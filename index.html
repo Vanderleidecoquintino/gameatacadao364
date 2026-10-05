@@ -150,5 +150,26 @@ carregarProdutos();
 window.addEventListener('resize',resize);
 document.getElementById('combo').addEventListener('change',()=>{let v=document.getElementById('combo').value.split(',');ir(parseInt(v[0]),parseInt(v[1]));});
 </script>
+<!-- ... seu código igual ... -->
+<footer id="assinatura" style="position:fixed; bottom:0; left:0; right:0; background:#111; color:#fff; text-align:center; padding:6px; font-size:12px; z-index:9999">
+  Mapa T1 - Desenvolvido por SEU NOME AQUI | v58
+</footer>
+
+<script>
+// TRAVA ANTI-CÓPIA SIMPLES
+const MEU_DOMINIO = "seu-usuario.github.io"; // <--- COLOCA SEU LINK AQUI
+if (!location.hostname.includes(MEU_DOMINIO) && location.hostname !== "localhost") {
+  document.body.innerHTML = "<h1 style='text-align:center;margin-top:20%'>Mapa original desenvolvido por SEU NOME AQUI<br>Versão oficial em: https://" + MEU_DOMINIO + "</h1>";
+}
+
+// LÓGICA DA FOTO REAL
+// No seu render, troca isso:
+if (produto.foto) {
+  html = `<img src="${produto.foto}" style="width:40px;height:40px;object-fit:cover;border-radius:8px">`;
+} else {
+  html = produto.emo;
+}
+</script>
+  
 </body>
 </html>
