@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>V56.1 - VELOCIDADE AJUSTAVEL</title>
+<title>V57 - BACKEND JSON</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#000;color:#fff;font-family:Arial;height:100dvh;overflow:hidden}
@@ -32,8 +32,8 @@ button{height:36px;border-radius:8px;border:1.5px solid #facc15;font-weight:bold
 </head>
 <body>
 <div id="tela1">
-<div id="t1top">🛒 ATACADÃO 364 - V56.1 COM VELOCIDADE</div>
-<div id="t1lista">Toque + pra adicionar - Salva automático</div>
+<div id="t1top">🛒 ATACADÃO 364 - V57 BACKEND JSON</div>
+<div id="t1lista">Carregando produtos do backend...</div>
 <div id="t1produtos"></div>
 <div id="totalBar">TOTAL: R$ 0,00 (0 itens)</div>
 <div id="t1btns">
@@ -43,7 +43,7 @@ button{height:36px;border-radius:8px;border:1.5px solid #facc15;font-weight:bold
 </div>
 </div>
 <div id="tela2">
-<div id="gps">V56.1 - 13 GONDOLAS - VEL AJUSTAVEL</div>
+<div id="gps">V57 - JSON BACKEND - VEL AJUSTAVEL</div>
 <div id="console">Pronto</div>
 <canvas id="c"></canvas>
 <div id="modalPego">
@@ -73,52 +73,24 @@ button{height:36px;border-radius:8px;border:1.5px solid #facc15;font-weight:bold
 <button class="bm" onclick="mudaVel(40)">↓↓</button>
 </div>
 </div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBBFqszMg6Z10iLu1DmNVqATymMNaPqut4",
-      authDomain: "mercado-app-b83c7.firebaseapp.com",
-      projectId: "mercado-app-b83c7",
-      storageBucket: "mercado-app-b83c7.firebasestorage.app",
-      messagingSenderId: "576399206797",
-      appId: "1:576399206797:web:5cfe2e7c4e5cc6b68df5c4",
-      measurementId: "G-0CZN5RK7RL"
-    };
-
-
-  
-<script type="module">
-
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-
-const auth = getAuth(app);
-
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    // Se não tá logado, manda pro login
-    window.location.href = "login.html";
-  } else {
-    console.log("Logado como:", user.email);
-    // aqui você carrega as listas dele
-  }
-});
-  
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-  const firebaseConfig = { /* mesma config */ };
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  onAuthStateChanged(auth, (user) => {
-    if (!user) { window.location.href = "login.html"; }
-  });
-</script>
-
 <script>
-const produtos=[{x:24,y:1,nome:"TANG",emo:"🧃",preco:"R$ 1,49",g:"1-2"},{x:2,y:2,nome:"ARROZ",emo:"🍚",preco:"R$ 22,90",g:"25-26"},{x:4,y:2,nome:"FEIJAO",emo:"🫘",preco:"R$ 8,99",g:"23-24"},{x:6,y:2,nome:"OLEO",emo:"🫒",preco:"R$ 7,49",g:"21-22"},{x:8,y:2,nome:"ACUCAR",emo:"🍬",preco:"R$ 4,99",g:"19-20"},{x:10,y:2,nome:"CAFE",emo:"☕",preco:"R$ 14,90",g:"17-18"},{x:12,y:2,nome:"MACARRAO",emo:"🍝",preco:"R$ 3,99",g:"15-16"},{x:14,y:2,nome:"BISCOITO",emo:"🍪",preco:"R$ 3,49",g:"13-14"},{x:16,y:2,nome:"LEITE",emo:"🥛",preco:"R$ 4,89",g:"11-12"},{x:18,y:2,nome:"MANTEIGA",emo:"🧈",preco:"R$ 9,90",g:"9-10"},{x:20,y:2,nome:"QUEIJO",emo:"🧀",preco:"R$ 29,90",g:"7-8"},{x:22,y:2,nome:"REFRI",emo:"🥤",preco:"R$ 8,99",g:"5-6"},{x:24,y:2,nome:"AGUA",emo:"💧",preco:"R$ 2,49",g:"3-4"},{x:2,y:5,nome:"CERVEJA",emo:"🍺",preco:"R$ 3,99",g:"25-26"},{x:4,y:5,nome:"SUCO",emo:"🧃",preco:"R$ 6,99",g:"23-24"},{x:6,y:5,nome:"ENERGETICO",emo:"⚡",preco:"R$ 7,99",g:"21-22"},{x:8,y:5,nome:"SABAO PO",emo:"🧼",preco:"R$ 12,90",g:"19-20"},{x:10,y:5,nome:"DETERGENTE",emo:"🧴",preco:"R$ 2,49",g:"17-18"},{x:12,y:5,nome:"AMACIANTE",emo:"👕",preco:"R$ 9,90",g:"15-16"},{x:14,y:5,nome:"DESINFETANTE",emo:"✨",preco:"R$ 6,99",g:"13-14"},{x:16,y:5,nome:"PAPEL HIG",emo:"🧻",preco:"R$ 15,90",g:"11-12"},{x:18,y:5,nome:"SABONETE",emo:"🧼",preco:"R$ 2,99",g:"9-10"},{x:20,y:5,nome:"SHAMPOO",emo:"💆",preco:"R$ 15,90",g:"7-8"},{x:22,y:5,nome:"CREME DENTAL",emo:"🪥",preco:"R$ 4,99",g:"5-6"},{x:24,y:5,nome:"DESODORANTE",emo:"💨",preco:"R$ 12,90",g:"3-4"},{x:2,y:10,nome:"PAO",emo:"🍞",preco:"R$ 0,89",g:"25-26"},{x:4,y:10,nome:"BOLO",emo:"🍰",preco:"R$ 6,90",g:"23-24"},{x:6,y:10,nome:"PRESUNTO",emo:"🍖",preco:"R$ 32,90",g:"21-22"},{x:8,y:10,nome:"MUSSARELA",emo:"🧀",preco:"R$ 39,90",g:"19-20"},{x:10,y:10,nome:"CARNE",emo:"🥩",preco:"R$ 29,90",g:"17-18"},{x:12,y:10,nome:"FRANGO",emo:"🍗",preco:"R$ 18,90",g:"15-16"},{x:14,y:10,nome:"LINGUICA",emo:"🌭",preco:"R$ 22,90",g:"13-14"},{x:16,y:10,nome:"OVOS",emo:"🥚",preco:"R$ 14,90",g:"11-12"},{x:18,y:10,nome:"TOMATE",emo:"🍅",preco:"R$ 7,90",g:"9-10"},{x:20,y:10,nome:"BATATA",emo:"🥔",preco:"R$ 5,90",g:"7-8"},{x:22,y:10,nome:"CEBOLA",emo:"🧅",preco:"R$ 4,90",g:"5-6"},{x:24,y:10,nome:"BANANA",emo:"🍌",preco:"R$ 6,90",g:"3-4"},{x:2,y:12,nome:"MACA",emo:"🍎",preco:"R$ 9,90",g:"25-26"},{x:4,y:12,nome:"RACAO CAO",emo:"🐶",preco:"R$ 89,90",g:"23-24"},{x:6,y:12,nome:"RACAO GATO",emo:"🐱",preco:"R$ 79,90",g:"21-22"}];
+let produtos = [];
 let listaT1=JSON.parse(localStorage.getItem('atacadao364_v56')||'[]');
+
+async function carregarProdutos(){
+  try{
+    const res = await fetch('./produtos.json?v='+Date.now());
+    if(!res.ok) throw new Error('sem json');
+    produtos = await res.json();
+    document.getElementById('t1lista').innerHTML = '✅ Backend conectado: '+produtos.length+' produtos';
+  }catch(e){
+    console.log('Usando lista local backup', e);
+    produtos=[{x:24,y:1,nome:"TANG",emo:"🧃",preco:"R$ 1,49",g:"1-2"},{x:2,y:2,nome:"ARROZ",emo:"🍚",preco:"R$ 22,90",g:"25-26"},{x:4,y:2,nome:"FEIJAO",emo:"🫘",preco:"R$ 8,99",g:"23-24"},{x:6,y:2,nome:"OLEO",emo:"🫒",preco:"R$ 7,49",g:"21-22"}];
+    document.getElementById('t1lista').innerHTML = '⚠️ Sem produtos.json - usando backup';
+  }
+  renderT1();
+}
+
 function falar(texto){if('speechSynthesis' in window){let u=new SpeechSynthesisUtterance(texto);u.lang='pt-BR';u.rate=1.1;speechSynthesis.cancel();speechSynthesis.speak(u);}}
 function falarLista(){if(!listaT1.length){falar('Lista vazia');return;}falar(`Sua lista tem ${listaT1.length} itens. ${listaT1.map(l=>l.nome).join(', ')}`);}
 function calcTotal(){return listaT1.reduce((s,p)=>s+parseFloat(p.preco.replace('R$','').replace(',','.')),0);}
@@ -132,7 +104,7 @@ function renderT1(){
    cont.appendChild(div);
  });
  let total=calcTotal();
- document.getElementById('t1lista').innerHTML=listaT1.length==0?'Toque + pra adicionar - Salva automático':listaT1.map(l=>`${l.emo} ${l.nome}`).join(' | ')+` [${listaT1.length}]`;
+ document.getElementById('t1lista').innerHTML=listaT1.length==0?'Toque + pra adicionar - Backend JSON ativo':listaT1.map(l=>`${l.emo} ${l.nome}`).join(' | ')+` [${listaT1.length}]`;
  document.getElementById('totalBar').innerText=`TOTAL: R$ ${total.toFixed(2).replace('.',',')} (${listaT1.length} itens)`;
  document.getElementById('btnGo').innerText=`🗺️ IR MERCADO (${listaT1.length})`;
  let combo=document.getElementById('combo');combo.innerHTML='';
@@ -147,13 +119,7 @@ const COLS=27,ROWS=19,W=40,H=26;
 let lab=[],px=26,py=15,tx=26,ty=15,cam=[],tm=null,camX=0,camY=0,rastro=[],vw=0,vh=0,vel=250;
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
 let idxRota=0,esperando=false,listaOrdenada=[];
-function mudaVel(d){
-  vel+=d;
-  if(vel<30) vel=30;
-  if(vel>5000) vel=5000;
-  document.getElementById('gps').innerText='V56.1 - VEL '+vel+'ms - '+(d<0?'MAIS RAPIDO':'MAIS DEVAGAR');
-  if(tm){ clearInterval(tm); tm=setInterval(step,vel); }
-}
+function mudaVel(d){vel+=d;if(vel<30) vel=30;if(vel>5000) vel=5000;document.getElementById('gps').innerText='V57 JSON - VEL '+vel+'ms - '+(d<0?'MAIS RAPIDO':'MAIS DEVAGAR');if(tm){ clearInterval(tm); tm=setInterval(step,vel); }}
 function gerarRotaDaLista(){listaT1.forEach(l=>l.visitado=false);let resto=[...listaT1],atual={x:26,y:15},ordem=[];while(resto.length){resto.sort((a,b)=>(Math.abs(atual.x-a.x)+Math.abs(atual.y-a.y))-(Math.abs(atual.x-b.x)+Math.abs(atual.y-b.y)));let prox=resto.shift();ordem.push(prox);atual=prox;}listaOrdenada=ordem;idxRota=0;irParaProximoDaLista();}
 function irParaProximoDaLista(){if(idxRota>=listaOrdenada.length){let total=calcTotal();document.getElementById('console').innerText='🎉 LISTA COMPLETA!';falar(`Lista completa! ${listaOrdenada.length} itens, total ${total.toFixed(2)} reais. Indo para o caixa.`);alert(`🎉 FINALIZADO! ${listaOrdenada.length} itens - Total R$ ${total.toFixed(2).replace('.',',')}`);return;}ir(listaOrdenada[idxRota].x,listaOrdenada[idxRota].y);}
 function mostrarModalPego(item){
@@ -162,8 +128,7 @@ function mostrarModalPego(item){
  document.getElementById('modalGond').innerText='GÔNDOLA ['+item.g+']';
  document.getElementById('modalPreco').innerText=item.preco;
  document.getElementById('modalProgress').innerText='Item '+(idxRota+1)+'/'+listaOrdenada.length;
- let total=calcTotal();
- let pegos=listaOrdenada.filter(l=>l.visitado).length;
+ let total=calcTotal();let pegos=listaOrdenada.filter(l=>l.visitado).length;
  document.getElementById('modalTotal').innerText=`TOTAL PARCIAL: R$ ${total.toFixed(2).replace('.',',')} | ${pegos+1}/${listaOrdenada.length} PEGOS`;
  document.getElementById('modalPego').style.display='block';
  falar(`Chegou no ${item.nome}, gôndola ${item.g}, preço ${item.preco}`);
@@ -181,7 +146,7 @@ function step(){if(cam.length==0){clearInterval(tm);tm=null;let alvo=listaOrdena
 function mover(dx,dy){if(tm){clearInterval(tm);tm=null;}let nx=px+dx,ny=py+dy;if(!livre(nx,ny))return;rastro.push({x:px,y:py});if(rastro.length>25) rastro.shift();px=nx;py=ny;draw();}
 function ir(x,y){if(tm){clearInterval(tm);tm=null;}if(x==26&&y==15) rastro=[];if(lab[y][x]==1){if(x>0&&lab[y][x-1]!=1) x--; else if(x<COLS-1&&lab[y][x+1]!=1) x++;}tx=x;ty=y;cam=achar(px,py,x,y);if(cam.length==0){px=x;py=y;draw();if(listaOrdenada[idxRota]&&px==listaOrdenada[idxRota].x&&py==listaOrdenada[idxRota].y){mostrarModalPego(listaOrdenada[idxRota]);esperando=true;}return;}tm=setInterval(step,vel);draw();}
 function loop(){updateCam();draw();requestAnimationFrame(loop);}
-renderT1();
+carregarProdutos();
 window.addEventListener('resize',resize);
 document.getElementById('combo').addEventListener('change',()=>{let v=document.getElementById('combo').value.split(',');ir(parseInt(v[0]),parseInt(v[1]));});
 </script>
