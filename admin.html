@@ -2,36 +2,22 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width">
-<title>ADM Loja - T1</title>
-<style>
-body{font-family:system-ui;padding:12px;max-width:480px;margin:auto;background:#f8f9fa}
-.top{display:flex;gap:8px;position:sticky;top:0;background:#f8f9fa;padding:8px 0}
-input{padding:12px;border:1px solid #ccc;border-radius:10px;width:100%}
-.card{background:#fff;padding:12px;border-radius:12px;margin:8px 0;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.06)}
-.b{padding:8px 12px;border-radius:8px;border:none;font-weight:700}
-.edit{background:#e0f2fe}.del{background:#fee2e2;color:#b91c1c}
-#formEdit{background:#111;color:#fff;padding:16px;border-radius:16px;position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:auto;display:none}
-</style>
+<title>ADM T1 - 41 produtos</title>
+<style>body{font-family:system-ui;padding:12px;max-width:480px;margin:auto;background:#f8f9fa}.top{display:flex;gap:8px;position:sticky;top:0;background:#f8f9fa;padding:8px 0}input{padding:12px;border:1px solid #ccc;border-radius:10px;width:100%}.card{background:#fff;padding:12px;border-radius:12px;margin:8px 0;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.06)}.b{padding:8px 12px;border-radius:8px;border:none;font-weight:700}.edit{background:#e0f2fe}.del{background:#fee2e2;color:#b91c1c}#formEdit{background:#111;color:#fff;padding:16px;border-radius:16px;position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:auto;display:none}</style>
 </head>
 <body>
 <h2>ADM T1 - <span id="total">0</span> produtos</h2>
 <div class="top">
-<input id="busca" placeholder="Buscar: alcool..." oninput="render()">
-<button class="b" onclick="openForm()" style="background:#22c55e;color:#fff;min-width:80px">+ Novo</button>
+<input id="busca" placeholder="Buscar..." oninput="render()">
+<button class="b" onclick="openForm()" style="background:#22c55e;color:#fff">+ Novo</button>
 </div>
-
 <div id="lista"></div>
+<textarea id="jsonOut" style="width:100%;height:140px;margin-top:20px"></textarea>
+<button class="b" style="width:100%;background:#111;color:#fff;margin-top:8px" onclick="copiar()">COPIAR produtos.json</button>
 
-<textarea id="jsonOut" style="width:100%;height:120px;margin-top:20px"></textarea>
-<button class="b" style="width:100%;background:#111;color:#fff" onclick="copiar()">COPIAR produtos.json</button>
-
-<!-- FORM EDITAR -->
 <div id="formEdit">
-<h3 id="formTitle">Novo Produto</h3>
-<input id="f_nome" placeholder="Nome">
-<input id="f_corredor" placeholder="Corredor A2">
-<input id="f_preco" placeholder="Preço 8.99">
-<input id="f_foto" placeholder="foto.jpg">
+<h3 id="formTitle">Editar</h3>
+<input id="f_nome" placeholder="Nome"><input id="f_corredor" placeholder="Corredor"><input id="f_preco" placeholder="Preço"><input id="f_foto" placeholder="foto.jpg">
 <div style="display:flex;gap:8px;margin-top:10px">
 <button class="b" style="flex:1;background:#fff;color:#111" onclick="closeForm()">Cancelar</button>
 <button class="b" style="flex:1;background:#22c55e;color:#fff" onclick="salvar()">Salvar</button>
@@ -39,34 +25,58 @@ input{padding:12px;border:1px solid #ccc;border-radius:10px;width:100%}
 </div>
 
 <script>
-let produtos = JSON.parse(localStorage.getItem('produtos') || '[]');
-let editIndex = -1;
-
-function render(){
- const q = document.getElementById('busca').value.toLowerCase();
- const lista = document.getElementById('lista');
- const filtrados = produtos.map((p,i)=>({...p, _i:i})).filter(p=>p.nome.toLowerCase().includes(q));
- lista.innerHTML = filtrados.map(p=>`
-  <div class="card">
-    <div><b>${p.nome}</b><br><small>${p.corredor} - R$ ${p.preco}</small></div>
-    <div><button class="b edit" onclick="editar(${p._i})">Editar</button> <button class="b del" onclick="apagar(${p._i})">X</button></div>
-  </div>`).join('');
- document.getElementById('total').innerText = produtos.length;
- document.getElementById('jsonOut').value = JSON.stringify(produtos, null, 2);
- localStorage.setItem('produtos', JSON.stringify(produtos));
-}
-
-function openForm(){ editIndex=-1; document.getElementById('formTitle').innerText='Novo Produto'; ['f_nome','f_corredor','f_preco','f_foto'].forEach(id=>document.getElementById(id).value=''); document.getElementById('formEdit').style.display='block'; }
-function editar(i){ editIndex=i; const p=produtos[i]; document.getElementById('f_nome').value=p.nome; document.getElementById('f_corredor').value=p.corredor; document.getElementById('f_preco').value=p.preco; document.getElementById('f_foto').value=p.foto; document.getElementById('formTitle').innerText='Editar Produto'; document.getElementById('formEdit').style.display='block'; }
-function closeForm(){ document.getElementById('formEdit').style.display='none'; }
-function salvar(){
- const p={nome:f_nome.value, corredor:f_corredor.value, preco:f_preco.value, foto:f_foto.value||'sem-foto.jpg'};
- if(!p.nome) return alert('Nome obrigatório');
- if(editIndex>=0) produtos[editIndex]=p; else produtos.push(p);
- closeForm(); render();
-}
-function apagar(i){ if(confirm('Apagar?')){ produtos.splice(i,1); render(); } }
-function copiar(){ navigator.clipboard.writeText(JSON.stringify(produtos, null, 2)); alert('Copiado!'); }
+// AQUI ESTÃO SEUS 41 PRODUTOS - PODE EDITAR DIRETO
+let produtos = [
+{"nome":"Álcool 70% 1L","corredor":"A2","preco":"8.99","foto":"alcool.jpg"},
+{"nome":"Arroz T1 5kg","corredor":"A3","preco":"22.90","foto":"arroz.jpg"},
+{"nome":"Feijão Carioca 1kg","corredor":"A3","preco":"7.49","foto":"feijao.jpg"},
+{"nome":"Açúcar 1kg","corredor":"A3","preco":"4.29","foto":"acucar.jpg"},
+{"nome":"Óleo de Soja","corredor":"A3","preco":"6.99","foto":"oleo.jpg"},
+{"nome":"Sal Refinado","corredor":"A3","preco":"2.19","foto":"sal.jpg"},
+{"nome":"Café 500g","corredor":"A4","preco":"14.90","foto":"cafe.jpg"},
+{"nome":"Leite Integral 1L","corredor":"B1","preco":"4.99","foto":"leite.jpg"},
+{"nome":"Pão de Forma","corredor":"B1","preco":"6.49","foto":"pao.jpg"},
+{"nome":"Manteiga 200g","corredor":"B1","preco":"7.99","foto":"manteiga.jpg"},
+{"nome":"Detergente Neutro","corredor":"A2","preco":"2.29","foto":"detergente.jpg"},
+{"nome":"Sabão em Pó 1kg","corredor":"A2","preco":"12.90","foto":"sabao.jpg"},
+{"nome":"Amaciante 2L","corredor":"A2","preco":"11.90","foto":"amaciante.jpg"},
+{"nome":"Água Sanitária 1L","corredor":"A2","preco":"3.49","foto":"agua-sanitaria.jpg"},
+{"nome":"Papel Higiênico 12un","corredor":"A1","preco":"18.90","foto":"papel.jpg"},
+{"nome":"Sabonete","corredor":"A1","preco":"1.99","foto":"sabonete.jpg"},
+{"nome":"Shampoo 350ml","corredor":"A1","preco":"9.90","foto":"shampoo.jpg"},
+{"nome":"Creme Dental","corredor":"A1","preco":"4.49","foto":"creme.jpg"},
+{"nome":"Refrigerante 2L","corredor":"B2","preco":"7.99","foto":"refri.jpg"},
+{"nome":"Cerveja Lata","corredor":"B2","preco":"3.29","foto":"cerveja.jpg"},
+{"nome":"Água 500ml","corredor":"B2","preco":"1.50","foto":"agua.jpg"},
+{"nome":"Bolacha Recheada","corredor":"B3","preco":"2.99","foto":"bolacha.jpg"},
+{"nome":"Macarrão 500g","corredor":"A3","preco":"3.99","foto":"macarrao.jpg"},
+{"nome":"Molho de Tomate","corredor":"A3","preco":"2.49","foto":"molho.jpg"},
+{"nome":"Farinha de Trigo","corredor":"A3","preco":"4.79","foto":"farinha.jpg"},
+{"nome":"Ovos 30un","corredor":"B1","preco":"18.90","foto":"ovos.jpg"},
+{"nome":"Queijo Mussarela kg","corredor":"B1","preco":"39.90","foto":"queijo.jpg"},
+{"nome":"Presunto kg","corredor":"B1","preco":"28.90","foto":"presunto.jpg"},
+{"nome":"Frango kg","corredor":"C1","preco":"12.90","foto":"frango.jpg"},
+{"nome":"Carne Moída kg","corredor":"C1","preco":"29.90","foto":"carne.jpg"},
+{"nome":"Linguiça kg","corredor":"C1","preco":"19.90","foto":"linguica.jpg"},
+{"nome":"Tomate kg","corredor":"C2","preco":"6.99","foto":"tomate.jpg"},
+{"nome":"Batata kg","corredor":"C2","preco":"4.99","foto":"batata.jpg"},
+{"nome":"Cebola kg","corredor":"C2","preco":"5.49","foto":"cebola.jpg"},
+{"nome":"Banana kg","corredor":"C2","preco":"4.29","foto":"banana.jpg"},
+{"nome":"Maçã kg","corredor":"C2","preco":"8.99","foto":"maca.jpg"},
+{"nome":"Pão Francês kg","corredor":"B1","preco":"14.90","foto":"pao-frances.jpg"},
+{"nome":"Achocolatado 400g","corredor":"B3","preco":"6.99","foto":"achocolatado.jpg"},
+{"nome":"Leite Condensado","corredor":"B3","preco":"5.49","foto":"leite-cond.jpg"},
+{"nome":"Creme de Leite","corredor":"B3","preco":"3.29","foto":"creme-leite.jpg"},
+{"nome":"Azeite 500ml","corredor":"A4","preco":"24.90","foto":"azeite.jpg"}
+];
+let editIndex=-1;
+function render(){const q=busca.value.toLowerCase();lista.innerHTML=produtos.map((p,i)=>({...p,_i:i})).filter(p=>p.nome.toLowerCase().includes(q)).map(p=>`<div class="card"><div><b>${p.nome}</b><br><small>${p.corredor} - R$ ${p.preco}</small></div><div><button class="b edit" onclick="editar(${p._i})">Editar</button> <button class="b del" onclick="apagar(${p._i})">X</button></div></div>`).join('');total.innerText=produtos.length;jsonOut.value=JSON.stringify(produtos,null,2);localStorage.setItem('produtos',JSON.stringify(produtos));}
+function openForm(){editIndex=-1;formTitle.innerText='Novo';['f_nome','f_corredor','f_preco','f_foto'].forEach(id=>document.getElementById(id).value='');formEdit.style.display='block';}
+function editar(i){editIndex=i;const p=produtos[i];f_nome.value=p.nome;f_corredor.value=p.corredor;f_preco.value=p.preco;f_foto.value=p.foto;formTitle.innerText='Editar';formEdit.style.display='block';}
+function closeForm(){formEdit.style.display='none';}
+function salvar(){const p={nome:f_nome.value,corredor:f_corredor.value,preco:f_preco.value,foto:f_foto.value||'sem-foto.jpg'};if(!p.nome)return alert('Nome');if(editIndex>=0)produtos[editIndex]=p;else produtos.push(p);closeForm();render();}
+function apagar(i){if(confirm('Apagar?')){produtos.splice(i,1);render();}}
+function copiar(){navigator.clipboard.writeText(JSON.stringify(produtos,null,2));alert('Copiado! Agora cola no produtos.json');}
 render();
 </script>
 </body>
