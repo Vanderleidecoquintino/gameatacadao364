@@ -1,39 +1,107 @@
-
 <!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><title>ADM - GONDOLAS 1-26</title>
-<style>body{background:#111;color:#fff;font-family:Arial;padding:12px}input,button{width:100%;margin:4px 0;height:40px;border-radius:8px;border:1px solid #facc15;padding:0 8px}button{background:#facc15;color:#000;font-weight:900}#lista{background:#000;padding:8px;margin-top:8px;font-size:11px;max-height:300px;overflow:auto}</style>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width">
+<title>ADM T1 - 41 produtos - G 23-24</title>
+<style>
+body{font-family:system-ui;padding:12px;max-width:480px;margin:auto;background:#f8f9fa}
+.top{display:flex;gap:8px;position:sticky;top:0;background:#f8f9fa;padding:8px 0;z-index:5}
+input,select{padding:12px;border:1px solid #ccc;border-radius:10px;width:100%;margin-top:6px}
+.card{background:#fff;padding:12px;border-radius:12px;margin:8px 0;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.b{padding:8px 12px;border-radius:8px;border:none;font-weight:700}
+.edit{background:#e0f2fe}.del{background:#fee2e2;color:#b91c1c}
+#formEdit{background:#111;color:#fff;padding:16px;border-radius:16px;position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:auto;display:none;z-index:10;max-height:92vh;overflow:auto}
+#mapa{width:100%;height:300px;border:2px dashed #555;border-radius:12px;position:relative;background:#fff url('mapa-padrao-vertical.png') center/100% 100% no-repeat;margin:10px 0;cursor:crosshair}
+.ponto{position:absolute;transform:translate(-50%,-50%);font-size:28px}
+.grid2{display:flex;gap:8px}
+</style>
 </head>
 <body>
-<h3>ADM T2- ATACADÃO 364 - G: 23-24</h3>
-<input id="nome" placeholder="NOME PRODUTO ex: ARROZ">
-<input id="emoji" placeholder="Emoji ex: 🍚" value="📦">
-<input id="preco" placeholder="Preço ex: 22,90" value="">
-<input id="g" placeholder="GÔNDOLA ex: 23-24" value="23-24">
-<input id="x" placeholder="X (1 a 26) ex: 4" type="number">
-<input id="y" placeholder="Y (1 a 17) ex: 2" type="number">
-<button onclick="add()">+ SALVAR NO STORAGE</button>
-<button onclick="limpar()" style="background:#333;color:#fff">LIMPAR TUDO</button>
-<button onclick="exportar()" style="background:#22c55e">EXPORTAR produtos.json</button>
+<h2>ADM T1 - <span id="total">0</span> produtos</h2>
+<div class="top">
+<input id="busca" placeholder="Buscar..." oninput="render()">
+<button class="b" onclick="openForm()" style="background:#22c55e;color:#fff">+ Novo</button>
+</div>
 <div id="lista"></div>
+<textarea id="jsonOut" style="width:100%;height:140px;margin-top:20px"></textarea>
+<button class="b" style="width:100%;background:#111;color:#fff;margin-top:8px" onclick="copiar()">COPIAR produtos.json</button>
+<div id="formEdit">
+<h3 id="formTitle">Editar</h3>
+<input id="f_nome" placeholder="Nome">
+<div class="grid2">
+<input id="f_emoji" placeholder="Emoji ex: 🍚" style="flex:1">
+<select id="f_corredor" style="flex:1"><option value="1-2">1-2</option><option value="3-4">3-4</option><option value="5-6">5-6</option><option value="7-8">7-8</option><option value="9-10">9-10</option><option value="11-12">11-12</option><option value="13-14">13-14</option><option value="15-16">15-16</option><option value="17-18">17-18</option><option value="19-20">19-20</option><option value="21-22">21-22</option><option value="23-24" selected>23-24</option><option value="25-26">25-26</option></select>
+</div>
+<div class="grid2">
+<input id="f_preco" placeholder="Preço 22.90" style="flex:1">
+<input id="f_foto" placeholder="foto.jpg" style="flex:1">
+</div>
+<div class="grid2">
+<div style="flex:1"><input id="f_x" type="number" placeholder="X %"><small style="color:#aaa"> X no mapa</small></div>
+<div style="flex:1"><input id="f_y" type="number" placeholder="Y %"><small style="color:#aaa"> Y no mapa</small></div>
+</div>
+<div id="mapa" onclick="pegaXY(event)"><div id="pontoPrev" class="ponto" style="left:50%;top:50%">📦</div></div>
+<small>Clique no mapa para pegar X e Y automático</small>
+<div style="display:flex;gap:8px;margin-top:10px">
+<button class="b" style="flex:1;background:#fff;color:#111" onclick="closeForm()">Cancelar</button>
+<button class="b" style="flex:1;background:#22c55e;color:#fff" onclick="salvar()">Salvar</button>
+</div>
+</div>
 <script>
-let produtos=JSON.parse(localStorage.getItem('produtos')||'[]');
-function render(){let d=document.getElementById('lista');d.innerHTML=produtos.map((p,i)=>`${i+1}. ${p.emoji} ${p.nome} [${p.g}] x:${p.x} y:${p.y} - ${p.preco} <button onclick="rem(${i})" style="height:20px;width:60px">DEL</button>`).join('<br>');}
-function add(){
-  let nome=document.getElementById('nome').value.toUpperCase();
-  let emo=document.getElementById('emoji').value||'📦';
-  let preco=document.getElementById('preco').value;
-  let g=document.getElementById('g').value||'23-24'; // <--- AGORA g: 23-24
-  let x=parseInt(document.getElementById('x').value);
-  let y=parseInt(document.getElementById('y').value);
-  if(!nome||isNaN(x)||isNaN(y)){alert('Preencha NOME, X, Y');return;}
-  produtos.push({nome, emoji:emo, preco, g, x, y}); // salva g, não corredor
-  localStorage.setItem('produtos',JSON.stringify(produtos));
-  render(); document.getElementById('nome').value='';
-}
-function rem(i){produtos.splice(i,1);localStorage.setItem('produtos',JSON.stringify(produtos));render();}
-function limpar(){if(confirm('Limpar?')){produtos=[];localStorage.removeItem('produtos');render();}}
-function exportar(){let blob=new Blob([JSON.stringify(produtos,null,2)],{type:'application/json'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='produtos.json';a.click();}
+let produtos = [
+{"nome":"Álcool 70% 1L","corredor":"23-24","g":"23-24","preco":"8.99","foto":"alcool.jpg","emoji":"🧴","x":25,"y":20},
+{"nome":"Arroz T1 5kg","corredor":"21-22","g":"21-22","preco":"22.90","foto":"arroz.jpg","emoji":"🍚","x":25,"y":30},
+{"nome":"Feijão Carioca 1kg","corredor":"21-22","g":"21-22","preco":"7.49","foto":"feijao.jpg","emoji":"🫘","x":25,"y":35},
+{"nome":"Açúcar 1kg","corredor":"21-22","g":"21-22","preco":"4.29","foto":"acucar.jpg","emoji":"🍚","x":25,"y":40},
+{"nome":"Óleo de Soja","corredor":"21-22","g":"21-22","preco":"6.99","foto":"oleo.jpg","emoji":"🫙","x":35,"y":30},
+{"nome":"Sal Refinado","corredor":"21-22","g":"21-22","preco":"2.19","foto":"sal.jpg","emoji":"🧂","x":35,"y":35},
+{"nome":"Café 500g","corredor":"19-20","g":"19-20","preco":"14.90","foto":"cafe.jpg","emoji":"☕","x":45,"y":30},
+{"nome":"Leite Integral 1L","corredor":"15-16","g":"15-16","preco":"4.99","foto":"leite.jpg","emoji":"🥛","x":60,"y":30},
+{"nome":"Pão de Forma","corredor":"15-16","g":"15-16","preco":"6.49","foto":"pao.jpg","emoji":"🍞","x":60,"y":40},
+{"nome":"Manteiga 200g","corredor":"15-16","g":"15-16","preco":"7.99","foto":"manteiga.jpg","emoji":"🧈","x":60,"y":45},
+{"nome":"Detergente Neutro","corredor":"23-24","g":"23-24","preco":"2.29","foto":"detergente.jpg","emoji":"🧴","x":35,"y":20},
+{"nome":"Sabão em Pó 1kg","corredor":"23-24","g":"23-24","preco":"12.90","foto":"sabao.jpg","emoji":"🧼","x":35,"y":25},
+{"nome":"Amaciante 2L","corredor":"23-24","g":"23-24","preco":"11.90","foto":"amaciante.jpg","emoji":"🧴","x":35,"y":35},
+{"nome":"Água Sanitária 1L","corredor":"23-24","g":"23-24","preco":"3.49","foto":"agua-sanitaria.jpg","emoji":"🧴","x":35,"y":40},
+{"nome":"Papel Higiênico 12un","corredor":"25-26","g":"25-26","preco":"18.90","foto":"papel.jpg","emoji":"🧻","x":15,"y":20},
+{"nome":"Sabonete","corredor":"25-26","g":"25-26","preco":"1.99","foto":"sabonete.jpg","emoji":"🧼","x":15,"y":30},
+{"nome":"Shampoo 350ml","corredor":"25-26","g":"25-26","preco":"9.90","foto":"shampoo.jpg","emoji":"🧴","x":15,"y":35},
+{"nome":"Creme Dental","corredor":"25-26","g":"25-26","preco":"4.49","foto":"creme.jpg","emoji":"🪥","x":15,"y":40},
+{"nome":"Refrigerante 2L","corredor":"11-12","g":"11-12","preco":"7.99","foto":"refri.jpg","emoji":"🥤","x":75,"y":20},
+{"nome":"Cerveja Lata","corredor":"11-12","g":"11-12","preco":"3.29","foto":"cerveja.jpg","emoji":"🍺","x":75,"y":30},
+{"nome":"Água 500ml","corredor":"11-12","g":"11-12","preco":"1.50","foto":"agua.jpg","emoji":"💧","x":75,"y":40},
+{"nome":"Bolacha Recheada","corredor":"13-14","g":"13-14","preco":"2.99","foto":"bolacha.jpg","emoji":"🍪","x":50,"y":50},
+{"nome":"Macarrão 500g","corredor":"21-22","g":"21-22","preco":"3.99","foto":"macarrao.jpg","emoji":"🍝","x":25,"y":45},
+{"nome":"Molho de Tomate","corredor":"21-22","g":"21-22","preco":"2.49","foto":"molho.jpg","emoji":"🥫","x":25,"y":50},
+{"nome":"Farinha de Trigo","corredor":"21-22","g":"21-22","preco":"4.79","foto":"farinha.jpg","emoji":"🌾","x":25,"y":55},
+{"nome":"Ovos 30un","corredor":"15-16","g":"15-16","preco":"18.90","foto":"ovos.jpg","emoji":"🥚","x":60,"y":50},
+{"nome":"Queijo Mussarela kg","corredor":"15-16","g":"15-16","preco":"39.90","foto":"queijo.jpg","emoji":"🧀","x":60,"y":55},
+{"nome":"Presunto kg","corredor":"15-16","g":"15-16","preco":"28.90","foto":"presunto.jpg","emoji":"🍖","x":60,"y":60},
+{"nome":"Frango kg","corredor":"5-6","g":"5-6","preco":"12.90","foto":"frango.jpg","emoji":"🍗","x":85,"y":30},
+{"nome":"Carne Moída kg","corredor":"5-6","g":"5-6","preco":"29.90","foto":"carne.jpg","emoji":"🥩","x":85,"y":40},
+{"nome":"Linguiça kg","corredor":"5-6","g":"5-6","preco":"19.90","foto":"linguica.jpg","emoji":"🌭","x":85,"y":50},
+{"nome":"Tomate kg","corredor":"1-2","g":"1-2","preco":"6.99","foto":"tomate.jpg","emoji":"🍅","x":90,"y":20},
+{"nome":"Batata kg","corredor":"1-2","g":"1-2","preco":"4.99","foto":"batata.jpg","emoji":"🥔","x":90,"y":30},
+{"nome":"Cebola kg","corredor":"1-2","g":"1-2","preco":"5.49","foto":"cebola.jpg","emoji":"🧅","x":90,"y":40},
+{"nome":"Banana kg","corredor":"1-2","g":"1-2","preco":"4.29","foto":"banana.jpg","emoji":"🍌","x":90,"y":50},
+{"nome":"Maçã kg","corredor":"1-2","g":"1-2","preco":"8.99","foto":"maca.jpg","emoji":"🍎","x":90,"y":60},
+{"nome":"Pão Francês kg","corredor":"15-16","g":"15-16","preco":"14.90","foto":"pao-frances.jpg","emoji":"🥖","x":60,"y":65},
+{"nome":"Achocolatado 400g","corredor":"13-14","g":"13-14","preco":"6.99","foto":"achocolatado.jpg","emoji":"🍫","x":50,"y":55},
+{"nome":"Leite Condensado","corredor":"13-14","g":"13-14","preco":"5.49","foto":"leite-cond.jpg","emoji":"🥫","x":50,"y":60},
+{"nome":"Creme de Leite","corredor":"13-14","g":"13-14","preco":"3.29","foto":"creme-leite.jpg","emoji":"🥛","x":50,"y":65},
+{"nome":"Azeite 500ml","corredor":"19-20","g":"19-20","preco":"24.90","foto":"azeite.jpg","emoji":"🫒","x":45,"y":20}
+];
+let editIndex=-1;
+function render(){const q=busca.value.toLowerCase();lista.innerHTML=produtos.map((p,i)=>({...p,_i:i})).filter(p=>p.nome.toLowerCase().includes(q)).map(p=>`<div class="card"><div style="display:flex;gap:8px;align-items:center"><span style="font-size:24px">${p.emoji||'📦'}</span><div><b>${p.nome}</b><br><small>${p.g||p.corredor} - R$ ${p.preco} | X:${p.x} Y:${p.y}</small></div></div><div><button class="b edit" onclick="editar(${p._i})">Editar</button> <button class="b del" onclick="apagar(${p._i})">X</button></div></div>`).join('');total.innerText=produtos.length;jsonOut.value=JSON.stringify(produtos,null,2);localStorage.setItem('produtos',JSON.stringify(produtos));}
+function pegaXY(e){const r=mapa.getBoundingClientRect();const x=Math.round(((e.clientX-r.left)/r.width)*100);const y=Math.round(((e.clientY-r.top)/r.height)*100);f_x.value=x;f_y.value=y;pontoPrev.style.left=x+'%';pontoPrev.style.top=y+'%';}
+function openForm(){editIndex=-1;formTitle.innerText='Novo';['f_nome','f_preco','f_foto','f_emoji','f_x','f_y'].forEach(id=>document.getElementById(id).value='');f_corredor.value='23-24';pontoPrev.textContent='📦';pontoPrev.style.left='50%';pontoPrev.style.top='50%';formEdit.style.display='block';}
+function editar(i){editIndex=i;const p=produtos[i];f_nome.value=p.nome;f_corredor.value=p.g||p.corredor;f_preco.value=p.preco;f_foto.value=p.foto;f_emoji.value=p.emoji||'📦';f_x.value=p.x||50;f_y.value=p.y||50;pontoPrev.textContent=f_emoji.value;pontoPrev.style.left=f_x.value+'%';pontoPrev.style.top=f_y.value+'%';formTitle.innerText='Editar';formEdit.style.display='block';}
+function closeForm(){formEdit.style.display='none';}
+function salvar(){const g=f_corredor.value;const p={nome:f_nome.value,corredor:g,g:g,preco:f_preco.value,foto:f_foto.value||'sem-foto.jpg',emoji:f_emoji.value||'📦',x:parseInt(f_x.value)||50,y:parseInt(f_y.value)||50};if(!p.nome)return alert('Nome');if(editIndex>=0)produtos[editIndex]=p;else produtos.push(p);closeForm();render();}
+function apagar(i){if(confirm('Apagar?')){produtos.splice(i,1);render();}}
+function copiar(){navigator.clipboard.writeText(JSON.stringify(produtos,null,2));alert('Copiado! Agora com g:23-24 - 13 gondolas 1-26');}
+f_emoji.addEventListener('input',()=>{pontoPrev.textContent=f_emoji.value||'📦';});
+try{const s=JSON.parse(localStorage.getItem('produtos')||'[]'); if(s.length>0) produtos=s.map(p=>{let g=p.g||p.corredor; if(['A1','A2','A3','A4','B1','B2','B3','C1','C2'].includes(g)){const m={'A1':'25-26','A2':'23-24','A3':'21-22','A4':'19-20','B1':'15-16','B2':'11-12','B3':'13-14','C1':'5-6','C2':'1-2'}; g=m[g]||'23-24';} return {...p, corredor:g, g:g};});}catch(e){}
 render();
 </script>
 </body>
