@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>V60.1 - BANDEIRA FIX</title>
+<title>V60.2 - V57 MOTOR FIX</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#000;color:#fff;font-family:monospace;height:100dvh;overflow:hidden}
 #tela1{height:100dvh;display:flex;flex-direction:column}
-#t1top{background:#00ff88;color:#000;padding:12px;text-align:center;font-weight:900;font-size:14px}
+#t1top{background:#00ff88;color:#000;padding:12px;text-align:center;font-weight:900;font-size:14px;text-shadow:0 0 10px #00ff88}
 #t1lista{background:#0a0a0a;padding:8px;min-height:45px;max-height:75px;overflow:auto;border-bottom:2px solid #00ff88;font-size:11px;color:#00ff88}
 #t1produtos{flex:1;overflow:auto;padding:6px;display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .prod{border:2px solid #222;background:#111;border-radius:12px;padding:8px;text-align:center}
-.prod.sel{border-color:#00ff88;background:#002a12}
+.prod.sel{border-color:#00ff88;background:#002a12;box-shadow:0 0 10px #00ff88}
 .prod button{width:100%;margin-top:5px;height:28px;border-radius:8px;border:1px solid #00ff88;background:#00ff88;color:#000;font-weight:bold;font-size:9px}
 #t1btns{padding:8px;display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
 #t1btns button{height:44px;min-width:90px;flex:1;max-width:140px;border-radius:10px;border:2px solid #00ff88;font-weight:900;font-size:10px;font-family:monospace}
@@ -32,8 +32,8 @@ button{height:36px;border-radius:8px;border:1.5px solid #00ff88;font-weight:bold
 </head>
 <body>
 <div id="tela1">
-<div id="t1top">🛒 ATACADÃO 364 - V60.1 BANDEIRA FIX</div>
-<div id="t1lista">Lendo ADM...</div>
+<div id="t1top">> ATACADÃO 364 - V60.2 V57 MOTOR_</div>
+<div id="t1lista">Carregando...</div>
 <div id="t1produtos"></div>
 <div id="totalBar">TOTAL: R$ 0,00 (0 itens)</div>
 <div id="t1btns">
@@ -43,7 +43,7 @@ button{height:36px;border-radius:8px;border:1.5px solid #00ff88;font-weight:bold
 </div>
 </div>
 <div id="tela2">
-<div id="gps">V60.1 - 13 GÔNDOLAS</div>
+<div id="gps">V60.2 - V57 MOTOR - BANDEIRA FIX</div>
 <div id="console">Pronto</div>
 <canvas id="c"></canvas>
 <div id="modalPego">
@@ -74,55 +74,64 @@ button{height:36px;border-radius:8px;border:1.5px solid #00ff88;font-weight:bold
 </div>
 </div>
 <script>
-const MATRIX=[
-  {g:'25-26',x:1,c:'A1'},{g:'23-24',x:3,c:'A1'},{g:'21-22',x:5,c:'A2'},
-  {g:'19-20',x:7,c:'A2'},{g:'17-18',x:9,c:'A3'},{g:'15-16',x:11,c:'A3'},
-  {g:'13-14',x:13,c:'A4'},{g:'11-12',x:15,c:'B1'},{g:'9-10',x:17,c:'B1'},
-  {g:'7-8',x:19,c:'B2'},{g:'5-6',x:21,c:'B2'},{g:'3-4',x:23,c:'B3'},
-  {g:'1-2',x:25,c:'C2'}
-];
-function getXByCorredor(cor){
-  if(!cor) return 3;
-  let f = MATRIX.find(m=>m.g==cor || m.c==cor);
-  if(f) return f.x;
-  if(cor.includes('A1')) return 1;
-  if(cor.includes('A2')) return 5;
-  if(cor.includes('A3')) return 9;
-  if(cor.includes('B1')) return 13;
-  if(cor.includes('B2')) return 19;
-  if(cor.includes('B3')) return 23;
-  return 3;
-}
 let produtos = [];
 let listaT1=JSON.parse(localStorage.getItem('atacadao364_v56')||'[]');
+
+// V57 MOTOR - FIX BANDEIRA + V60.1 COMPATÍVEL
 async function carregarProdutos(){
   try{
-    let raw = JSON.parse(localStorage.getItem('atacadao364_FINAL')||localStorage.getItem('produtos')||'[]');
-    if(raw.length>0){
+    // 1. Tenta ADM T1 novo
+    let raw = JSON.parse(localStorage.getItem('atacadao364_FINAL')||localStorage.getItem('produtos')||'null');
+    if(raw && raw.length>0){
       produtos = raw.map(p=>{
-        let xReal = parseInt(p.x);
-        if(xReal>26 || isNaN(xReal) || p.corredor) xReal = getXByCorredor(p.corredor||p.g);
+        let x = parseInt(p.x);
+        if(isNaN(x) || x>26){
+          let cor = p.corredor||p.g||'A3';
+          if(cor.includes('A1') || cor=='25-26' || cor=='23-24') x=2;
+          else if(cor.includes('A2') || cor=='21-22' || cor=='19-20') x=6;
+          else if(cor.includes('A3') || cor=='17-18' || cor=='15-16') x=10;
+          else if(cor.includes('A4') || cor=='13-14') x=13;
+          else if(cor.includes('B1') || cor=='11-12' || cor=='9-10') x=16;
+          else if(cor.includes('B2') || cor=='7-8' || cor=='5-6') x=20;
+          else if(cor.includes('B3') || cor=='3-4') x=23;
+          else if(cor.includes('C2') || cor=='1-2') x=25;
+          else x=10;
+        }
         return {
-          x: xReal,
-          y: p.y>19?2:p.y||2,
+          x: x, y: 2,
           nome: (p.nome||'').toUpperCase(),
           emo: p.emoji||p.emo||'📦',
-          preco: String(p.preco||'0').includes('R$')?p.preco:`R$ ${p.preco}`,
-          g: p.corredor||p.g||'A3',
-          foto: p.foto||''
-        }
+          preco: String(p.preco||'').includes('R$')?p.preco:`R$ ${p.preco}`,
+          g: p.corredor||p.g||'A3'
+        };
       });
-      document.getElementById('t1lista').innerHTML = `✅ ${produtos.length} produtos - bandeira OK - ${produtos.slice(0,3).map(p=>p.emo).join(' ')}`;
+      document.getElementById('t1lista').innerHTML = `✅ ${produtos.length} produtos - ${produtos.slice(0,5).map(p=>p.emo).join(' ')}`;
       renderT1(); return;
     }
-  }catch(e){}
-  produtos=[{x:3,y:2,nome:"FEIJAO",emo:"🫘",preco:"R$ 8,99",g:"A3"},{x:1,y:2,nome:"ARROZ",emo:"🍚",preco:"R$ 22,90",g:"A1"}];
+    // 2. Fallback V57 original - fetch
+    const res = await fetch('./produtos.json?v='+Date.now());
+    if(!res.ok) throw new Error('sem json');
+    let j = await res.json();
+    produtos = j.map(p=>({
+      x: parseInt(p.x)||2, y: parseInt(p.y)||2,
+      nome: (p.nome||'').toUpperCase(),
+      emo: p.emoji||p.emo||'📦',
+      preco: p.preco,
+      g: p.g||p.corredor||'A3'
+    }));
+    document.getElementById('t1lista').innerHTML = '✅ Backend JSON: '+produtos.length;
+  }catch(e){
+    console.log('backup',e);
+    produtos=[{x:2,y:2,nome:"ARROZ",emo:"🍚",preco:"R$ 22,90",g:"25-26"},{x:4,y:2,nome:"FEIJAO",emo:"🫘",preco:"R$ 8,99",g:"23-24"}];
+    document.getElementById('t1lista').innerHTML = '⚠️ Backup local';
+  }
   renderT1();
 }
+
 function falar(t){if('speechSynthesis' in window){let u=new SpeechSynthesisUtterance(t);u.lang='pt-BR';u.rate=1.1;speechSynthesis.cancel();speechSynthesis.speak(u);}}
 function falarLista(){if(!listaT1.length){falar('Lista vazia');return;}falar(`Sua lista tem ${listaT1.length} itens. ${listaT1.map(l=>l.nome).join(', ')}`);}
-function calcTotal(){return listaT1.reduce((s,p)=>{let v=parseFloat((p.preco||'').replace('R$','').replace(',','.').trim());return isNaN(v)?s:s+v;},0);}
-function salvarLista(){localStorage.setItem('atacadao364_v56',JSON.stringify(listaT1));document.getElementById('t1lista').innerHTML='💾 Salvo!';setTimeout(renderT1,1000);}
+function calcTotal(){return listaT1.reduce((s,p)=>{let v=parseFloat(String(p.preco||'').replace('R$','').replace(',','.').trim());return isNaN(v)?s:s+v;},0);}
+function salvarLista(){localStorage.setItem('atacadao364_v56',JSON.stringify(listaT1));document.getElementById('t1lista').innerHTML='💾 Salvo!';setTimeout(renderT1,800);}
 function renderT1(){
  let cont=document.getElementById('t1produtos');cont.innerHTML='';
  produtos.forEach((p,i)=>{
@@ -132,7 +141,7 @@ function renderT1(){
    cont.appendChild(div);
  });
  let total=calcTotal();
- document.getElementById('t1lista').innerHTML=listaT1.length==0?`✅ ${produtos.length} produtos - Toque +`:listaT1.map(l=>`${l.emo} ${l.nome}[${l.g}]`).join(' | ');
+ document.getElementById('t1lista').innerHTML=listaT1.length==0?`✅ ${produtos.length} produtos - ${produtos.slice(0,3).map(p=>p.emo).join(' ')} - Toque +`:listaT1.map(l=>`${l.emo} ${l.nome}`).join(' | ');
  document.getElementById('totalBar').innerText=`TOTAL: R$ ${total.toFixed(2).replace('.',',')} (${listaT1.length} itens)`;
  document.getElementById('btnGo').innerText=`🗺️ IR MERCADO (${listaT1.length})`;
  let combo=document.getElementById('combo');combo.innerHTML='';
@@ -147,7 +156,7 @@ const COLS=27,ROWS=19,W=40,H=26;
 let lab=[],px=26,py=15,tx=26,ty=15,cam=[],tm=null,camX=0,camY=0,rastro=[],vw=0,vh=0,vel=250;
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
 let idxRota=0,esperando=false,listaOrdenada=[];
-function mudaVel(d){vel+=d;if(vel<30) vel=30;if(vel>5000) vel=5000;document.getElementById('gps').innerText='V60.1 VEL '+vel+'ms';if(tm){ clearInterval(tm); tm=setInterval(step,vel); }}
+function mudaVel(d){vel+=d;if(vel<30) vel=30;if(vel>5000) vel=5000;document.getElementById('gps').innerText='V60.2 V57 MOTOR VEL '+vel+'ms';if(tm){ clearInterval(tm); tm=setInterval(step,vel); }}
 function gerarRotaDaLista(){listaT1.forEach(l=>l.visitado=false);let resto=[...listaT1],atual={x:26,y:15},ordem=[];while(resto.length){resto.sort((a,b)=>(Math.abs(atual.x-a.x)+Math.abs(atual.y-a.y))-(Math.abs(atual.x-b.x)+Math.abs(atual.y-b.y)));let prox=resto.shift();ordem.push(prox);atual=prox;}listaOrdenada=ordem;idxRota=0;irParaProximoDaLista();}
 function irParaProximoDaLista(){if(idxRota>=listaOrdenada.length){let total=calcTotal();document.getElementById('console').innerText='🎉 COMPLETA!';alert(`🎉 FINALIZADO! ${listaOrdenada.length} itens - R$ ${total.toFixed(2).replace('.',',')}`);return;}ir(listaOrdenada[idxRota].x,listaOrdenada[idxRota].y);}
 function mostrarModalPego(item){document.getElementById('modalProd').innerText=item.emo;document.getElementById('modalNome').innerText=item.nome;document.getElementById('modalGond').innerText='GÔNDOLA ['+item.g+']';document.getElementById('modalPreco').innerText=item.preco;document.getElementById('modalProgress').innerText='Item '+(idxRota+1)+'/'+listaOrdenada.length;let total=calcTotal();document.getElementById('modalTotal').innerText=`TOTAL: R$ ${total.toFixed(2).replace('.',',')}`;document.getElementById('modalPego').style.display='block';falar(`Chegou no ${item.nome}`);if(navigator.vibrate) navigator.vibrate([200,100,200]);}
