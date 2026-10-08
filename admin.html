@@ -1,97 +1,95 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ADM V60 - MATRIX</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width">
+<title>ADM T1 - TERMINAL V61</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#0f0f0f;color:#fff;font-family:system-ui;padding:14px}
-h1{color:#00ff88;margin-bottom:12px}
-.card{background:#1c1c1c;border:1px solid #333;border-radius:12px;padding:12px;margin-bottom:12px}
-input,select{width:100%;padding:12px;border-radius:8px;border:1px solid #444;background:#222;color:#fff;margin:6px 0;font-size:16px}
-button{padding:12px 16px;border-radius:10px;border:0;font-weight:900;cursor:pointer}
-.btn-save{background:#00ff88;color:#000;width:100%;font-size:18px;margin-top:10px}
-.btn-del{background:#ff3b30;color:#fff;padding:6px 10px;font-size:12px}
-.grid{display:grid;grid-template-columns:1fr;gap:8px}
-.item{display:flex;justify-content:space-between;align-items:center;background:#222;padding:10px;border-radius:10px;border:1px solid #333}
-.item b{font-size:13px}
-pre{background:#000;padding:10px;border-radius:8px;overflow:auto;font-size:11px;color:#0f0;margin-top:10px;border:1px solid #333}
+body{font-family:monospace;padding:12px;max-width:480px;margin:auto;background:#000;color:#00ff88}
+.top{display:flex;gap:8px;position:sticky;top:0;background:#000;padding:8px 0;z-index:5;border-bottom:1px solid #00ff88}
+input,textarea{padding:12px;border:1px solid #00ff88;border-radius:10px;width:100%;margin-top:6px;background:#000;color:#00ff88;font-family:monospace}
+input::placeholder{color:#00ff8855}
+.card{background:#0a0a0a;padding:12px;border-radius:12px;margin:8px 0;display:flex;justify-content:space-between;align-items:center;border:1px solid #00ff8822;box-shadow:0 0 10px #00ff8811}
+.b{padding:8px 12px;border-radius:8px;border:1px solid #00ff88;font-weight:700;background:#000;color:#00ff88;font-family:monospace}
+.edit{border-color:#00ff88;color:#00ff88}.del{border-color:#ff3b30;color:#ff3b30}
+#formEdit{background:#000;color:#00ff88;padding:16px;border-radius:16px;position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:auto;display:none;z-index:10;max-height:92vh;overflow:auto;border:2px solid #00ff88;box-shadow:0 0 30px #00ff88}
+#mapa{width:100%;height:300px;border:2px dashed #00ff88;border-radius:12px;position:relative;background:#111 url('mapa-padrao-vertical.png') center/100% 100% no-repeat;margin:10px 0;cursor:crosshair}
+.ponto{position:absolute;transform:translate(-50%,-50%);font-size:28px;filter:drop-shadow(0 0 8px #00ff88)}
+.grid2{display:flex;gap:8px}
+h2{text-shadow:0 0 10px #00ff88}
 </style>
 </head>
 <body>
-<h1>🛠️ ADM V60 - ATACADÃO 364</h1>
-<div style="background:#00ff8811;border:1px solid #00ff88;padding:10px;border-radius:10px;margin-bottom:12px;font-size:13px">
-✅ MATRIX ATIVA - Gôndola ajusta tudo sozinha<br>
-KEY: <b>atacadao364_FINAL</b> (não apaga no reload)
+<h2>> ADM_T1 - <span id="total">0</span> PRODUTOS_</h2>
+<div style="font-size:10px;border:1px dashed #00ff88;padding:6px;border-radius:6px;margin:8px 0">MATRIX: 13 GÔNDOLAS 1-26 | KEY: atacadao364_FINAL | FORMAT: A1,B2,C2</div>
+<div class="top">
+<input id="busca" placeholder="> BUSCAR..." oninput="render()">
+<button class="b" onclick="openForm()" style="background:#00ff88;color:#000">+ NOVO</button>
 </div>
+<div id="lista"></div>
+<textarea id="jsonOut" style="height:140px;margin-top:20px"></textarea>
+<button class="b" style="width:100%;background:#00ff88;color:#000;margin-top:8px" onclick="copiar()">> COPIAR produtos.json</button>
 
-<div class="card">
-  <input id="nome" placeholder="NOME DO PRODUTO ex: ARROZ 5KG">
-  <select id="gondola"></select>
-  <input id="preco" placeholder="PREÇO ex: 22,90">
-  <input id="emoji" placeholder="EMOJI ex: 🍚">
-  <button class="btn-save" onclick="addProduto()">💾 SALVAR PRODUTO</button>
-  <button onclick="exportarJSON()" style="width:100%;margin-top:8px;background:#222;color:#fff;border:1px solid #444">📤 Exportar produtos.json</button>
+<div id="formEdit">
+<h3 id="formTitle">> EDITAR_</h3>
+<input id="f_nome" placeholder="NOME">
+<div class="grid2">
+<input id="f_emoji" placeholder="EMOJI 🍚" style="flex:1">
+<input id="f_corredor" list="listaG" placeholder="CORREDOR A1 ou GONDOLA 23-24" style="flex:1">
+<datalist id="listaG"></datalist>
 </div>
-
-<div class="card">
-  <div style="display:flex;justify-content:space-between;align-items:center">
-    <b>Lista: <span id="qtd">0</span> produtos</b>
-    <button onclick="limparTudo()" style="background:#222;color:#ff3b30;border:1px solid #333">Zerar tudo</button>
-  </div>
-  <div id="lista" class="grid" style="margin-top:10px"></div>
-  <pre id="matrixView"></pre>
+<div class="grid2">
+<input id="f_preco" placeholder="PREÇO 22.90" style="flex:1">
+<input id="f_foto" placeholder="foto.jpg" style="flex:1">
+</div>
+<div class="grid2">
+<div style="flex:1"><input id="f_x" type="number" placeholder="X %"><small style="color:#00ff88"> X no mapa</small></div>
+<div style="flex:1"><input id="f_y" type="number" placeholder="Y %"><small style="color:#00ff88"> Y no mapa</small></div>
+</div>
+<div id="mapa" onclick="pegaXY(event)"><div id="pontoPrev" class="ponto" style="left:50%;top:50%">📦</div></div>
+<small>> CLIQUE NO MAPA PRA PEGAR X Y AUTO</small>
+<div style="display:flex;gap:8px;margin-top:10px">
+<button class="b" style="flex:1" onclick="closeForm()">CANCELAR</button>
+<button class="b" style="flex:1;background:#00ff88;color:#000" onclick="salvar()">SALVAR</button>
+</div>
 </div>
 
 <script>
-// ============ MATRIX OFICIAL - EDITE SÓ AQUI SE PRECISAR ============
-const MATRIX_GONDOLAS=[
+const MATRIX=[
   {g:'25-26',x:1},{g:'23-24',x:3},{g:'21-22',x:5},{g:'19-20',x:7},{g:'17-18',x:9},
   {g:'15-16',x:11},{g:'13-14',x:13},{g:'11-12',x:15},{g:'9-10',x:17},{g:'7-8',x:19},
   {g:'5-6',x:21},{g:'3-4',x:23},{g:'1-2',x:25}
 ];
 const KEY='atacadao364_FINAL';
-function getX(g){return (MATRIX_GONDOLAS.find(m=>m.g==g)||{x:3}).x;}
-// ===================================================================
+function getXByG(g){let f=MATRIX.find(m=>m.g==g);return f?f.x:null;}
 
-let produtos=JSON.parse(localStorage.getItem(KEY)||'[]');
+let produtos = [
+{"nome":"Álcool 70% 1L","corredor":"A2","preco":"8.99","foto":"alcool.jpg","emoji":"🧴","x":25,"y":20},
+{"nome":"Arroz T1 5kg","corredor":"A3","preco":"22.90","foto":"arroz.jpg","emoji":"🍚","x":25,"y":30},
+{"nome":"Feijão Carioca 1kg","corredor":"A3","preco":"7.49","foto":"feijao.jpg","emoji":"🫘","x":25,"y":35}
+];
+// popula datalist
+let dl=document.getElementById('listaG');
+MATRIX.forEach(m=>{let o=document.createElement('option');o.value=m.g;dl.appendChild(o);});
+['A1','A2','A3','A4','B1','B2','B3','C1','C2'].forEach(c=>{let o=document.createElement('option');o.value=c;dl.appendChild(o);});
 
-const sel=document.getElementById('gondola');
-MATRIX_GONDOLAS.forEach(m=>{
-  let o=document.createElement('option'); o.value=m.g; o.textContent=`GÔNDOLA ${m.g} -> x:${m.x}`;
-  sel.appendChild(o);
-});
-sel.value='23-24';
-
-function render(){
-  document.getElementById('qtd').textContent=produtos.length;
-  document.getElementById('lista').innerHTML=produtos.map((p,i)=>`
-    <div class="item">
-      <div><b>${p.emoji||'📦'} ${p.nome}</b><br><small style="color:#00ff88">G:${p.g} x:${p.x} | R$${p.preco}</small></div>
-      <button class="btn-del" onclick="del(${i})">X</button>
-    </div>
-  `).join('');
-  document.getElementById('matrixView').textContent='MATRIX ATUAL:\n'+JSON.stringify(MATRIX_GONDOLAS,null,2);
-  localStorage.setItem(KEY, JSON.stringify(produtos));
-  localStorage.setItem('produtos', JSON.stringify(produtos));
+let editIndex=-1;
+function render(){const q=busca.value.toLowerCase();lista.innerHTML=produtos.map((p,i)=>({...p,_i:i})).filter(p=>p.nome.toLowerCase().includes(q)).map(p=>`<div class="card"><div style="display:flex;gap:8px;align-items:center"><span style="font-size:24px">${p.emoji||'📦'}</span><div><b>${p.nome}</b><br><small style="color:#00ff88">${p.corredor} - R$ ${p.preco} | X:${p.x} Y:${p.y}</small></div></div><div><button class="b edit" onclick="editar(${p._i})">EDIT</button> <button class="b del" onclick="apagar(${p._i})">X</button></div></div>`).join('');total.innerText=produtos.length;jsonOut.value=JSON.stringify(produtos,null,2);localStorage.setItem('produtos',JSON.stringify(produtos));localStorage.setItem(KEY,JSON.stringify(produtos));}
+function pegaXY(e){const r=mapa.getBoundingClientRect();const x=Math.round(((e.clientX-r.left)/r.width)*100);const y=Math.round(((e.clientY-r.top)/r.height)*100);f_x.value=x;f_y.value=y;pontoPrev.style.left=x+'%';pontoPrev.style.top=y+'%';}
+function openForm(){editIndex=-1;formTitle.innerText='> NOVO_';['f_nome','f_corredor','f_preco','f_foto','f_emoji','f_x','f_y'].forEach(id=>document.getElementById(id).value='');pontoPrev.textContent='📦';pontoPrev.style.left='50%';pontoPrev.style.top='50%';formEdit.style.display='block';}
+function editar(i){editIndex=i;const p=produtos[i];f_nome.value=p.nome;f_corredor.value=p.corredor;f_preco.value=p.preco;f_foto.value=p.foto;f_emoji.value=p.emoji||'📦';f_x.value=p.x||50;f_y.value=p.y||50;pontoPrev.textContent=f_emoji.value;pontoPrev.style.left=f_x.value+'%';pontoPrev.style.top=f_y.value+'%';formTitle.innerText='> EDITAR_';formEdit.style.display='block';}
+function closeForm(){formEdit.style.display='none';}
+function salvar(){
+  let cor=f_corredor.value||'A3';
+  let xAuto=getXByG(cor);
+  const p={nome:f_nome.value,corredor:cor,g:cor,preco:f_preco.value,foto:f_foto.value||'sem-foto.jpg',emoji:f_emoji.value||'📦',x:xAuto!==null?xAuto:(parseInt(f_x.value)||50),y:parseInt(f_y.value)||50};
+  if(!p.nome)return alert('Nome');if(editIndex>=0)produtos[editIndex]=p;else produtos.push(p);closeForm();render();
 }
-function addProduto(){
-  let nome=document.getElementById('nome').value.trim().toUpperCase();
-  let g=document.getElementById('gondola').value;
-  let preco=document.getElementById('preco').value.trim();
-  let emoji=document.getElementById('emoji').value.trim()||'📦';
-  if(!nome) return alert('Digite nome');
-  produtos.push({nome, g, corredor:g, x:getX(g), y:2, preco, emoji});
-  document.getElementById('nome').value=''; document.getElementById('preco').value='';
-  render();
-}
-function del(i){ produtos.splice(i,1); render(); }
-function limparTudo(){ if(confirm('Apagar TUDO?')){ produtos=[]; render(); } }
-function exportarJSON(){
-  let blob=new Blob([JSON.stringify(produtos,null,2)],{type:'application/json'});
-  let a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='produtos.json'; a.click();
-}
+function apagar(i){if(confirm('Apagar?')){produtos.splice(i,1);render();}}
+function copiar(){navigator.clipboard.writeText(JSON.stringify(produtos,null,2));alert('Copiado!');}
+f_emoji.addEventListener('input',()=>{pontoPrev.textContent=f_emoji.value||'📦';});
+f_corredor.addEventListener('input',()=>{let xv=getXByG(f_corredor.value); if(xv!==null) f_x.value=xv;});
+try{const s=JSON.parse(localStorage.getItem(KEY)||localStorage.getItem('produtos')||'[]'); if(s.length>0) produtos=s;}catch(e){}
 render();
 </script>
 </body>
