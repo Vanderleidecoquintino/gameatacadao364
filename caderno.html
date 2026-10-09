@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SCANNER + BUSCA</title>
+<style>
+body{background:#000;color:#00ff88;font-family:monospace;margin:0;padding:10px}
+#reader{width:100%;border:3px solid #00ff88;border-radius:12px;overflow:hidden;max-height:220px}
+#busca{width:100%;height:44px;background:#111;border:2px solid #00ff88;border-radius:10px;color:#fff;padding:0 12px;font-size:16px;margin:8px 0;box-sizing:border-box}
+.item{border:1px solid #222;background:#111;padding:10px;margin:4px 0;border-radius:10px;display:flex;justify-content:space-between;align-items:center}
+.item.sel{border-color:#00ff88;background:#002a12}
+.b{height:44px;border-radius:10px;border:2px solid #00ff88;font-weight:900;width:100%;margin-top:6px}
+</style>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body>
+<h3>📷 SCANNER + 🔍 BUSCA</h3>
+<div id="reader"></div>
+<input id="busca" type="text" placeholder="🔍 Buscar: cebola, pepino, cara..." oninput="filtrar()">
+<div id="status" style="padding:8px;background:#002a12;border-radius:8px">Carregando...</div>
+<div id="todos"></div>
+<div id="lista" style="margin-top:12px;border-top:2px solid #00ff88;padding-top:8px"></div>
+<button onclick="exportar()" class="b" style="background:#00ff88;color:#000">💾 EXPORTAR (0)</button>
+<button onclick="limpar()" class="b" style="background:#333;color:#fff;border-color:#333">🗑️ LIMPAR LIDOS</button>
+
+<script>
+const MAPA = {
+"1917949":{n:"CARA PAULISTA",e:"🍠"},
+"1489936":{n:"JILO",e:"🫛"},
+"36041905":{n:"CEBOLA ROXA",e:"🧅"},
+"1506929":{n:"MANDIOCA AIPIM",e:"🥔"},
+"14882998":{n:"CEBOLA ATACADAO",e:"🧅"},
+"1504910":{n:"MANDIOQUINHA",e:"🥔"},
+"25216":{n:"CEBOLA PALITO",e:"🧄"},
+"4779949":{n:"MAXIXE",e:"🥒"},
+"1925905":{n:"CENOURA",e:"🥕"},
+"1514206":{n:"PEPINO COMUM",e:"🥒"},
+"1923990":{n:"CHUCHU",e:"🥑"},
+"1516925":{n:"PEPINO JAPONES",e:"🥒"},
+"1497919":{n:"GENGIBRE",e:"🫚"},
+"1525":{n:"PEPINO CAIPIRA",e:"🥒"},
+"1502992":{n:"INHAME DA COSTA",e:"🍠"},
+"9147939":{n:"PIMENTA CAMBUCI",e:"🌶️"}
+};
+
+let lidos = JSON.parse(localStorage.getItem('scan_gramatura')||'[]');
+
+function filtrar(){
+  let q = document.getElementById('busca').value.toUpperCase();
+  let div = document.getElementById('todos'); div.innerHTML='';
+  Object.entries(MAPA).forEach(([cod,inf])=>{
+    if(q &&!inf.n.includes(q)) return;
+    let ja = lidos.find(l=>l.cod==cod);
+    div.innerHTML+=`<div class="item ${ja?'sel':''}" onclick="toggleCod('${cod}')">
+      <span>${inf.e} ${inf.n}</span><span style="font-size:10px">${ja?'✅':'+ ADD'} ${cod}</span>
+    </div>`;
+  });
+}
+
+function toggleCod(cod){
+  let idx=lidos.findIndex(l=>l.cod==cod);
+  if(idx>=0){ lidos.splice(idx,1); }
+  else{ let inf=MAPA[cod]; lidos.push({cod:cod,nome:inf.n,emo:inf.e,g:"1-2",x:25,y:2,preco:"R$ --"});
+    if(navigator.vibrate) navigator.vibrate(50);
+  }
+  localStorage.setItem('scan_gramatura',JSON.stringify(lidos));
+  filtrar(); renderLidos();
+}
+
+function renderLidos(){
+  let d=document.getElementById('lista'); d.innerHTML=`<b>LIDOS (${lidos.length}/16):</b>`;
+  lidos.forEach(i=>{ d.innerHTML+=`<div class="item sel"><span>${i.emo} ${i.nome}</span><span>${i.cod}</span></div>`; });
+  document.querySelector('button').innerText=`💾 EXPORTAR (${lidos.length})`;
+  document.getElementById('status').innerText=`📦 ${lidos.length} lidos - Busca por nome ativa`;
+}
+
+function onScan(code){
+  let clean=code.replace(/^0+/,'');
+  let key=Object.keys(MAPA).find(k=>code.includes(k)||clean.includes(k));
+  if(!key){ document.getElementById('status').innerText=`❓ ${code} não está na lista`; return; }
+  if(lidos.find(l=>l.cod==key)){ document.getElementById('status').innerText=`⚠️ ${MAPA[key].n} já lido`; return; }
+  toggleCod(key);
+  document.getElementById('status').innerText=`✅ ${MAPA[key].e} ${MAPA[key].n} lido!`;
+}
+
+function exportar(){
+  if(!lidos.length){alert('Nada');return;}
+  let final=lidos.map(i=>({x:25,y:2,nome:i.nome,emoji:i.emo,preco:i.preco,corredor:"1-2",cod:i.cod}));
+  localStorage.setItem('atacadao364_FINAL',JSON.stringify(final));
+  alert(`Exportado! Vai na V60.2 agora.`);
+}
+function limpar(){ if(confirm('Limpar?')){ lidos=[]; localStorage.removeItem('scan_gramatura'); filtrar(); renderLidos(); } }
+
+filtrar(); renderLidos();
+let qr=new Html5Qrcode("reader");
+qr.start({facingMode:"environment"},{fps:10,qrbox:{width:280,height:80}},(txt)=>onScan(txt),()=>{}).catch(e=>document.getElementById('status').innerText='Sem câmera: usa a busca por nome');
+</script>
+</body>
+</html>
