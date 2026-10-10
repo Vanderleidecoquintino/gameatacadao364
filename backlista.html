@@ -1,46 +1,54 @@
 <!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>BACKEND COMPACTO</title>
+<title>BACKEND MINI - PRODUTOS DE VOLTA</title>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
-body{margin:0;background:#111;color:#fff;font-family:Arial;padding:6px}
-.top{position:sticky;top:0;background:#111;padding:6px;z-index:10}
-input{width:100%;height:42px;border-radius:10px;border:0;font-weight:900;padding:0 12px;box-sizing:border-box;font-size:14px;margin:3px 0}
-button{width:100%;height:40px;border-radius:10px;border:0;font-weight:900;font-size:13px;margin:3px 0}
-.yellow{background:#ff0;color:#000}
-.green{background:#00ff88;color:#000}
-.blue{background:#00ccff;color:#000}
-.red{background:#ff4444;color:#fff}
-.bip{background:#fff;color:#000;border-radius:12px;padding:10px;margin:6px;font-weight:900;text-align:center;box-shadow:0 0 10px #ff0;font-size:14px}
-.bip svg{width:100%;max-width:300px;height:60px}
-#leitor{width:100%;border-radius:12px;overflow:hidden;display:none;border:2px solid #ff0;margin-top:4px}
-h2{font-size:18px;margin:4px 0;text-align:center;color:#ff0}
-hr{margin:6px 0;border:1px solid #333}
+body{margin:0;background:#111;color:#fff;font-family:Arial;padding:4px}
+.top{position:sticky;top:0;background:#111;padding:5px;z-index:20}
+input{width:100%;height:36px;border-radius:8px;border:0;font-weight:900;padding:0 10px;box-sizing:border-box;font-size:13px;margin:2px 0}
+button{width:100%;height:34px;border-radius:8px;border:0;font-weight:900;font-size:12px;margin:2px 0}
+.yellow{background:#ff0;color:#000}.green{background:#00ff88;color:#000}.blue{background:#00ccff;color:#000}.red{background:#ff4444;color:#fff}
+.bip{background:#fff;color:#000;border-radius:8px;padding:6px;margin:4px;font-weight:900;text-align:center;box-shadow:0 0 6px #ff0;font-size:11px;display:flex;align-items:center;justify-content:space-between;gap:6px}
+.bip svg{width:140px;height:32px;flex-shrink:0}
+.bip.cod{background:#000;color:#fff;padding:2px 5px;border-radius:4px;font-size:10px}
+#leitor{width:100%;border-radius:10px;overflow:hidden;display:none;border:2px solid #ff0}
+h2{font-size:14px;text-align:center;color:#ff0;margin:3px}
 </style>
 </head><body>
 <div class=top>
-<h2>💛 BACKEND + LEITOR + BIPADOR 💛</h2>
-<input id=n placeholder="NOME EX: MANGA PALMER">
-<input id=c placeholder="CODIGO" inputmode="numeric">
-<button class=yellow onclick=add()>+ SALVAR DO CADERNO</button>
-<button class=green onclick=exportar()>⬇️ BAIXAR LISTA.HTML</button>
-<button class=blue onclick="abrirLeitor()">📷 ABRIR LEITOR DE CAMERA</button>
-<button class=red onclick="fecharLeitor()" style="display:none" id=btnFechar>❌ FECHAR CAMERA</button>
+<h2>💛 BACKEND MINI - TUDO DE VOLTA 💛</h2>
+<input id=n placeholder="NOME">
+<input id=c placeholder="CODIGO" style="border:2px solid #0f8">
+<button class=yellow onclick=add()>+ SALVAR</button>
+<button class=blue onclick="abrirLeitor()">📷 LEITOR CAMERA</button>
+<button class=red id=btnFechar style="display:none" onclick="fecharLeitor()">❌ FECHAR</button>
+<button class=green onclick=exportar()>⬇️ BAIXAR LISTA</button>
 <div id=leitor></div>
-<div id=resultado style="text-align:center;color:#00ff88;font-weight:900;font-size:12px;padding:4px"></div>
-<hr>
-<input id=s placeholder="🔍 BIPAR AQUI" oninput=bipar() style="border:2px solid #ff0;height:38px">
-<div id=cont style="text-align:center;color:#ff0;font-weight:900;font-size:11px"></div>
+<div id=resultado style="text-align:center;color:#0f8;font-weight:900;font-size:11px;padding:3px"></div>
+<input id=s placeholder="🔍 BUSCAR" oninput=bipar() style="border:2px solid #ff0;height:32px">
+<div id=cont style="text-align:center;color:#ff0;font-size:10px;font-weight:900"></div>
+<button class=yellow onclick="recuperar()" style="height:28px;font-size:10px">♻️ RECUPERAR LISTA ANTIGA SE SUMIU</button>
 </div>
 <div id=visor></div>
 <script>
-let P=JSON.parse(localStorage.getItem('produtos_bip'))||[["MAÇA DIVERTIDA BOA ROCA","000173"],["CARA PAULISTA","1917949"],["JILO","1499938"],["CEBOLA ROXA","36041605"],["MANDIOCA AIPIM","1506929"],["CEBOLA ATACADAO","14692998"],["MANDIOQUINHA","1504910"],["CEBOLA PALITO","262216"],["MAXIXE","4779949"],["CENOURA","19020905"],["PEPINO COMUM","1514008"],["CHUCHU","19020990"],["PEPINO JAPONES","1516925"],["GENGIBRE","1497919"],["PEPINO CAIPIRA","1525"],["INHAME DA COSTA","19029962"],["PIMENTA CAMBUCI","9147999"],["ABOBORA ITALIANA","1688"],["ABOBORA JAP/CABOTIA","1894905"],["ABOBORA PTA JACAR.","2093926"],["ABOBORA SECA","1893"],["ABOBORA BRASILEIRA","1892"],["ABOBORA BATA","64782905"],["ABOBORA MORANGA","1896924"],["ALHO KG A GRANEL","21933966"],["BATATA LAVADA","14691938"],["BATATA ASTERIX","3023977"],["BATATA BOLINHA","14863922"],["BATATA DOCE","1908912"],["BETERRABA","1616916"],["BERINJELA COMUM","1900931"],["ABACATE","1632935"],["AVOCADO","4614874"],["AMEIXA NACIONAL","1637"],["AMEIXA IMPORTADA","5606912"],["ATEMOIA","35858"],["BANANA NANICA","1643973"],["BANANA PRATA","1640951"],["BANANA MACA","1661910"],["BANANA TERRA","4606915"],["CAQUI FUYU","21843"],["CAQUI RAMA FORTE","21700"],["CARAMBOLA","9109927"],["CEREJA","20914"],["COCO SECO TROPIC","1650967"],["GOIABA BRANCA TROPIC","1773999"],["GOIABA VERM TROPICAL","9009993"],["KIWI","1768974"],["KIWI SUN GOLD","73384961"],["LARANJA PERA GRANEL","11672947"],["HF.LARANJA LIMA","1494"],["LARANJA IMPORTADA","8353964"],["LIMAO TAITI TROPICAL","1805943"],["LIMAO SICILIANO","53849902"],["MACA RED IMPORT","1819977"],["MACA NAC FUJI","1827936"],["MACA NAC GALA","1825917"],["MACA VERDE IMPORT","5603934"],["MAMAO FORMOSA","4786949"],["MAMAO COMUM","1816999"],["MAMAO HAWAI/PAPAYA","1815539"]];
-let html5QrcodeScanner=null;
-function save(){localStorage.setItem('produtos_bip',JSON.stringify(P))}
-function add(){let no=n.value.toUpperCase().trim(),co=c.value.trim();if(!no||!co)return alert('Preencha!');P.push([no,co]);P.sort((a,b)=>a[0].localeCompare(b[0]));save();n.value='';c.value='';bipar()}
-function bipar(){let q=s.value.toUpperCase().trim();let achados=q==''?P:P.filter(x=>x[0].includes(q)||x[1].includes(q));cont.innerText=achados.length+' PRODUTOS';visor.innerHTML=achados.map((p,i)=>`<div class=bip>⭐ ${p[0]} ⭐<br><svg id=b${i}></svg><br>📦 ${p[1]}</div>`).join('');setTimeout(()=>{achados.forEach((p,i)=>{try{JsBarcode('#b'+i,String(p[1]),{format:'CODE128',width:2,height:55,displayValue:false})}catch(e){}})},80);}
-function abrirLeitor(){document.getElementById('leitor').style.display='block';document.getElementById('btnFechar').style.display='block';html5QrcodeScanner=new Html5Qrcode("leitor");html5QrcodeScanner.start({facingMode:"environment"},{fps:10,qrbox:{width:200,height:200}},(decodificado)=>{resultado.innerText='BIPOU: '+decodificado;s.value=decodificado;bipar();new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play();},()=>{});}
-function fecharLeitor(){if(html5QrcodeScanner){html5QrcodeScanner.stop().then(()=>{document.getElementById('leitor').style.display='none';btnFechar.style.display='none';document.getElementById('leitor').innerHTML='';});}}
-function exportar(){let itens=P.map(p=>`{n:"${p[0]}",c:"${p[1]}"},`).join('');let html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>LISTA</title><script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script><script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"><\/script><style>body{background:#000;color:#fff;font-family:Arial;text-align:center;margin:0;padding:6px}.top{position:sticky;top:0;background:#000;padding:6px}input{width:95%;height:40px;border-radius:10px;border:0;font-weight:900;font-size:16px;padding:0 12px}button{width:95%;height:38px;border-radius:10px;border:0;background:#00ccff;font-weight:900;margin:4px 0;font-size:13px}.item{background:#fff;color:#000;border-radius:12px;padding:10px;margin:6px 0;font-weight:900;box-shadow:0 0 10px #ff0;font-size:14px}svg{width:100%;height:60px}#leitor{width:95%;margin:auto;border-radius:12px;overflow:hidden;display:none;border:2px solid #ff0}<\/style></head><body><div class=top><h2 style=color:#ff0;font-size:16px>💛 BIPADOR LINDO + LEITOR 💛</h2><button onclick="abrir()">📷 ABRIR LEITOR</button><div id=leitor></div><input id=s placeholder="🔍 DIGITE..." oninput="f()"></div><div id=l></div><script>let D=[${itens}];let qr=null;function abrir(){document.getElementById('leitor').style.display='block';qr=new Html5Qrcode("leitor");qr.start({facingMode:"environment"},{fps:10,qrbox:200},(txt)=>{s.value=txt;f();qr.stop();document.getElementById('leitor').style.display='none';});}function f(){let q=s.value.toUpperCase(),h='';D.forEach((p,i)=>{if(!q||p.n.includes(q)||p.c.includes(q)){h+='<div class=item>⭐ '+p.n+' ⭐<br><svg id=i'+i+'></svg><br>📦 '+p.c+'</div>'}});l.innerHTML=h;setTimeout(()=>{D.forEach((p,i)=>{let e=document.getElementById('i'+i);if(e)try{JsBarcode(e,p.c,{format:'CODE128',width:2,height:55,displayValue:false})}catch(e){}})},80)}f();<\/script></body></html>`;let blob=new Blob([html],{type:'text/html'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='lista.html';a.click();}
+let PADRAO=[["MAÇA DIVERTIDA BOA ROCA","000173"],["CARA PAULISTA","1917949"],["JILO","1499938"],["CEBOLA ROXA","36041605"],["MANDIOCA AIPIM","1506929"],["CEBOLA ATACADAO","14692998"],["MANDIOQUINHA","1504910"],["CEBOLA PALITO","262216"],["MAXIXE","4779949"],["CENOURA","19020905"],["PEPINO COMUM","1514008"],["CHUCHU","19020990"],["PEPINO JAPONES","1516925"],["GENGIBRE","1497919"],["PEPINO CAIPIRA","1525"],["INHAME DA COSTA","19029962"],["PIMENTA CAMBUCI","9147999"],["ABOBORA ITALIANA","1688"],["ABOBORA JAP/CABOTIA","1894905"],["ABOBORA PTA JACAR.","2093926"],["ABOBORA SECA","1893"],["ABOBORA BRASILEIRA","1892"],["ABOBORA BATA","64782905"],["ABOBORA MORANGA","1896924"],["ALHO KG A GRANEL","21933966"],["BATATA LAVADA","14691938"],["BATATA ASTERIX","3023977"],["BATATA BOLINHA","14863922"],["BATATA DOCE","1908912"],["BETERRABA","1616916"],["BERINJELA COMUM","1900931"],["ABACATE","1632935"],["AVOCADO","4614874"],["AMEIXA NACIONAL","1637"],["AMEIXA IMPORTADA","5606912"],["ATEMOIA","35858"],["BANANA NANICA","1643973"],["BANANA PRATA","1640951"],["BANANA MACA","1661910"],["BANANA TERRA","4606915"],["CAQUI FUYU","21843"],["CAQUI RAMA FORTE","21700"],["CARAMBOLA","9109927"],["CEREJA","20914"],["COCO SECO TROPIC","1650967"],["GOIABA BRANCA TROPIC","1773999"],["GOIABA VERM TROPICAL","9009993"],["KIWI","1768974"],["KIWI SUN GOLD","73384961"],["LARANJA PERA GRANEL","11672947"],["HF.LARANJA LIMA","1494"],["LARANJA IMPORTADA","8353964"],["LIMAO TAITI TROPICAL","1805943"],["LIMAO SICILIANO","53849902"],["MACA RED IMPORT","1819977"],["MACA NAC FUJI","1827936"],["MACA NAC GALA","1825917"],["MACA VERDE IMPORT","5603934"],["MAMAO FORMOSA","4786949"],["MAMAO COMUM","1816999"],["MAMAO HAWAI/PAPAYA","1815539"]];
+// MIGRA LISTA ANTIGA
+let antigo1=JSON.parse(localStorage.getItem('produtos_bip')||'[]');
+let antigo2=JSON.parse(localStorage.getItem('produtos_bip_v2')||'[]');
+let P=[...PADRAO];
+if(antigo1.length>P.length) P=antigo1;
+if(antigo2.length>P.length) P=antigo2;
+if(antigo1.length) antigo1.forEach(x=>{if(!P.find(p=>p[1]==x[1])) P.push(x)});
+if(antigo2.length) antigo2.forEach(x=>{if(!P.find(p=>p[1]==x[1])) P.push(x)});
+
+let qr=null;
+function save(){localStorage.setItem('produtos_bip_v2',JSON.stringify(P));localStorage.setItem('produtos_bip',JSON.stringify(P))}
+function add(){let no=n.value.toUpperCase().trim(),co=c.value.trim();if(!no||!co)return alert('Preencha!');let i=P.findIndex(x=>x[1]==co);if(i>=0)P[i]=[no,co];else P.push([no,co]);P.sort((a,b)=>a[0].localeCompare(b[0]));save();n.value='';c.value='';resultado.innerText='✅ SALVO: '+no;bipar()}
+function bipar(){let q=s.value.toUpperCase().trim();let achados=q==''?P:P.filter(x=>x[0].includes(q)||x[1].includes(q));cont.innerText=achados.length+' de '+P.length+' produtos - aparecendo todos';visor.innerHTML=achados.map((p,i)=>`<div class=bip><div style="text-align:left;flex:1">⭐ ${p[0]}<br><span class=cod>📦 ${p[1]}</span></div><svg id=b${i}></svg></div>`).join('');setTimeout(()=>{achados.forEach((p,i)=>{try{JsBarcode('#b'+i,String(p[1]),{format:'CODE128',width:1.4,height:26,displayValue:false,margin:0})}catch(e){}})},30);}
+function aoBipar(cod){c.value=cod;s.value=cod;let a=P.find(x=>x[1]==cod);resultado.innerText=a?'✅ ACHOU: '+a[0]:'🆕 NOVO: '+cod+' -> digite NOME e SALVAR';if(!a)n.focus();bipar();new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play();}
+function abrirLeitor(){document.getElementById('leitor').style.display='block';btnFechar.style.display='block';qr=new Html5Qrcode("leitor");qr.start({facingMode:"environment"},{fps:15,qrbox:{width:250,height:80}},(txt)=>{aoBipar(txt);},()=>{});}
+function fecharLeitor(){if(qr){qr.stop().then(()=>{leitor.style.display='none';btnFechar.style.display='none';leitor.innerHTML='';});}}
+function recuperar(){let a=JSON.parse(localStorage.getItem('produtos_bip')||'[]');if(a.length){P=a;save();bipar();alert('Recuperado '+P.length+' produtos da lista antiga!')}else alert('Nada na lista antiga');}
+function exportar(){let itens=P.map(p=>`{n:"${p[0]}",c:"${p[1]}"},`).join('');let html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>LISTA MINI</title><script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script><script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"><\/script><style>body{background:#000;color:#fff;font-family:Arial;margin:0;padding:4px;text-align:center}.top{position:sticky;top:0;background:#000;padding:5px}input{width:95%;height:34px;border-radius:8px;border:0;font-weight:900;font-size:14px;padding:0 10px}button{width:95%;height:32px;border-radius:8px;border:0;background:#00ccff;font-weight:900;margin:3px 0;font-size:12px}.item{background:#fff;color:#000;border-radius:8px;padding:5px;margin:3px 0;font-weight:900;font-size:11px;display:flex;align-items:center;justify-content:space-between}svg{width:130px;height:28px}#leitor{width:95%;margin:auto;border-radius:10px;overflow:hidden;display:none;border:2px solid #ff0}<\/style></head><body><div class=top><h2 style=color:#ff0>💛 BIPADOR MINI 💛</h2><button onclick="abrir()">📷 LEITOR</button><div id=leitor></div><input id=s placeholder="🔍 DIGITE..." oninput="f()"></div><div id=l></div><script>let D=[${itens}];let qr=null;function abrir(){leitor.style.display='block';qr=new Html5Qrcode("leitor");qr.start({facingMode:"environment"},{fps:15,qrbox:{width:250,height:80}},(txt)=>{s.value=txt;f();});}function f(){let q=s.value.toUpperCase(),h='';D.forEach((p,i)=>{if(!q||p.n.includes(q)||p.c.includes(q)){h+='<div class=item><div style=text-align:left>'+p.n+'<br><span style=background:#000;color:#fff;padding:1px 4px;border-radius:3px>'+p.c+'</span></div><svg id=i'+i+'></svg></div>'}});l.innerHTML=h;setTimeout(()=>{D.forEach((p,i)=>{let e=document.getElementById('i'+i);if(e)try{JsBarcode(e,p.c,{format:'CODE128',width:1.4,height:26,displayValue:false,margin:0})}catch(e){}})},30)}f();<\/script></body></html>`;let blob=new Blob([html],{type:'text/html'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='lista-mini.html';a.click();}
 bipar();
 </script></body></html>
