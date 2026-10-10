@@ -1,22 +1,51 @@
 <!DOCTYPE html><html><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1.0">
-<title>BACKEND TURBO</title>
+<title>BACKEND BIPADOR LINDO</title>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
-<style>body{font-family:Arial;padding:10px;background:#111;color:#fff}input,button{width:100%;height:60px;margin:6px 0;border-radius:12px;border:0;font-weight:900;padding:0 15px;box-sizing:border-box;font-size:18px}button{background:#ff0;color:#000}.card{background:#fff;color:#000;border-radius:10px;padding:10px;margin:8px 0;text-align:center}.top{position:sticky;top:0;background:#111;padding:10px 0;z-index:10}</style>
+<style>
+body{font-family:Arial;padding:0;margin:0;background:#111;color:#fff}
+.top{position:sticky;top:0;background:#111;padding:10px;z-index:10}
+input,button{width:100%;height:60px;margin:6px 0;border-radius:12px;border:0;font-weight:900;padding:0 15px;box-sizing:border-box;font-size:18px}
+button{background:#ff0;color:#000}
+.exp{background:#00ff88}
+.bip{background:#fff;color:#000;border-radius:15px;padding:15px;margin:10px;font-weight:900;text-align:center;box-shadow:0 0 20px #ff0}
+.bip svg{width:100%;max-width:350px;height:90px}
+.card{background:#222;color:#fff;border-radius:10px;padding:10px;margin:8px 10px;text-align:center;border:1px solid #333}
+#visor{min-height:200px}
+</style>
 </head><body>
 <div class=top>
-<h2 style="color:#ff0;margin:0">🔧 BACKEND - ADD RAPIDO</h2>
+<h2 style="color:#ff0;margin:0;text-align:center">💛 BACKEND + BIPADOR LINDO 💛</h2>
 <input id=n placeholder="NOME (ex: MANGA PALMER)">
 <input id=c placeholder="CODIGO" inputmode="numeric">
-<button onclick=add()>+ SALVAR E LIMPAR PRA PROXIMO</button>
-<input id=b placeholder="🔍 BUSCAR..." oninput=f() style="background:#fff">
-<div id=cont style="color:#ff0;font-weight:900;margin-top:5px"></div>
+<button onclick=add()>+ SALVAR PRODUTO NOVO</button>
+<button class=exp onclick=exportar()>⬇️ BAIXAR LISTA.HTML ATUALIZADA</button>
+<hr style="border:1px solid #333">
+<input id=s placeholder="🔍 BIPAR AQUI - DIGITE NOME OU CODIGO" oninput=bipar() style="background:#fff;color:#000;border:3px solid #ff0">
+<div id=cont style="color:#ff0;font-weight:900;margin-top:5px;text-align:center"></div>
 </div>
+
+<div id=visor></div>
 <div id=l></div>
+
 <script>
 let P=JSON.parse(localStorage.getItem('produtos_bip'))||[["MAÇA DIVERTIDA BOA ROCA","000173"],["CARA PAULISTA","1917949"],["JILO","1499938"],["CEBOLA ROXA","36041605"],["MANDIOCA AIPIM","1506929"],["CEBOLA ATACADAO","14692998"],["MANDIOQUINHA","1504910"],["CEBOLA PALITO","262216"],["MAXIXE","4779949"],["CENOURA","19020905"],["PEPINO COMUM","1514008"],["CHUCHU","19020990"],["PEPINO JAPONES","1516925"],["GENGIBRE","1497919"],["PEPINO CAIPIRA","1525"],["INHAME DA COSTA","19029962"],["PIMENTA CAMBUCI","9147999"],["ABOBORA ITALIANA","1688"],["ABOBORA JAP/CABOTIA","1894905"],["ABOBORA PTA JACAR.","2093926"],["ABOBORA SECA","1893"],["ABOBORA BRASILEIRA","1892"],["ABOBORA BATA","64782905"],["ABOBORA MORANGA","1896924"],["ALHO KG A GRANEL","21933966"],["BATATA LAVADA","14691938"],["BATATA ASTERIX","3023977"],["BATATA BOLINHA","14863922"],["BATATA DOCE","1908912"],["BETERRABA","1616916"],["BERINJELA COMUM","1900931"],["ABACATE","1632935"],["AVOCADO","4614874"],["AMEIXA NACIONAL","1637"],["AMEIXA IMPORTADA","5606912"],["ATEMOIA","35858"],["BANANA NANICA","1643973"],["BANANA PRATA","1640951"],["BANANA MACA","1661910"],["BANANA TERRA","4606915"],["CAQUI FUYU","21843"],["CAQUI RAMA FORTE","21700"],["CARAMBOLA","9109927"],["CEREJA","20914"],["COCO SECO TROPIC","1650967"],["GOIABA BRANCA TROPIC","1773999"],["GOIABA VERM TROPICAL","9009993"],["KIWI","1768974"],["KIWI SUN GOLD","73384961"],["LARANJA PERA GRANEL","11672947"],["HF.LARANJA LIMA","1494"],["LARANJA IMPORTADA","8353964"],["LIMAO TAITI TROPICAL","1805943"],["LIMAO SICILIANO","53849902"],["MACA RED IMPORT","1819977"],["MACA NAC FUJI","1827936"],["MACA NAC GALA","1825917"],["MACA VERDE IMPORT","5603934"],["MAMAO FORMOSA","4786949"],["MAMAO COMUM","1816999"],["MAMAO HAWAI/PAPAYA","1815539"]];
 function save(){localStorage.setItem('produtos_bip',JSON.stringify(P))}
-function add(){let no=n.value.toUpperCase().trim(),co=c.value.trim();if(!no||!co)return alert('!');let i=P.findIndex(x=>x[0]==no);if(i>=0)P[i][1]=co;else P.push([no,co]);P.sort((a,b)=>a[0].localeCompare(b[0]));save();n.value='';c.value='';n.focus();f()}
-function del(i){if(confirm('Apagar '+P[i][0]+'?')){P.splice(i,1);save();f()}}
-function f(){let q=(b.value||'').toUpperCase(),d=l;d.innerHTML='';let F=P.map((x,idx)=>[...x,idx]).filter(x=>!q||x[0].includes(q)||x[1].includes(q));cont.innerText=F.length+' produtos | Total: '+P.length;d.innerHTML=F.map((p,i)=>`<div class=card><b>${p[0]}</b><br><svg id=o${i}></svg><br>${p[1]}<br><button onclick="P.splice(${p[2]},1);save();f()" style="height:35px;background:#ff4444;color:#fff;margin-top:5px">APAGAR</button></div>`).join('');F.forEach((p,i)=>{try{JsBarcode('#o'+i,p[1],{format:'CODE128',width:2,height:40,displayValue:false})}catch(e){}})}
-f();
+function add(){let no=n.value.toUpperCase().trim(),co=c.value.trim();if(!no||!co)return alert('Preencha nome e codigo!');let i=P.findIndex(x=>x[0]==no);if(i>=0)P[i][1]=co;else P.push([no,co]);P.sort((a,b)=>a[0].localeCompare(b[0]));save();n.value='';c.value='';n.focus();f();bipar()}
+function f(){let q=(b.value||'').toUpperCase();l.innerHTML='';}
+
+function bipar(){
+let q=s.value.toUpperCase().trim();
+if(!q){visor.innerHTML='<div style="text-align:center;padding:20px;opacity:.5">Digite pra bipar...</div>';cont.innerText=P.length+' produtos cadastrados';return}
+let achados=P.filter(x=>x[0].includes(q)||x[1].includes(q));
+cont.innerText=achados.length+' encontrados | Total: '+P.length;
+visor.innerHTML=achados.map((p,i)=>`<div class=bip>⭐ ${p[0]} ⭐<br><svg id=b${i}></svg><br>📦 ${p[1]}</div>`).join('');
+achados.forEach((p,i)=>{try{JsBarcode('#b'+i,p[1],{format:'CODE128',width:2,height:80,displayValue:false,background:"#ffffff",lineColor:"#000000"})}catch(e){}});
+if(achados.length==0)visor.innerHTML='<div style="text-align:center;padding:20px;color:#ff4444">NADA ENCONTRADO</div>';
+}
+function exportar(){
+let itens = P.map(p=>`{n:"${p[0].replace(/"/g,'')}",c:"${p[1]}",e:""},`).join('\n');
+let html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>LISTA LINDA</title><script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script><style>body{font-family:Arial;text-align:center;background:#000;color:#fff;margin:0;padding:10px}#b{position:sticky;top:0;background:#000;padding:10px;z-index:10}input{width:95%;height:60px;font-size:24px;font-weight:900;border-radius:12px;border:0;padding:0 15px;text-transform:uppercase}.item{background:#fff;color:#000;margin:12px 0;border-radius:20px;padding:18px;font-weight:900;box-shadow:0 0 15px #ff0;font-size:18px}svg{width:100%;max-width:350px;height:85px}</style></head><body><div id=b><h2 style="color:#ff0">💛 BIPADOR LINDO 💛</h2><input id=s placeholder="🔍 DIGITE AQUI..." oninput="f()"></div><div id=l></div><script>let D=[${itens}];function f(){let q=s.value.toUpperCase(),h='';D.forEach((p,i)=>{if(!q||p.n.includes(q)||p.c.includes(q)){h+='<div class=item>⭐ '+p.n+' ⭐<br><svg id=i'+i+'></svg><br>📦 '+p.c+'</div>'}});l.innerHTML=h;D.forEach((p,i)=>{let e=document.getElementById('i'+i);if(e){try{JsBarcode(e,p.c,{format:'CODE128',width:2,height:70,displayValue:false})}catch(e){}}})}f();<\/script></body></html>`;
+let blob=new Blob([html],{type:'text/html'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='lista.html';a.click();
+}
+bipar();
 </script></body></html>
