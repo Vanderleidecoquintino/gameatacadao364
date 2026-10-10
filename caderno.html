@@ -3,61 +3,102 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>LISTA BIPADORA</title>
+<title>LISTA CAIXA - COMPLETA 61 PRODUTOS</title>
 <style>
 body{background:#fff;color:#000;font-family:Arial;margin:0;padding:10px}
-#busca{width:100%;height:50px;border:3px solid #000;border-radius:12px;padding:0 15px;font-size:18px;font-weight:700;box-sizing:border-box;position:sticky;top:10px;z-index:10;background:#ffff00}
-.card{background:#fff;border:2px solid #000;border-radius:12px;padding:10px;margin:10px 0;text-align:center;page-break-inside:avoid}
-.nome{font-weight:900;font-size:18px;text-transform:uppercase;margin:5px 0}
-.cod{font-size:12px;color:#666}
-canvas,svg{width:100%!important;max-height:120px}
+#busca{width:100%;height:60px;border:3px solid #000;border-radius:12px;padding:0 15px;font-size:20px;font-weight:900;box-sizing:border-box;position:sticky;top:10px;z-index:10;background:#ffff00;text-transform:uppercase}
+.card{background:#fff;border:2px solid #000;border-radius:12px;padding:15px;margin:12px 0;text-align:center}
+.nome{font-weight:900;font-size:18px;text-transform:uppercase;margin-bottom:10px}
+.cod{font-size:14px;color:#000;font-weight:bold;margin-top:8px}
+svg{width:100%!important;height:110px!important;background:#fff}
+#total{position:fixed;bottom:10px;right:10px;background:#000;color:#ffff00;padding:10px 16px;border-radius:20px;font-weight:900;font-size:14px;z-index:20}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 </head>
 <body>
-<input id="busca" type="text" placeholder="🔍 BUSCAR: cebola, arroz, pepino..." oninput="filtrar()" autofocus>
+<input id="busca" type="text" placeholder="🔍 BUSCAR..." oninput="filtrar()" autofocus>
 <div id="lista"></div>
-
+<div id="total"></div>
 <script>
 const PRODUTOS = [
+// === 17 DA SUA BASE CORRIGIDA ===
+{n:"MAÇA DIVERTIDA BOA ROCA",c:"000173",e:"🧙‍♀️"},
 {n:"CARA PAULISTA",c:"1917949",e:"🍠"},
-{n:"JILO",c:"1489936",e:"🫛"},
-{n:"CEBOLA ROXA",c:"36041905",e:"🧅"},
+{n:"JILO",c:"1499938",e:"🫛"},
+{n:"CEBOLA ROXA",c:"36041605",e:"🧅"},
 {n:"MANDIOCA AIPIM",c:"1506929",e:"🥔"},
-{n:"CEBOLA ATACADAO",c:"14882998",e:"🧅"},
+{n:"CEBOLA ATACADAO",c:"14692998",e:"🧅"},
 {n:"MANDIOQUINHA",c:"1504910",e:"🥔"},
-{n:"CEBOLA PALITO",c:"25216",e:"🧄"},
+{n:"CEBOLA PALITO",c:"262216",e:"🧄"},
 {n:"MAXIXE",c:"4779949",e:"🥒"},
-{n:"CENOURA",c:"1925905",e:"🥕"},
-{n:"PEPINO COMUM",c:"1514206",e:"🥒"},
-{n:"CHUCHU",c:"1923990",e:"🥑"},
+{n:"CENOURA",c:"19020905",e:"🥕"},
+{n:"PEPINO COMUM",c:"1514008",e:"🥒"},
+{n:"CHUCHU",c:"19020990",e:"🥑"},
 {n:"PEPINO JAPONES",c:"1516925",e:"🥒"},
 {n:"GENGIBRE",c:"1497919",e:"🫚"},
 {n:"PEPINO CAIPIRA",c:"1525",e:"🥒"},
-{n:"INHAME DA COSTA",c:"1502992",e:"🍠"},
-{n:"PIMENTA CAMBUCI",c:"9147939",e:"🌶️"},
-{n:"ARROZ TIPO 1 5KG",c:"7891234567890",e:"🍚"},
-{n:"FEIJAO CARIOCA 1KG",c:"7891234567891",e:"🫘"}
+{n:"INHAME DA COSTA",c:"19029962",e:"🍠"},
+{n:"PIMENTA CAMBUCI",c:"9147999",e:"🌶️"},
+// === 14 FOLHA LARANJA ===
+{n:"ABOBORA ITALIANA",c:"1688",e:"🥒"},
+{n:"ABOBORA JAP/CABOTIA",c:"1894905",e:"🎃"},
+{n:"ABOBORA PTA JACAR.",c:"2093926",e:"🎃"},
+{n:"ABOBORA SECA",c:"1893",e:"🎃"},
+{n:"ABOBORA BRASILEIRA",c:"1892",e:"🎃"},
+{n:"ABOBORA BATA",c:"64782905",e:"🎃"},
+{n:"ABOBORA MORANGA",c:"1896924",e:"🎃"},
+{n:"ALHO KG A GRANEL",c:"21933966",e:"🧄"},
+{n:"BATATA LAVADA",c:"14691938",e:"🥔"},
+{n:"BATATA ASTERIX",c:"3023977",e:"🥔"},
+{n:"BATATA BOLINHA",c:"14863922",e:"🥔"},
+{n:"BATATA DOCE",c:"1908912",e:"🍠"},
+{n:"BETERRABA",c:"1616916",e:"🥗"},
+{n:"BERINJELA COMUM",c:"1900931",e:"🍆"},
+// === 30 FOLHAS VERMELHAS ===
+{n:"ABACATE",c:"1632935",e:"🥑"},
+{n:"AVOCADO",c:"4614874",e:"🥑"},
+{n:"AMEIXA NACIONAL",c:"1637",e:"🍒"},
+{n:"AMEIXA IMPORTADA",c:"5606912",e:"🍒"},
+{n:"ATEMOIA",c:"35858",e:"🍈"},
+{n:"BANANA NANICA",c:"1643973",e:"🍌"},
+{n:"BANANA PRATA",c:"1640951",e:"🍌"},
+{n:"BANANA MACA",c:"1661910",e:"🍌"},
+{n:"BANANA TERRA",c:"4606915",e:"🍌"},
+{n:"CAQUI FUYU",c:"21843",e:"🍑"},
+{n:"CAQUI RAMA FORTE",c:"21700",e:"🍑"},
+{n:"CARAMBOLA",c:"9109927",e:"⭐"},
+{n:"CEREJA",c:"20914",e:"🍒"},
+{n:"COCO SECO TROPIC",c:"1650967",e:"🥥"},
+{n:"GOIABA BRANCA TROPIC",c:"1773999",e:"🍐"},
+{n:"GOIABA VERM TROPICAL",c:"9009993",e:"🍐"},
+{n:"KIWI",c:"1768974",e:"🥝"},
+{n:"KIWI SUN GOLD",c:"73384961",e:"🥝"},
+{n:"LARANJA PERA GRANEL",c:"11672947",e:"🍊"},
+{n:"HF.LARANJA LIMA",c:"1494",e:"🍊"},
+{n:"LARANJA IMPORTADA",c:"8353964",e:"🍊"},
+{n:"LIMAO TAITI TROPICAL",c:"1805943",e:"🍋"},
+{n:"LIMAO SICILIANO",c:"53849902",e:"🍋"},
+{n:"MACA RED IMPORT",c:"1819977",e:"🍎"},
+{n:"MACA NAC FUJI",c:"1827936",e:"🍎"},
+{n:"MACA NAC GALA",c:"1825917",e:"🍎"},
+{n:"MACA VERDE IMPORT",c:"5603934",e:"🍏"},
+{n:"MAMAO FORMOSA",c:"4786949",e:"🥭"},
+{n:"MAMAO COMUM",c:"1816999",e:"🥭"},
+{n:"MAMAO HAWAI/PAPAYA",c:"1815539",e:"🥭"}
 ];
-
 function filtrar(){
   let q=document.getElementById('busca').value.toUpperCase();
   let div=document.getElementById('lista'); div.innerHTML='';
-  PRODUTOS.filter(p=>!q || p.n.includes(q)).forEach((p,i)=>{
-    div.innerHTML+=`
-      <div class="card">
-        <div class="nome">${p.e} ${p.n}</div>
-        <svg id="bc${i}"></svg>
-        <div class="cod">${p.c}</div>
-      </div>`;
+  let filtrados = PRODUTOS.filter(p=>!q || p.n.includes(q) || p.c.includes(q));
+  filtrados.sort((a,b)=>a.n.localeCompare(b.n));
+  document.getElementById('total').innerText = filtrados.length + ' / ' + PRODUTOS.length;
+  filtrados.forEach((p,i)=>{
+    div.innerHTML+=`<div class="card"><div class="nome">${p.e} ${p.n}</div><svg id="bc${i}"></svg><div class="cod">${p.c}</div></div>`;
   });
-  PRODUTOS.filter(p=>!q || p.n.includes(q)).forEach((p,i)=>{
-    try{
-      JsBarcode(`#bc${i}`, p.c, {format:"CODE128", width:2, height:80, displayValue:true, fontSize:16, margin:5});
-    }catch(e){ JsBarcode(`#bc${i}`, p.c, {format:"EAN13", width:2, height:80}); }
+  filtrados.forEach((p,i)=>{
+    JsBarcode(`#bc${i}`, p.c, {format:"CODE128",width:3,height:100,displayValue:false,margin:15,background:"#ffffff",lineColor:"#000000"});
   });
 }
-
 filtrar();
 </script>
 </body>
