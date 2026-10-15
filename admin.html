@@ -2,52 +2,39 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width">
-<title>ADM T1 - TERMINAL V60</title>
+<title>ADM T1 - V60.4 GRID FIX</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:monospace;padding:12px;max-width:480px;margin:auto;background:#000;color:#00ff88}
-.top{display:flex;gap:8px;position:sticky;top:0;background:#000;padding:8px 0;z-index:5;border-bottom:1px solid #00ff88}
+.top{display:flex;gap:8px;position:sticky;top:0;background:#000;padding:8px 0;z-index:10;border-bottom:1px solid #00ff88}
 input,textarea{padding:12px;border:1px solid #00ff88;border-radius:10px;width:100%;margin-top:6px;background:#000;color:#00ff88;font-family:monospace}
-input::placeholder{color:#00ff8855}
-.card{background:#0a0a0a;padding:12px;border-radius:12px;margin:8px 0;display:flex;justify-content:space-between;align-items:center;border:1px solid #00ff8822;box-shadow:0 0 10px #00ff8811}
-.b{padding:8px 12px;border-radius:8px;border:1px solid #00ff88;font-weight:700;background:#000;color:#00ff88;font-family:monospace}
-.edit{border-color:#00ff88;color:#00ff88}.del{border-color:#ff3b30;color:#ff3b30}
-#formEdit{background:#000;color:#00ff88;padding:16px;border-radius:16px;position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:auto;display:none;z-index:10;max-height:92vh;overflow:auto;border:2px solid #00ff88;box-shadow:0 0 30px #00ff88}
-#mapa{width:100%;height:300px;border:2px dashed #00ff88;border-radius:12px;position:relative;background:#111 url('mapa-padrao-vertical.png') center/100% 100% no-repeat;margin:10px 0;cursor:crosshair}
-.ponto{position:absolute;transform:translate(-50%,-50%);font-size:28px;filter:drop-shadow(0 0 8px #00ff88)}
-.grid2{display:flex;gap:8px}
-h2{text-shadow:0 0 10px #00ff88}
+.card{background:#0a0a0a;padding:12px;border-radius:12px;margin:8px 0;display:flex;justify-content:space-between;align-items:center;border:1px solid #222}
+.b{padding:8px 12px;border-radius:8px;border:1px solid #00ff88;font-weight:700;background:#000;color:#00ff88}
+#formEdit{background:#111;padding:16px;border-radius:16px;position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:auto;display:none;z-index:20;max-height:90vh;overflow:auto;border:2px solid #00ff88}
+#mapa{width:100%;height:380px;border:2px solid #00ff88;border-radius:12px;position:relative;background:#000;margin:10px 0;cursor:crosshair;overflow:hidden}
+.ponto{position:absolute;transform:translate(-50%,-50%);font-size:28px;pointer-events:none}
+.gondola{position:absolute;background:#1e40af;border:1px solid #00ff88;opacity:0.4}
 </style>
 </head>
 <body>
-<h2>> ADM_T1 - <span id="total">0</span> PRODUTOS_</h2>
-<div style="font-size:10px;border:1px dashed #00ff88;padding:6px;border-radius:6px;margin:8px 0">MATRIX: 13 GÔNDOLAS 1-26 | KEY: atacadao364_FINAL | FORMAT: A1,B2,C2</div>
+<h2>> ADM V60.4 GRID - <span id="total">0</span></h2>
+<div style="font-size:9px;border:1px dashed #00ff88;padding:4px;border-radius:6px;margin:6px 0">GRID 27x19 COMPATIVEL COM V57 MOTOR | KEY: atacadao364_FINAL</div>
 <div class="top">
-<input id="busca" placeholder="> BUSCAR..." oninput="render()">
+<input id="busca" placeholder="BUSCAR..." oninput="debounceRender()">
 <button class="b" onclick="openForm()" style="background:#00ff88;color:#000">+ NOVO</button>
 </div>
 <div id="lista"></div>
-<textarea id="jsonOut" style="height:140px;margin-top:20px"></textarea>
-<button class="b" style="width:100%;background:#00ff88;color:#000;margin-top:8px" onclick="copiar()">> COPIAR produtos.json</button>
+
+<button class="b" style="width:100%;background:#00ff88;color:#000;margin-top:12px" onclick="exportar()">💾 EXPORTAR E SALVAR (FIX)</button>
+<textarea id="jsonOut" style="height:80px;margin-top:8px;font-size:8px"></textarea>
 
 <div id="formEdit">
-<h3 id="formTitle">> EDITAR_</h3>
+<h3 id="formTitle">EDITAR</h3>
 <input id="f_nome" placeholder="NOME">
-<div class="grid2">
-<input id="f_emoji" placeholder="EMOJI 🍚" style="flex:1">
-<input id="f_corredor" list="listaG" placeholder="CORREDOR A1 ou GONDOLA 23-24" style="flex:1">
-<datalist id="listaG"></datalist>
-</div>
-<div class="grid2">
-<input id="f_preco" placeholder="PREÇO 22.90" style="flex:1">
-<input id="f_foto" placeholder="foto.jpg" style="flex:1">
-</div>
-<div class="grid2">
-<div style="flex:1"><input id="f_x" type="number" placeholder="X %"><small style="color:#00ff88"> X no mapa</small></div>
-<div style="flex:1"><input id="f_y" type="number" placeholder="Y %"><small style="color:#00ff88"> Y no mapa</small></div>
-</div>
-<div id="mapa" onclick="pegaXY(event)"><div id="pontoPrev" class="ponto" style="left:50%;top:50%">📦</div></div>
-<small>> CLIQUE NO MAPA PRA PEGAR X Y AUTO</small>
+<div style="display:flex;gap:6px"><input id="f_emoji" placeholder="🍚"><input id="f_corredor" placeholder="GÔNDOLA 23-24"></div>
+<div style="display:flex;gap:6px"><input id="f_preco" placeholder="22.90"><input id="f_x" type="number" min="0" max="26" placeholder="X 0-26"><input id="f_y" type="number" min="0" max="18" placeholder="Y 0-18"></div>
+<div id="mapa" onclick="pegaXY(event)"></div>
+<small style="color:#00ff8855">CLIQUE NO MAPA - VERDE = CORREDOR LIVRE, AZUL = GÔNDOLA (NÃO PODE)</small>
 <div style="display:flex;gap:8px;margin-top:10px">
 <button class="b" style="flex:1" onclick="closeForm()">CANCELAR</button>
 <button class="b" style="flex:1;background:#00ff88;color:#000" onclick="salvar()">SALVAR</button>
@@ -55,42 +42,97 @@ h2{text-shadow:0 0 10px #00ff88}
 </div>
 
 <script>
+const COLS=27, ROWS=19;
 const MATRIX=[
-  {g:'25-26',x:1},{g:'23-24',x:3},{g:'21-22',x:5},{g:'19-20',x:7},{g:'17-18',x:9},
-  {g:'15-16',x:11},{g:'13-14',x:13},{g:'11-12',x:15},{g:'9-10',x:17},{g:'7-8',x:19},
-  {g:'5-6',x:21},{g:'3-4',x:23},{g:'1-2',x:25}
+  {g:'25-26',x:2},{g:'23-24',x:4},{g:'21-22',x:6},{g:'19-20',x:8},{g:'17-18',x:10},
+  {g:'15-16',x:12},{g:'13-14',x:14},{g:'11-12',x:16},{g:'9-10',x:18},{g:'7-8',x:20},
+  {g:'5-6',x:22},{g:'3-4',x:24},{g:'1-2',x:26}
 ];
 const KEY='atacadao364_FINAL';
-function getXByG(g){let f=MATRIX.find(m=>m.g==g);return f?f.x:null;}
-
-let produtos = [
-{"nome":"Álcool 70% 1L","corredor":"A2","preco":"8.99","foto":"alcool.jpg","emoji":"🧴","x":25,"y":20},
-{"nome":"Arroz T1 5kg","corredor":"A3","preco":"22.90","foto":"arroz.jpg","emoji":"🍚","x":25,"y":30},
-{"nome":"Feijão Carioca 1kg","corredor":"A3","preco":"7.49","foto":"feijao.jpg","emoji":"🫘","x":25,"y":35}
+let produtos=[];
+try{produtos=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){produtos=[]}
+if(produtos.length==0) produtos=[
+{"nome":"Arroz T1 5kg","corredor":"25-26","preco":"22.90","emoji":"🍚","x":2,"y":4},
+{"nome":"Feijão Carioca 1kg","corredor":"23-24","preco":"7.49","emoji":"🫘","x":4,"y":4}
 ];
-// popula datalist
-let dl=document.getElementById('listaG');
-MATRIX.forEach(m=>{let o=document.createElement('option');o.value=m.g;dl.appendChild(o);});
-['A1','A2','A3','A4','B1','B2','B3','C1','C2'].forEach(c=>{let o=document.createElement('option');o.value=c;dl.appendChild(o);});
 
-let editIndex=-1;
-function render(){const q=busca.value.toLowerCase();lista.innerHTML=produtos.map((p,i)=>({...p,_i:i})).filter(p=>p.nome.toLowerCase().includes(q)).map(p=>`<div class="card"><div style="display:flex;gap:8px;align-items:center"><span style="font-size:24px">${p.emoji||'📦'}</span><div><b>${p.nome}</b><br><small style="color:#00ff88">${p.corredor} - R$ ${p.preco} | X:${p.x} Y:${p.y}</small></div></div><div><button class="b edit" onclick="editar(${p._i})">EDIT</button> <button class="b del" onclick="apagar(${p._i})">X</button></div></div>`).join('');total.innerText=produtos.length;jsonOut.value=JSON.stringify(produtos,null,2);localStorage.setItem('produtos',JSON.stringify(produtos));localStorage.setItem(KEY,JSON.stringify(produtos));}
-function pegaXY(e){const r=mapa.getBoundingClientRect();const x=Math.round(((e.clientX-r.left)/r.width)*100);const y=Math.round(((e.clientY-r.top)/r.height)*100);f_x.value=x;f_y.value=y;pontoPrev.style.left=x+'%';pontoPrev.style.top=y+'%';}
-function openForm(){editIndex=-1;formTitle.innerText='> NOVO_';['f_nome','f_corredor','f_preco','f_foto','f_emoji','f_x','f_y'].forEach(id=>document.getElementById(id).value='');pontoPrev.textContent='📦';pontoPrev.style.left='50%';pontoPrev.style.top='50%';formEdit.style.display='block';}
-function editar(i){editIndex=i;const p=produtos[i];f_nome.value=p.nome;f_corredor.value=p.corredor;f_preco.value=p.preco;f_foto.value=p.foto;f_emoji.value=p.emoji||'📦';f_x.value=p.x||50;f_y.value=p.y||50;pontoPrev.textContent=f_emoji.value;pontoPrev.style.left=f_x.value+'%';pontoPrev.style.top=f_y.value+'%';formTitle.innerText='> EDITAR_';formEdit.style.display='block';}
-function closeForm(){formEdit.style.display='none';}
-function salvar(){
-  let cor=f_corredor.value||'A3';
-  let xAuto=getXByG(cor);
-  const p={nome:f_nome.value,corredor:cor,g:cor,preco:f_preco.value,foto:f_foto.value||'sem-foto.jpg',emoji:f_emoji.value||'📦',x:xAuto!==null?xAuto:(parseInt(f_x.value)||50),y:parseInt(f_y.value)||50};
-  if(!p.nome)return alert('Nome');if(editIndex>=0)produtos[editIndex]=p;else produtos.push(p);closeForm();render();
+function getXByG(g){let f=MATRIX.find(m=>m.g==g);return f?f.x:null}
+function isGondola(x,y){ if(y==0||y==8||y==17||x==0||x==26) return true; if(x%2==1) return true; return false; }
+
+let editIndex=-1; let debounceTimer=null;
+function debounceRender(){ clearTimeout(debounceTimer); debounceTimer=setTimeout(render,200); }
+
+function render(){
+  const q=document.getElementById('busca').value.toLowerCase();
+  const filtered = produtos.map((p,i)=>({...p,_i:i})).filter(p=>p.nome.toLowerCase().includes(q));
+  document.getElementById('lista').innerHTML=filtered.map(p=>`
+    <div class="card"><div style="display:flex;gap:8px;align-items:center">
+    <span style="font-size:22px">${p.emoji}</span><div><b>${p.nome}</b><br><small>${p.corredor} R$${p.preco} X:${p.x} Y:${p.y} ${isGondola(p.x,p.y)?'⚠️ EM CIMA DA GÔNDOLA!':''}</small></div></div>
+    <div><button class="b" onclick="editar(${p._i})">EDIT</button> <button class="b" style="border-color:#ff3b30;color:#ff3b30" onclick="apagar(${p._i})">X</button></div></div>`).join('');
+  document.getElementById('total').innerText=produtos.length;
+  document.getElementById('jsonOut').value = `TOTAL ${produtos.length} - KEY ${KEY} - Pronto pra V60`;
+  // NÃO salva aqui dentro pra não travar - só no exportar()
 }
-function apagar(i){if(confirm('Apagar?')){produtos.splice(i,1);render();}}
-function copiar(){navigator.clipboard.writeText(JSON.stringify(produtos,null,2));alert('Copiado!');}
-f_emoji.addEventListener('input',()=>{pontoPrev.textContent=f_emoji.value||'📦';});
-f_corredor.addEventListener('input',()=>{let xv=getXByG(f_corredor.value); if(xv!==null) f_x.value=xv;});
-try{const s=JSON.parse(localStorage.getItem(KEY)||localStorage.getItem('produtos')||'[]'); if(s.length>0) produtos=s;}catch(e){}
-render();
+
+function desenhaMapa(){
+  const mapa=document.getElementById('mapa'); mapa.innerHTML='';
+  for(let y=0;y<ROWS;y++) for(let x=0;x<COLS;x++){
+    if(isGondola(x,y)){
+      let d=document.createElement('div'); d.className='gondola';
+      d.style.left=(x/COLS*100)+'%'; d.style.top=(y/ROWS*100)+'%';
+      d.style.width=(100/COLS)+'%'; d.style.height=(100/ROWS)+'%';
+      mapa.appendChild(d);
+    }
+  }
+  produtos.forEach(p=>{
+    let d=document.createElement('div'); d.className='ponto';
+    d.style.left=(p.x/COLS*100)+'%'; d.style.top=(p.y/ROWS*100)+'%';
+    d.textContent=p.emoji; mapa.appendChild(d);
+  });
+  let prev=document.getElementById('pontoPrev');
+  if(prev){ mapa.appendChild(prev); }
+}
+
+function pegaXY(e){
+  const r=document.getElementById('mapa').getBoundingClientRect();
+  let x=Math.round((e.clientX-r.left)/r.width*COLS);
+  let y=Math.round((e.clientY-r.top)/r.height*ROWS);
+  if(isGondola(x,y)){ alert('⚠️ Você clicou em cima da gôndola! Clique no corredor ao lado.');
+    // corrige pra corredor livre do lado
+    if(x>0 &&!isGondola(x-1,y)) x--; else if(x<COLS-1 &&!isGondola(x+1,y)) x++;
+  }
+  document.getElementById('f_x').value=x;
+  document.getElementById('f_y').value=y;
+  let pp=document.getElementById('pontoPrev');
+  if(!pp){ pp=document.createElement('div'); pp.id='pontoPrev'; pp.className='ponto'; document.getElementById('mapa').appendChild(pp); }
+  pp.style.left=(x/COLS*100)+'%'; pp.style.top=(y/ROWS*100)+'%';
+  pp.textContent=document.getElementById('f_emoji').value||'📦';
+}
+
+function openForm(){ editIndex=-1; document.getElementById('formTitle').innerText='NOVO'; ['f_nome','f_corredor','f_preco','f_emoji','f_x','f_y'].forEach(id=>document.getElementById(id).value=''); document.getElementById('formEdit').style.display='block'; desenhaMapa(); }
+function editar(i){ editIndex=i; const p=produtos[i]; document.getElementById('f_nome').value=p.nome; document.getElementById('f_corredor').value=p.corredor; document.getElementById('f_preco').value=p.preco; document.getElementById('f_emoji').value=p.emoji; document.getElementById('f_x').value=p.x; document.getElementById('f_y').value=p.y; document.getElementById('formEdit').style.display='block'; desenhaMapa(); let pp=document.getElementById('pontoPrev'); if(pp){ pp.style.left=(p.x/COLS*100)+'%'; pp.style.top=(p.y/ROWS*100)+'%'; pp.textContent=p.emoji; } }
+function closeForm(){ document.getElementById('formEdit').style.display='none'; }
+function salvar(){
+  let cor=document.getElementById('f_corredor').value||'25-26';
+  let x=parseInt(document.getElementById('f_x').value); let y=parseInt(document.getElementById('f_y').value);
+  if(isNaN(x)) x=getXByG(cor)||2; if(isNaN(y)) y=4;
+  if(isGondola(x,y)){ alert('Corrige X,Y - está em cima da gôndola!'); return; }
+  const p={nome:document.getElementById('f_nome').value.toUpperCase(), corredor:cor, g:cor, preco:document.getElementById('f_preco').value, emoji:document.getElementById('f_emoji').value||'📦', x:x, y:y};
+  if(!p.nome) return alert('Nome');
+  if(editIndex>=0) produtos[editIndex]=p; else produtos.push(p);
+  closeForm(); exportar();
+}
+function apagar(i){ if(confirm('Apagar?')){ produtos.splice(i,1); exportar(); } }
+function exportar(){
+  try{
+    localStorage.setItem(KEY, JSON.stringify(produtos));
+    localStorage.setItem('produtos', JSON.stringify(produtos));
+    render(); desenhaMapa();
+    document.getElementById('jsonOut').value=JSON.stringify(produtos,null,2);
+    alert(`✅ Salvo! ${produtos.length} produtos - Agora abre o V60.2 que não trava mais`);
+  }catch(e){ alert('Storage cheio: '+e.message+' - Exporta o JSON e limpa'); }
+}
+render(); desenhaMapa();
 </script>
 </body>
 </html>
