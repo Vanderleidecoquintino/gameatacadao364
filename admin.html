@@ -1,68 +1,130 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<title>ADM V60.8 - 26-25</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width">
+<title>ADM V60.8 - 25-26 DIREITA + 40 DEMO</title>
 <style>
-body{background:#000;color:#00ff88;font-family:monospace;padding:12px}
-h1{text-align:center;border:2px solid #00ff88;border-radius:12px;padding:10px}
-.card{background:#111;border:1px solid #333;border-radius:12px;padding:12px;margin:10px 0}
-button{width:100%;height:44px;background:#00ff88;color:#000;border:0;border-radius:10px;font-weight:900;margin:4px 0}
-.casa{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #222;margin:2px}
-.entrada{background:#00ff88;color:#000;font-weight:900;border-radius:6px}
-.prod{border-bottom:1px solid #222;padding:6px;font-size:12px;display:flex;justify-content:space-between}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:monospace;padding:12px;max-width:480px;margin:auto;background:#000;color:#00ff88}
+.top{display:flex;gap:8px;position:sticky;top:0;background:#000;padding:8px 0;z-index:5;border-bottom:1px solid #00ff88}
+input,textarea{padding:12px;border:1px solid #00ff88;border-radius:10px;width:100%;margin-top:6px;background:#000;color:#00ff88}
+.card{background:#0a0a0a;padding:12px;border-radius:12px;margin:8px 0;display:flex;justify-content:space-between;align-items:center;border:1px solid #222}
+.b{padding:8px 12px;border-radius:8px;border:1px solid #00ff88;font-weight:700;background:#000;color:#00ff88}
+#formEdit{background:#111;padding:16px;border-radius:16px;position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:auto;display:none;z-index:20;max-height:90vh;overflow:auto;border:2px solid #00ff88}
+#mapa{width:100%;height:380px;border:2px solid #00ff88;border-radius:12px;position:relative;background:#000;margin:10px 0;cursor:crosshair}
+.ponto{position:absolute;transform:translate(-50%,-50%);font-size:22px}
+.gondola{position:absolute;background:#1e40af;border:1px solid #00ff88;opacity:0.5}
+#gpsInfo{background:#00ff88;color:#000;padding:4px;font-size:9px;text-align:center;font-weight:bold}
 </style>
 </head>
 <body>
-<h1>🎮 ADM V60.8<br><small>ENTRADA 26-25 CORRIGIDA</small></h1>
+<h2>> ADM V60.8 25-26 DIREITA + 40 DEMO - <span id="total">0</span></h2>
+<div style="font-size:9px;border:1px dashed #00ff88;padding:4px;border-radius:6px">DIREITA 25-26 (ENTRADA) → ESQUERDA 1-2 | 40 PRODUTOS DEMO</div>
+<div class="top"><input id="busca" placeholder="BUSCAR..." oninput="debounceRender()"><button class="b" onclick="openForm()" style="background:#00ff88;color:#000">+ NOVO</button></div>
+<div style="display:flex;gap:6px"><button class="b" style="flex:1;background:#00ff88;color:#000" onclick="carregar40Demo()">📦 CARREGAR 40 DEMO</button><button class="b" style="flex:1;border-color:#ff3b30;color:#ff3b30" onclick="limparDemo()">🗑️ LIMPAR</button></div>
+<div id="lista"></div>
+<div id="gpsInfo">CLIQUE NO CORREDOR - AUTO GÔNDOLA</div>
+<div id="mapa" onclick="pegaXY(event)"></div>
+<button class="b" style="width:100%;background:#00ff88;color:#000;margin-top:12px" onclick="exportar()">💾 SALVAR V60.8</button>
+<textarea id="jsonOut" style="height:60px;margin-top:8px;font-size:8px"></textarea>
 
-<div class="card">
-<b>ENTRADA ADM:</b> 26-25
-<div id="mapa" style="margin-top:8px"></div>
-</div>
-
-<div class="card">
-Total lojas: <b id="total">0</b>
-<button onclick="window.open('painel.html','_blank')">ABRIR PAINEL</button>
-</div>
-
-<div class="card">
-<b>📦 40 PRODUTOS DEMO - SÓ ADM VÊ</b>
-<div id="listaDemo" style="margin-top:8px"></div>
+<div id="formEdit">
+<h3 id="formTitle">EDITAR</h3>
+<input id="f_nome" placeholder="NOME">
+<div style="display:flex;gap:6px"><input id="f_emoji" placeholder="🍚"><input id="f_corredor" placeholder="GÔNDOLA"></div>
+<div style="display:flex;gap:6px"><input id="f_preco" placeholder="22.90"><input id="f_x" type="number" min="0" max="26"><input id="f_y" type="number" min="0" max="18"></div>
+<div style="display:flex;gap:8px;margin-top:10px"><button class="b" style="flex:1" onclick="closeForm()">CANCELAR</button><button class="b" style="flex:1;background:#00ff88;color:#000" onclick="salvar()">SALVAR</button></div>
 </div>
 
 <script>
-const ENTRADA_ADM = [26,25];
-let m='';
-for(let i=1;i<=30;i++){
- let c='casa'; if(ENTRADA_ADM.includes(i)) c+=' entrada';
- m+=`<div class="${c}">${i}</div>`; if(i%6==0) m+='<br>';
-}
-document.getElementById('mapa').innerHTML=m;
-localStorage.setItem('entrada_adm','26-25');
+const COLS=27,ROWS=19;
+const MAP_G={ '25-26':25,'23-24':23,'21-22':21,'19-20':19,'17-18':17,'15-16':15,'13-14':13,'11-12':11,'9-10':9,'7-8':7,'5-6':5,'3-4':3,'1-2':1 };
+function getXByG(g){ return MAP_G[g]||25; }
+function getGByX(x){ let best='25-26',dist=99; for(let k in MAP_G){ let d=Math.abs(x-MAP_G[k]); if(d<dist){dist=d;best=k;} } return best; }
+function isGondola(x,y){ if(y==0||y==8||y==17||x==0||x==COLS-1) return true; if(x%2==1) return true; return false; }
+const KEY='atacadao364_FINAL';
+let produtos=[]; try{produtos=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){}
+let editIndex=-1; let debounceTimer=null;
+function debounceRender(){ clearTimeout(debounceTimer); debounceTimer=setTimeout(render,200); }
 
-// CONTADOR SEM TRAVAR (countapi morreu, usei hits)
-document.getElementById('total').innerText = localStorage.getItem('total_lojas') || '1';
-let tot = parseInt(localStorage.getItem('total_lojas')||'0')+1;
-localStorage.setItem('total_lojas', tot);
-document.getElementById('total').innerText = tot;
-
-// 40 PRODUTOS DEMO
-const PRODUTOS_DEMO = [
-"Arroz 5kg R$26,90 [preco]","Feijão 1kg R$8,49 [preco]","Açúcar 1kg R$4,29 [preco]","Óleo Soja R$7,99 [preco]","Café 500g R$18,90 [preco]",
-"Leite Caixa R$5,49 [estoque 120]","Refri 2L R$8,99 [estoque 80]","Água 1,5L R$3,50 [estoque 200]","Suco Caixa R$6,90 [estoque 60]","Cerveja Lata R$4,99 [estoque 300]",
-"Bolacha R$3,99>2,99 [promo]","Chocolate R$6,50>4,99 [promo]","Bala 600g R$12,90>9,90 [promo]","Chiclete R$2,50>1,99 [promo]","Paçoca R$18,90>14,90 [promo]",
-"Sabão em Pó R$15,90 [limpeza]","Detergente R$2,99 [limpeza]","Amaciante 2L R$14,90 [limpeza]","Água Sanitária R$6,90 [limpeza]","Desinfetante R$8,90 [limpeza]",
-"Iogurte R$3,49 [validade]","Presunto 200g R$9,90 [validade]","Queijo Mussarela R$12,90 [validade]","Manteiga 500g R$18,90 [validade]","Requeijão R$7,50 [validade]",
-"Carne Bovina kg R$32,90 [peso]","Frango kg R$18,90 [peso]","Banana kg R$5,99 [peso]","Tomate kg R$8,90 [peso]","Cebola kg R$4,50 [peso]",
-"Shampoo Pantene R$16,90 [marca]","Sabonete Dove R$4,90 [marca]","Pasta Colgate R$5,99 [marca]","Fralda Pampers M R$45,90 [marca]","Papel Higiênico 12un R$18,90 [marca]",
-"OVO PÁSCOA BÔNUS [bonus 100pts]","VALE R$50 [bonus 500pts]","FRETE GRÁTIS [bonus 50pts]","GIRO DA SORTE [bonus 200pts]","CUPOM 10% OFF [bonus 150pts]"
+// 40 PRODUTOS DEMO BASE - 1 POR VARIAVEL
+const PRODUTOS_40_DEMO = [
+{nome:"ARROZ 5KG",corredor:"25-26",g:"25-26",preco:"26.90",emoji:"🍚",x:25,y:2},{nome:"FEIJAO 1KG",corredor:"25-26",g:"25-26",preco:"8.49",emoji:"🫘",x:25,y:4},{nome:"ACUCAR 1KG",corredor:"25-26",g:"25-26",preco:"4.29",emoji:"🍬",x:25,y:6},{nome:"OLEO SOJA",corredor:"25-26",g:"25-26",preco:"7.99",emoji:"🫒",x:24,y:2},{nome:"CAFE 500G",corredor:"25-26",g:"25-26",preco:"18.90",emoji:"☕",x:24,y:4},
+{nome:"LEITE CAIXA",corredor:"23-24",g:"23-24",preco:"5.49",emoji:"🥛",x:23,y:2},{nome:"REFRIGERANTE 2L",corredor:"23-24",g:"23-24",preco:"8.99",emoji:"🥤",x:23,y:4},{nome:"AGUA 1.5L",corredor:"23-24",g:"23-24",preco:"3.50",emoji:"💧",x:23,y:6},{nome:"SUCO CAIXA",corredor:"23-24",g:"23-24",preco:"6.90",emoji:"🧃",x:22,y:2},{nome:"CERVEJA LATA",corredor:"23-24",g:"23-24",preco:"4.99",emoji:"🍺",x:22,y:4},
+{nome:"BOLACHA RECHEADA",corredor:"21-22",g:"21-22",preco:"2.99",emoji:"🍪",x:21,y:2},{nome:"CHOCOLATE BARRA",corredor:"21-22",g:"21-22",preco:"4.99",emoji:"🍫",x:21,y:4},{nome:"BALA 600G",corredor:"21-22",g:"21-22",preco:"9.90",emoji:"🍬",x:21,y:6},{nome:"CHICLETE",corredor:"21-22",g:"21-22",preco:"1.99",emoji:"🍬",x:20,y:2},{nome:"PACOCA",corredor:"21-22",g:"21-22",preco:"14.90",emoji:"🥜",x:20,y:4},
+{nome:"SABAO EM PO 1KG",corredor:"19-20",g:"19-20",preco:"15.90",emoji:"🧴",x:19,y:2},{nome:"DETERGENTE",corredor:"19-20",g:"19-20",preco:"2.99",emoji:"🧼",x:19,y:4},{nome:"AMACIANTE 2L",corredor:"19-20",g:"19-20",preco:"14.90",emoji:"👕",x:19,y:6},{nome:"AGUA SANITARIA",corredor:"19-20",g:"19-20",preco:"6.90",emoji:"🧹",x:18,y:2},{nome:"DESINFETANTE",corredor:"19-20",g:"19-20",preco:"8.90",emoji:"🧽",x:18,y:4},
+{nome:"IOGURTE 170G",corredor:"17-18",g:"17-18",preco:"3.49",emoji:"🥣",x:17,y:2},{nome:"PRESUNTO 200G",corredor:"17-18",g:"17-18",preco:"9.90",emoji:"🍖",x:17,y:4},{nome:"QUEIJO MUSSARELA",corredor:"17-18",g:"17-18",preco:"12.90",emoji:"🧀",x:17,y:6},{nome:"MANTEIGA 500G",corredor:"17-18",g:"17-18",preco:"18.90",emoji:"🧈",x:16,y:2},{nome:"REQUEIJAO",corredor:"17-18",g:"17-18",preco:"7.50",emoji:"🥫",x:16,y:4},
+{nome:"CARNE BOVINA KG",corredor:"9-10",g:"9-10",preco:"32.90",emoji:"🥩",x:9,y:2},{nome:"FRANGO KG",corredor:"9-10",g:"9-10",preco:"18.90",emoji:"🍗",x:9,y:4},{nome:"BANANA KG",corredor:"7-8",g:"7-8",preco:"5.99",emoji:"🍌",x:7,y:2},{nome:"TOMATE KG",corredor:"7-8",g:"7-8",preco:"8.90",emoji:"🍅",x:7,y:4},{nome:"CEBOLA KG",corredor:"7-8",g:"7-8",preco:"4.50",emoji:"🧅",x:7,y:6},
+{nome:"SHAMPOO PANTENE",corredor:"5-6",g:"5-6",preco:"16.90",emoji:"🧴",x:5,y:2},{nome:"SABONETE DOVE",corredor:"5-6",g:"5-6",preco:"4.90",emoji:"🧼",x:5,y:4},{nome:"PASTA COLGATE",corredor:"5-6",g:"5-6",preco:"5.99",emoji:"🪥",x:5,y:6},{nome:"FRALDA PAMPERS M",corredor:"3-4",g:"3-4",preco:"45.90",emoji:"👶",x:3,y:2},{nome:"PAPEL HIGIENICO 12UN",corredor:"3-4",g:"3-4",preco:"18.90",emoji:"🧻",x:3,y:4},
+{nome:"OVO DE PASCOA BONUS",corredor:"1-2",g:"1-2",preco:"0",emoji:"🥚",x:1,y:10},{nome:"VALE COMPRAS R$50",corredor:"1-2",g:"1-2",preco:"0",emoji:"🎁",x:1,y:12},{nome:"FRETE GRATIS",corredor:"1-2",g:"1-2",preco:"0",emoji:"🚚",x:2,y:10},{nome:"GIRO DA SORTE",corredor:"1-2",g:"1-2",preco:"0",emoji:"🎰",x:2,y:12},{nome:"CUPOM 10% OFF",corredor:"1-2",g:"1-2",preco:"0",emoji:"🎫",x:1,y:14}
 ];
-let htmlDemo = PRODUTOS_DEMO.map((p,i)=>`<div class="prod"><span>${i+1}. ${p}</span></div>`).join('');
-document.getElementById('listaDemo').innerHTML = htmlDemo;
-localStorage.setItem('produtos_demo_v608', JSON.stringify(PRODUTOS_DEMO));
+
+function carregar40Demo(){
+  if(confirm('Carregar 40 produtos demo? Vai adicionar aos existentes.')){
+    produtos = produtos.concat(PRODUTOS_40_DEMO);
+    exportar();
+    alert('40 PRODUTOS DEMO CARREGADOS! Total: '+produtos.length);
+  }
+}
+function limparDemo(){
+  if(confirm('Limpar tudo?')){ produtos=[]; exportar(); }
+}
+
+function render(){
+  const q=document.getElementById('busca').value.toLowerCase();
+  const filtered=produtos.map((p,i)=>({...p,_i:i})).filter(p=>p.nome.toLowerCase().includes(q));
+  document.getElementById('lista').innerHTML=filtered.map(p=>`<div class="card"><div style="display:flex;gap:8px;align-items:center"><span style="font-size:22px">${p.emoji}</span><div><b>${p.nome}</b><br><small style="background:#00ff88;color:#000;padding:2px;border-radius:4px">${p.corredor||p.g} X:${p.x}</small> R$${p.preco}</small></div></div><div><button class="b" onclick="editar(${p._i})">EDIT</button> <button class="b" style="border-color:#ff3b30;color:#ff3b30" onclick="apagar(${p._i})">X</button></div></div>`).join('');
+  document.getElementById('total').innerText=produtos.length; desenhaMapa();
+}
+function desenhaMapa(){
+  const mapa=document.getElementById('mapa'); mapa.innerHTML='<div style="position:absolute;right:0;top:0;bottom:0;width:30px;background:#00ff88;opacity:0.3;display:flex;align-items:center;justify-content:center;font-size:8px;color:#000;font-weight:bold;writing-mode:vertical-rl">ENTRADA 26</div>';
+  for(let y=0;y<ROWS;y++) for(let x=0;x<COLS;x++){
+    if(isGondola(x,y)){
+      let d=document.createElement('div'); d.className='gondola';
+      d.style.left=(x/COLS*100)+'%'; d.style.top=(y/ROWS*100)+'%'; d.style.width=(100/COLS)+'%'; d.style.height=(100/ROWS)+'%';
+      if(x%2==1){ let lab=document.createElement('div'); lab.style.position='absolute'; lab.style.fontSize='7px'; lab.style.color='#fff'; lab.style.left='50%'; lab.style.top='50%'; lab.style.transform='translate(-50%,-50%)'; lab.innerText=getGByX(x); d.appendChild(lab); }
+      mapa.appendChild(d);
+    }
+  }
+  produtos.forEach(p=>{
+    let d=document.createElement('div'); d.className='ponto'; d.style.left=(p.x/COLS*100)+'%'; d.style.top=(p.y/ROWS*100)+'%'; d.textContent=p.emoji; mapa.appendChild(d);
+  });
+}
+function pegaXY(e){
+  const r=document.getElementById('mapa').getBoundingClientRect();
+  let x=Math.round((e.clientX-r.left)/r.width*COLS); let y=Math.round((e.clientY-r.top)/r.height*ROWS);
+  if(x%2==1){ if(x<26) x++; else x--; }
+  if(y<0) y=0; if(y>=ROWS) y=ROWS-1; if(x<0) x=0; if(x>=COLS) x=COLS-1;
+  if(isGondola(x,y)){ if(x>0 &&!isGondola(x-1,y)) x--; else if(x<COLS-1 &&!isGondola(x+1,y)) x++; }
+  let g=getGByX(x);
+  document.getElementById('f_x').value=x; document.getElementById('f_y').value=y; document.getElementById('f_corredor').value=g;
+  document.getElementById('gpsInfo').innerText=`AUTO: Corredor X:${x} Y:${y} = Gôndola ${g} (DIREITA 25-26 → ESQUERDA 1-2)`;
+  let pp=document.getElementById('pontoPrev'); if(!pp){ pp=document.createElement('div'); pp.id='pontoPrev'; pp.className='ponto'; pp.style.fontSize='28px'; pp.style.filter='drop-shadow(0 0 8px #00ff88)'; document.getElementById('mapa').appendChild(pp); }
+  pp.style.left=(x/COLS*100)+'%'; pp.style.top=(y/ROWS*100)+'%'; pp.textContent=document.getElementById('f_emoji').value||'📦';
+}
+function openForm(){ editIndex=-1; document.getElementById('formTitle').innerText='NOVO (25-26 DIREITA)'; ['f_nome','f_corredor','f_preco','f_emoji','f_x','f_y'].forEach(id=>document.getElementById(id).value=''); document.getElementById('formEdit').style.display='block'; }
+function editar(i){ editIndex=i; const p=produtos[i]; document.getElementById('f_nome').value=p.nome; document.getElementById('f_corredor').value=p.corredor||p.g; document.getElementById('f_preco').value=p.preco; document.getElementById('f_emoji').value=p.emoji; document.getElementById('f_x').value=p.x; document.getElementById('f_y').value=p.y; document.getElementById('formEdit').style.display='block'; document.getElementById('gpsInfo').innerText=`EDITANDO: ${p.nome} [${p.g}] X:${p.x}`; }
+function closeForm(){ document.getElementById('formEdit').style.display='none'; }
+function salvar(){
+  let cor=document.getElementById('f_corredor').value||'25-26';
+  let x=parseInt(document.getElementById('f_x').value); let y=parseInt(document.getElementById('f_y').value);
+  if(isNaN(x)) x=getXByG(cor); if(isNaN(y)) y=4;
+  if(isGondola(x,y)){ alert('X em cima da gôndola! Clique no corredor ao lado.'); return; }
+  const p={nome:document.getElementById('f_nome').value.toUpperCase(), corredor:cor, g:getGByX(x), preco:document.getElementById('f_preco').value, emoji:document.getElementById('f_emoji').value||'📦', x:x, y:y};
+  if(!p.nome) return alert('Nome'); if(editIndex>=0) produtos[editIndex]=p; else produtos.push(p);
+  closeForm(); exportar();
+}
+function apagar(i){ if(confirm('Apagar?')){ produtos.splice(i,1); exportar(); } }
+function exportar(){
+  try{
+    produtos=produtos.map(p=>{ p.g=getGByX(p.x); p.corredor=p.g; return p; });
+    localStorage.setItem(KEY,JSON.stringify(produtos));
+    localStorage.setItem('produtos',JSON.stringify(produtos));
+    document.getElementById('jsonOut').value=`✅ ${produtos.length} salvos - 25-26 DIREITA → 1-2 ESQUERDA - V60.8`;
+    render();
+  }catch(e){ alert('Erro: '+e.message); }
+}
+render();
 </script>
-<img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https://vanderleidecoquintino.github.io/gameatacadao364/&count_bg=%2300FF88&title_bg=%23000&title=ADM" style="display:none">
 </body>
 </html>
