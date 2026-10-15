@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width">
-<title>ADM V60.8 - 26-25 + 40 DEMO</title>
+<title>ADM V60.8 - 26-25</title>
 <style>
 body{background:#000;color:#00ff88;font-family:monospace;padding:12px}
 h1{text-align:center;border:2px solid #00ff88;border-radius:12px;padding:10px}
@@ -11,36 +11,58 @@ h1{text-align:center;border:2px solid #00ff88;border-radius:12px;padding:10px}
 button{width:100%;height:44px;background:#00ff88;color:#000;border:0;border-radius:10px;font-weight:900;margin:4px 0}
 .casa{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #222;margin:2px}
 .entrada{background:#00ff88;color:#000;font-weight:900;border-radius:6px}
-.prod{border:1px solid #222;padding:6px;margin:4px 0;border-radius:8px;font-size:12px;display:flex;justify-content:space-between}
+.prod{border-bottom:1px solid #222;padding:6px;font-size:12px;display:flex;justify-content:space-between}
 </style>
 </head>
 <body>
-<h1>🎮 ADM V60.8<br><small>26-25 + 40 PRODUTOS DEMO</small></h1>
+<h1>🎮 ADM V60.8<br><small>ENTRADA 26-25 CORRIGIDA</small></h1>
 
 <div class="card">
-<b>ENTRADA ADM:</b> 26-25 <span id="total" style="float:right">0 lojas</span>
+<b>ENTRADA ADM:</b> 26-25
 <div id="mapa" style="margin-top:8px"></div>
 </div>
 
 <div class="card">
-<h3>📦 40 PRODUTOS DEMO (só ADM vê)</h3>
-<button onclick="carregarDemo()">🔄 CARREGAR 40 PRODUTOS DEMO</button>
-<button onclick="limparDemo()" style="background:#ff3b30;color:#fff">🗑️ LIMPAR DEMO</button>
-<div id="lista"></div>
+Total lojas: <b id="total">0</b>
+<button onclick="window.open('painel.html','_blank')">ABRIR PAINEL</button>
+</div>
+
+<div class="card">
+<b>📦 40 PRODUTOS DEMO - SÓ ADM VÊ</b>
+<div id="listaDemo" style="margin-top:8px"></div>
 </div>
 
 <script>
-const ENTRADA_ADM=[26,25];
-let m='';for(let i=1;i<=30;i++){let c='casa';if(ENTRADA_ADM.includes(i))c+=' entrada';m+=`<div class="${c}">${i}</div>`;if(i%6==0)m+='<br>';}
+const ENTRADA_ADM = [26,25];
+let m='';
+for(let i=1;i<=30;i++){
+ let c='casa'; if(ENTRADA_ADM.includes(i)) c+=' entrada';
+ m+=`<div class="${c}">${i}</div>`; if(i%6==0) m+='<br>';
+}
 document.getElementById('mapa').innerHTML=m;
+localStorage.setItem('entrada_adm','26-25');
 
-// 40 PRODUTOS - SÓ ADM
-const PRODUTOS_DEMO=[
-{id:1,nome:"Arroz 5kg",preco:26.90,var:"preco"},{id:2,nome:"Feijão 1kg",preco:8.49,var:"preco"},{id:3,nome:"Açúcar 1kg",preco:4.29,var:"preco"},{id:4,nome:"Óleo Soja",preco:7.99,var:"preco"},{id:5,nome:"Café 500g",preco:18.90,var:"preco"},
-{id:6,nome:"Leite Caixa",preco:5.49,var:"estoque",qtd:120},{id:7,nome:"Refrigerante 2L",preco:8.99,var:"estoque",qtd:80},{id:8,nome:"Água 1.5L",preco:3.50,var:"estoque",qtd:200},{id:9,nome:"Suco Caixa",preco:6.90,var:"estoque",qtd:60},{id:10,nome:"Cerveja Lata",preco:4.99,var:"estoque",qtd:300},
-{id:11,nome:"Bolacha Recheada",preco:3.99,var:"promo",promo:2.99},{id:12,nome:"Chocolate Barra",preco:6.50,var:"promo",promo:4.99},{id:13,nome:"Bala 600g",preco:12.90,var:"promo",promo:9.90},{id:14,nome:"Chiclete",preco:2.50,var:"promo",promo:1.99},{id:15,nome:"Paçoca",preco:18.90,var:"promo",promo:14.90},
-{id:16,nome:"Sabão em Pó 1kg",preco:15.90,var:"categoria"},{id:17,nome:"Detergente",preco:2.99,var:"categoria"},{id:18,nome:"Amaciante 2L",preco:14.90,var:"categoria"},{id:19,nome:"Água Sanitária",preco:6.90,var:"categoria"},{id:20,nome:"Desinfetante",preco:8.90,var:"categoria"},
-{id:21,nome:"Iogurte 170g",preco:3.49,var:"validade"},{id:22,nome:"Presunto 200g",preco:9.90,var:"validade"},{id:23,nome:"Queijo Mussarela",preco:12.90,var:"validade"},{id:24,nome:"Manteiga 500g",preco:18.90,var:"validade"},{id:25,nome:"Requeijão",preco:7.50,var:"validade"},
-{id:26,nome:"Carne Bovina kg",preco:32.90,var:"peso"},{id:27,nome:"Frango kg",preco:18.90,var:"peso"},{id:28,nome:"Banana kg",preco:5.99,var:"peso"},{id:29,nome:"Tomate kg",preco:8.90,var:"peso"},{id:30,nome:"Cebola kg",preco:4.50,var:"peso"},
-{id:31,nome:"Shampoo Pantene",preco:16.90,var:"marca"},{id:32,nome:"Sabonete Dove",preco:4.90,var:"marca"},{id:33,nome:"Pasta Colgate",preco:5.99,var:"marca"},{id:34,nome:"Fralda Pampers M",preco:45.90,var:"marca"},{id:35,nome:"Papel Higiênico 12un",preco:18.90,var:"marca"},
-{id:36,nome:"OVO DE PÁSCOA BÔNUS",preco:0,var:"bonus"},{id:37,nome:"VALE COMPRAS R$50",preco:0,var:"bonus"},{id:38,nome:"FRETE GRÁTIS",preco:0,var:"bonus"},{id:39,nome:"GIRO DA SORTE",preco
+// CONTADOR SEM TRAVAR (countapi morreu, usei hits)
+document.getElementById('total').innerText = localStorage.getItem('total_lojas') || '1';
+let tot = parseInt(localStorage.getItem('total_lojas')||'0')+1;
+localStorage.setItem('total_lojas', tot);
+document.getElementById('total').innerText = tot;
+
+// 40 PRODUTOS DEMO
+const PRODUTOS_DEMO = [
+"Arroz 5kg R$26,90 [preco]","Feijão 1kg R$8,49 [preco]","Açúcar 1kg R$4,29 [preco]","Óleo Soja R$7,99 [preco]","Café 500g R$18,90 [preco]",
+"Leite Caixa R$5,49 [estoque 120]","Refri 2L R$8,99 [estoque 80]","Água 1,5L R$3,50 [estoque 200]","Suco Caixa R$6,90 [estoque 60]","Cerveja Lata R$4,99 [estoque 300]",
+"Bolacha R$3,99>2,99 [promo]","Chocolate R$6,50>4,99 [promo]","Bala 600g R$12,90>9,90 [promo]","Chiclete R$2,50>1,99 [promo]","Paçoca R$18,90>14,90 [promo]",
+"Sabão em Pó R$15,90 [limpeza]","Detergente R$2,99 [limpeza]","Amaciante 2L R$14,90 [limpeza]","Água Sanitária R$6,90 [limpeza]","Desinfetante R$8,90 [limpeza]",
+"Iogurte R$3,49 [validade]","Presunto 200g R$9,90 [validade]","Queijo Mussarela R$12,90 [validade]","Manteiga 500g R$18,90 [validade]","Requeijão R$7,50 [validade]",
+"Carne Bovina kg R$32,90 [peso]","Frango kg R$18,90 [peso]","Banana kg R$5,99 [peso]","Tomate kg R$8,90 [peso]","Cebola kg R$4,50 [peso]",
+"Shampoo Pantene R$16,90 [marca]","Sabonete Dove R$4,90 [marca]","Pasta Colgate R$5,99 [marca]","Fralda Pampers M R$45,90 [marca]","Papel Higiênico 12un R$18,90 [marca]",
+"OVO PÁSCOA BÔNUS [bonus 100pts]","VALE R$50 [bonus 500pts]","FRETE GRÁTIS [bonus 50pts]","GIRO DA SORTE [bonus 200pts]","CUPOM 10% OFF [bonus 150pts]"
+];
+let htmlDemo = PRODUTOS_DEMO.map((p,i)=>`<div class="prod"><span>${i+1}. ${p}</span></div>`).join('');
+document.getElementById('listaDemo').innerHTML = htmlDemo;
+localStorage.setItem('produtos_demo_v608', JSON.stringify(PRODUTOS_DEMO));
+</script>
+<img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https://vanderleidecoquintino.github.io/gameatacadao364/&count_bg=%2300FF88&title_bg=%23000&title=ADM" style="display:none">
+</body>
+</html>
