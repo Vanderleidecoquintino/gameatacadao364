@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Moises V4</title><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-black text-white"><div class="max-w-[480px] mx-auto p-3">
+<h1 class="bg-[#00ff88] text-black font-black p-3 rounded-xl text-center">MOISES V4 - FIXADO<br><span class="text-[10px]">modelo cjwbw/demucs da sua foto</span></h1>
+<input id="token" type="password" placeholder=" Cole seu token r8_ aqui" class="w-full mt-3 bg-zinc-900 border border-zinc-700 p-3 rounded-xl text-[11px]">
+<button onclick="localStorage.setItem('rep_token', token.value); alert('Salvo só no cel!')" class="w-full mt-2 bg-zinc-800 h-10 rounded-xl text-[10px]">💾 SALVAR TOKEN NO CEL</button>
+<input type="file" id="f" accept="audio/*" hidden>
+<button onclick="f.click()" class="mt-4 w-full border-2 border-dashed border-[#00ff88] p-6 rounded-xl font-black">📁 MANDAR MÚSICA PRONTA</button>
+<button id="btn" class="hidden mt-3 w-full bg-white text-black font-black h-14 rounded-xl">☁️ SEPARAR EM 6 - GRÁTIS</button>
+<p id="st" class="text-[10px] text-zinc-400 mt-2 text-center"></p><div id="out" class="mt-4 space-y-2"></div>
+</div>
+<script>
+let file; const $=id=>document.getElementById(id);
+f.onchange=e=>{file=e.target.files[0]; $('st').innerText=file.name; $('btn').classList.remove('hidden');}
+$('token').value=localStorage.getItem('rep_token')||'';
+$('btn').onclick=async()=>{
+ const TOKEN=localStorage.getItem('rep_token')||$('token').value; if(!TOKEN.startsWith('r8_')){alert('Cole token r8_ e salva');return;}
+ $('btn').innerText='⏳ ENVIANDO...';
+ try{
+ const fd=new FormData(); fd.append('file',file);
+ const up=await fetch('https://tmpfiles.org/api/v1/upload',{method:'POST',body:fd}).then(r=>r.json());
+ if(!up.data?.url) throw 'Erro no upload';
+ let audioUrl=up.data.url.replace('tmpfiles.org/','tmpfiles.org/dl/');
+ $('st').innerText='IA separando... 30s';
+ let res=await fetch('https://api.replicate.com/v1/models/cjwbw/demucs/predictions',{method:'POST',headers:{'Authorization':'Token '+TOKEN,'Content-Type':'application/json'},body:JSON.stringify({input:{audio:audioUrl}})}).then(r=>r.json());
+ let pred=res;
+ while(pred.status!=='succeeded' && pred.status!=='failed'){await new Promise(r=>setTimeout(r,3000));pred=await fetch('https://api.replicate.com/v1/predictions/'+pred.id,{headers:{'Authorization':'Token '+TOKEN}}).then(r=>r.json());$('st').innerText='Status: '+pred.status;}
+ if(pred.status==='succeeded' && pred.output){ $('out').innerHTML=Object.entries(pred.output).map(([k,v])=>`<div class="bg-zinc-900 p-2 rounded-xl flex justify-between items-center"><span class="text-[10px] uppercase">${k}</span><a href="${v}" target="_blank" class="bg-[#00ff88] text-black text-[9px] px-3 py-2 rounded-lg font-black">BAIXAR</a></div>`).join(''); $('btn').innerText='✅ 6 STEMS PRONTOS!';}
+ else throw JSON.stringify(pred);
+ }catch(e){alert('Erro: '+e); $('btn').innerText='TENTAR DE NOVO';}
+}
+</script></body></html>
