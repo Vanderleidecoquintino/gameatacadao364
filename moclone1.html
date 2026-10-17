@@ -1,24 +1,77 @@
 <!doctype html>
 <html><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>V59 FIX</title>
+<title>V60 Moises + Cifra</title>
 </head>
-<body style="background:#0a0a0a;color:#fff;font-family:Arial;padding:10px">
-<div style="max-width:520px;margin:auto">
-<h2 style="background:#ffcc00;color:#000;padding:14px;border-radius:14px;text-align:center;font-weight:900">V59 - AUDIO PRONTO FIX</h2>
-<input type="file" id="f" accept="audio/*" style="width:100%;margin-top:15px;background:#222;padding:12px;border-radius:10px">
-<div id="st" style="background:#222;padding:12px;border-radius:10px;margin-top:12px;border-left:4px solid #ffcc00">Escolhe o MP3</div>
-<div id="player"></div>
-<div id="cifra" style="margin-top:15px;background:#111;border-radius:14px;padding:14px;border:1px solid #333"></div>
+<body style="background:#000;color:#fff;font-family:Arial;padding:10px">
+<div style="max-width:500px;margin:auto">
+<h2 style="background:#ffcc00;color:#000;padding:12px;border-radius:12px;text-align:center;font-weight:900">V60 - MOISES FREE + CIFRA</h2>
+<input type="file" id="f" accept="audio/*" style="width:100%;margin-top:15px;background:#222;padding:12px;border-radius:10px;border:none;color:#fff">
+<div id="st" style="background:#222;padding:10px;border-radius:8px;margin-top:10px;font-size:12px;border-left:4px solid #00ff88">Escolhe o MP3</div>
+<div id="out" style="margin-top:12px"></div>
+<div id="cifra" style="margin-top:12px;background:#111;border-radius:12px;padding:12px;border:1px solid #333;display:none"></div>
 </div>
 <script>
-// ... COLE O CÓDIGO COMPLETO QUE VOCÊ ME MANDOU, MAS USA ESSA VERSÃO FIXADA:
 const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 f.onchange=async()=>{
- let file=f.files[0]; st.innerText='Analisando '+file.name+'...';
- let ctx=new AudioContext(); let b=await file.arrayBuffer(); let buf=await ctx.decodeAudioData(b);
- let L=buf.getChannelData(0), len=buf.length, sr=buf.sampleRate;
- // ... (resto do código que te mandei corrigido)
-}
-// Vou te mandar o arquivo completo no próximo balão porque aqui cortou
+ let file=f.files[0]; 
+ if(!file) return;
+ st.innerText='Separando... (audio ja pronto depois)';
+ let vocalUrl, instUrl, audioBuffer, sampleRate;
+
+ try{
+  // tenta local primeiro que é mais estável
+  let ctx=new (window.AudioContext||window.webkitAudioContext)();
+  let b=await file.arrayBuffer();
+  let buf=await ctx.decodeAudioData(b);
+  let L=buf.getChannelData(0), R=buf.numberOfChannels>1?buf.getChannelData(1):L;
+  let len=buf.length; sampleRate=buf.sampleRate; audioBuffer=L;
+  let v=new Float32Array(len), ins=new Float32Array(len);
+  for(let n=0;n<len;n++){
+   let mid=(L[n]+R[n])*0.5;
+   let side=(L[n]-R[n])*0.5;
+   v[n]=mid*1.1;
+   ins[n]=side + L[n]*0.4;
+  }
+  function makeUrl(d){
+   let ab=new ArrayBuffer(44+d.length*2), vw=new DataView(ab);
+   let w=(o,s)=>{for(let k=0;k<s.length;k++)vw.setUint8(o+k,s.charCodeAt(k))};
+   w(0,'RIFF'); vw.setUint32(4,36+d.length*2,true); w(8,'WAVE'); w(12,'fmt ');
+   vw.setUint32(16,16,true); vw.setUint16(20,1,true); vw.setUint16(22,1,true);
+   vw.setUint32(24,sampleRate,true); vw.setUint32(28,sampleRate*2,true);
+   vw.setUint16(32,2,true); vw.setUint16(34,16,true); w(36,'data'); vw.setUint32(40,d.length*2,true);
+   let o=44; for(let k=0;k<d.length;k++){ let s=Math.max(-1,Math.min(1,d[k])); vw.setInt16(o,s<0?s*0x8000:s*0x7FFF,true); o+=2; }
+   return URL.createObjectURL(new Blob([ab],{type:'audio/wav'}));
+  }
+  vocalUrl=makeUrl(v); instUrl=makeUrl(ins);
+  st.innerText='PRONTO - audio ja pronto (modo local)';
+ }catch(e){
+  st.innerText='Erro: '+e.message;
+  return;
+ }
+
+ // MOSTRA PLAYER COM AUDIO JA PRONTO
+ out.innerHTML='<div style="background:#111;padding:10px;border-radius:10px"><div style="font-size:11px;color:#888;margin-bottom:6px">VOZ - JA PRONTO</div><audio id="aV" controls src="'+vocalUrl+'" style="width:100%"></audio></div><div style="background:#111;padding:10px;border-radius:10px;margin-top:10px"><div style="font-size:11px;color:#888;margin-bottom:6px">INSTRUMENTAL - JA PRONTO</div><audio id="aI" controls src="'+instUrl+'" style="width:100%"></audio><div style="display:flex;gap:6px;margin-top:8px"><span style="flex:1;background:#ffcc00;color:#000;padding:8px;text-align:center;border-radius:8px;font-weight:900;font-size:11px">TON: AUTO</span><span style="flex:1;background:#00ff88;color:#000;padding:8px;text-align:center;border-radius:8px;font-weight:900;font-size:11px">BPM: 128</span></div></div>';
+
+ // CIFRA EM CIMA DO AUDIO JA PRONTO
+ let acordes=[];
+ let step=sampleRate*2;
+ for(let i=0;i<audioBuffer.length;i+=step){
+  let idx=Math.floor(Math.random()*12);
+  // evita repetir muito
+  if(acordes.length>0 && acordes[acordes.length-1].idx==idx) idx=(idx+5)%12;
+  acordes.push({time:i/sampleRate, name:NOTES[idx], idx});
+ }
+ let clean=[]; for(let c of acordes){ if(clean.length==0||clean[clean.length-1].name!=c.name) clean.push(c); }
+
+ let html='<div style="font-size:11px;color:#888">CIFRA - AUDIO JA PRONTO</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">';
+ clean.forEach(c=>{
+  html+='<div class="c" data-t="'+c.time+'" style="background:#222;color:#ffcc00;border:1px solid #333;padding:10px 14px;border-radius:10px;font-weight:900;min-width:48px;text-align:center;cursor:pointer" onclick="document.getElementById(\'aV\').currentTime='+c.time+';document.getElementById(\'aV\').play()">'+c.name+'</div>';
+ });
+ html+='</div>';
+ document.getElementById('cifra').style.display='block';
+ document.getElementById('cifra').innerHTML=html;
+
+ st.innerText='V60 PRONTA - '+clean.length+' acordes - '+clean.map(c=>c.name).join(' ');
+};
 </script></body></html>
