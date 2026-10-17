@@ -1,64 +1,36 @@
 <!DOCTYPE html>
-<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Moises V11 3 Faixas FREE</title><script src="https://cdn.tailwindcss.com"></script></head>
-<body class="bg-black text-white"><div class="max-w-[480px] mx-auto p-3">
-<h1 class="bg-[#00ff88] text-black font-black p-3 rounded-xl text-center">MOISES V11 - 3 FAIXAS OFFLINE</h1>
-<p class="text-[9px] text-zinc-500 text-center mt-2">Sem token, sem pagar, roda no celular</p>
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>V12 DEMIX REAL FREE</title><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-black text-white p-3"><div class="max-w-[480px] mx-auto">
+<h1 class="bg-[#00ff88] text-black font-black p-3 rounded-xl text-center">V12 DEMIX REAL - FREE</h1>
+<p class="text-[9px] text-zinc-500 text-center mt-2">IA do Facebook, grátis, sem cartão</p>
 <input type="file" id="f" accept="audio/*" hidden>
-<button onclick="f.click()" class="mt-4 w-full border-2 border-dashed border-[#00ff88] p-6 rounded-xl font-black">📁 MANDAR MP3 / WAV</button>
-<button id="btn" class="hidden mt-3 w-full bg-white text-black font-black h-14 rounded-xl">SEPARAR EM 3 FAIXAS</button>
+<button onclick="f.click()" class="mt-4 w-full border-2 border-dashed border-[#00ff88] p-6 rounded-xl font-black">📁 MANDAR MP3/WAV</button>
+<button id="btn" class="hidden mt-3 w-full bg-white text-black font-black h-14 rounded-xl">SEPARAR COM IA REAL</button>
 <p id="st" class="text-[11px] text-zinc-400 mt-3 text-center bg-zinc-900 p-3 rounded-xl">Pronto</p>
-<div id="out" class="mt-4 space-y-3"></div>
+<div id="out" class="mt-4 space-y-2"></div>
 </div>
-<script>
-let file=null; const $=id=>document.getElementById(id);
-f.onchange=e=>{file=e.target.files[0];$('st').innerText=file.name+' - '+(file.size/1024/1024).toFixed(1)+'MB';$('btn').classList.remove('hidden');}
-$('btn').onclick=async()=>{
- $('btn').disabled=true; $('btn').innerText='DECODIFICANDO...'; $('st').innerText='Lendo audio...';
+<script type="module">
+import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client@1.9.4/dist/index.js";
+let file=null;
+f.onchange=e=>{file=e.target.files[0];document.getElementById('st').innerText=file.name;btn.classList.remove('hidden');}
+btn.onclick=async()=>{
+ btn.disabled=true; btn.innerText='CONECTANDO IA GRÁTIS...';
+ document.getElementById('st').innerText='Conectando servidor grátis (pode demorar 40s na 1ª vez)...';
  try{
-  const ctx=new (window.AudioContext||window.webkitAudioContext)();
-  const buf=await file.arrayBuffer();
-  const audio=await ctx.decodeAudioData(buf);
-  $('st').innerText='Separando 3 faixas...';
-  const len=audio.length, sr=audio.sampleRate;
-  const L=audio.getChannelData(0), R=audio.numberOfChannels>1?audio.getChannelData(1):L;
-  
-  // 1. Instrumental (L-R remove centro/voz)
-  let instL=new Float32Array(len), instR=new Float32Array(len);
-  for(let i=0;i<len;i++){ instL[i]=(L[i]-R[i])*0.8; instR[i]=(R[i]-L[i])*0.8; }
-  
-  // 2. Voz (centro = Original - Instrumental)
-  let vocL=new Float32Array(len), vocR=new Float32Array(len);
-  for(let i=0;i<len;i++){ vocL[i]=L[i]-instL[i]; vocR[i]=R[i]-instR[i]; }
-  
-  // 3. Bateria/Baixo (grave da voz)
-  let drumL=new Float32Array(len);
-  for(let i=1;i<len;i++){ drumL[i]=vocL[i]*0.3+vocL[i-1]*0.7; } // lowpass simples
-  
-  function toWavUrl(chL,chR){
-    const interleaved=new Float32Array(len*2);
-    for(let i=0;i<len;i++){ interleaved[i*2]=chL[i]; interleaved[i*2+1]=chR?chR[i]:chL[i]; }
-    const wav=encodeWav(interleaved,sr);
-    return URL.createObjectURL(new Blob([wav],{type:'audio/wav'}));
-  }
-  function encodeWav(samples,sr){
-    const buffer=new ArrayBuffer(44+samples.length*2);
-    const view=new DataView(buffer);
-    const write=(o,s)=>{for(let i=0;i<s.length;i++) view.setUint8(o+i,s.charCodeAt(i));};
-    write(0,'RIFF'); view.setUint32(4,36+samples.length*2,true); write(8,'WAVE'); write(12,'fmt '); view.setUint32(16,16,true); view.setUint16(20,1,true); view.setUint16(22,2,true); view.setUint32(24,sr,true); view.setUint32(28,sr*4,true); view.setUint16(32,4,true); view.setUint16(34,16,true); write(36,'data'); view.setUint32(40,samples.length*2,true);
-    let offset=44; for(let i=0;i<samples.length;i++,offset+=2){ let s=Math.max(-1,Math.min(1,samples[i])); view.setInt16(offset,s<0?s*0x8000:s*0x7FFF,true); }
-    return buffer;
-  }
-  
-  const urlVoc=toWavUrl(vocL,vocR);
-  const urlInst=toWavUrl(instL,instR);
-  const urlDrum=toWavUrl(drumL,drumL);
-  
-  $('out').innerHTML=`
-   <div class="bg-zinc-900 p-3 rounded-xl"><p class="text-[10px] font-black">🎤 VOZ</p><audio controls class="w-full mt-2" src="${urlVoc}"></audio><a href="${urlVoc}" download="voz.wav" class="mt-2 block bg-[#00ff88] text-black text-center py-2 rounded-lg text-[10px] font-black">BAIXAR VOZ</a></div>
-   <div class="bg-zinc-900 p-3 rounded-xl"><p class="text-[10px] font-black">🎸 INSTRUMENTAL</p><audio controls class="w-full mt-2" src="${urlInst}"></audio><a href="${urlInst}" download="instrumental.wav" class="mt-2 block bg-white text-black text-center py-2 rounded-lg text-[10px] font-black">BAIXAR INSTRUMENTAL</a></div>
-   <div class="bg-zinc-900 p-3 rounded-xl"><p class="text-[10px] font-black">🥁 BATERIA / BAIXO</p><audio controls class="w-full mt-2" src="${urlDrum}"></audio><a href="${urlDrum}" download="bateria.wav" class="mt-2 block bg-zinc-700 text-white text-center py-2 rounded-lg text-[10px] font-black">BAIXAR BATERIA</a></div>
-  `;
-  $('st').innerText='PRONTO! 3 faixas separadas offline'; $('btn').innerText='✅ FEITO';
- }catch(e){$('st').innerText='ERRO: '+e.message; $('btn').innerText='ERRO - TENTAR OUTRO MP3'; $('btn').disabled=false;}
+  const app=await Client.connect("facebook/demucs");
+  document.getElementById('st').innerText='Separando com IA... 30-60s, não feche';
+  btn.innerText='SEPARANDO...';
+  const res=await app.predict("/predict",[file,"htdemucs"]);
+  // res.data = [vocals, drums, bass, other]
+  const labels=['VOZ','BATERIA','BAIXO','OUTROS'];
+  document.getElementById('out').innerHTML=res.data.map((d,i)=>`
+   <div class="bg-zinc-900 p-3 rounded-xl"><p class="text-[10px] font-black">${labels[i]||'FAIXA '+(i+1)}</p><audio controls class="w-full mt-2" src="${d.url||d}"></audio><a href="${d.url||d}" target="_blank" download="${labels[i]}.wav" class="mt-2 block bg-[#00ff88] text-black text-center py-2 rounded-lg text-[10px] font-black">BAIXAR ${labels[i]}</a></div>
+  `).join('');
+  document.getElementById('st').innerText='PRONTO! DEMIX REAL FEITO';
+  btn.innerText='✅ FEITO';
+ }catch(e){
+  document.getElementById('st').innerText='Erro: '+e.message+' - tenta de novo, servidor grátis as vezes dorme';
+  btn.innerText='TENTAR DE NOVO'; btn.disabled=false;
+ }
 }
 </script></body></html>
