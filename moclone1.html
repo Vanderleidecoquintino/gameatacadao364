@@ -1,26 +1,39 @@
 <!DOCTYPE html>
-<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Moises V8 FREE 6</title><script src="https://cdn.tailwindcss.com"></script></head>
-<body class="bg-black text-white"><div class="max-w-[480px] mx-auto p-3">
-<h1 class="bg-[#00ff88] text-black font-black p-3 rounded-xl text-center">MOISES V8 FREE - SEM TOKEN</h1>
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Moises V8.1 FREE</title><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-black text-white p-3"><div class="max-w-[480px] mx-auto">
+<h1 class="bg-[#00ff88] text-black font-black p-3 rounded-xl text-center">MOISES V8.1 FREE - 6 FAIXAS</h1>
 <input type="file" id="f" accept="audio/*" hidden>
-<button onclick="document.getElementById('f').click()" class="mt-4 w-full border-2 border-dashed border-[#00ff88] p-6 rounded-xl font-black">📁 MANDAR MÚSICA</button>
-<button id="btn" class="hidden mt-3 w-full bg-white text-black font-black h-14 rounded-xl">SEPARAR GRÁTIS (6 FAIXAS)</button>
-<p id="st" class="text-[11px] text-zinc-400 mt-3 text-center bg-zinc-900 p-3 rounded-xl"></p>
+<button onclick="f.click()" class="mt-4 w-full border-2 border-dashed border-[#00ff88] p-6 rounded-xl font-black">📁 ESCOLHER MÚSICA</button>
+<button id="btn" class="hidden mt-3 w-full bg-white text-black font-black h-14 rounded-xl">ACORDAR SERVIDOR E SEPARAR</button>
+<p id="st" class="text-[11px] text-zinc-400 mt-3 text-center bg-zinc-900 p-3 rounded-xl">Servidor grátis dorme 30s na primeira vez, normal.</p>
 <div id="out" class="mt-4 space-y-2"></div>
 </div>
-<script type="module">
-import {Client} from "https://cdn.jsdelivr.net/npm/@gradio/client@1.9.4/dist/index.js";
-let file=null;const $=id=>document.getElementById(id);
-$('f').onchange=e=>{file=e.target.files[0];$('st').innerText=file.name;$('btn').classList.remove('hidden');};
-$('btn').onclick=async()=>{
- $('btn').innerText='CONECTANDO SERVIDOR GRÁTIS...';$('st').innerText='Conectando (30s)...';
- try{
-  const app=await Client.connect("r3gm/uvr5_webui");
-  $('st').innerText='Separando 6 faixas... 1 a 2 min, não feche!';
-  $('btn').innerText='SEPARANDO...';
-  const res=await app.predict("/predict",[file,0,"UVR-MDX-NET-Voc_FT","",0]);
-  $('out').innerHTML=res.data.map((u,i)=>`<div class="bg-zinc-900 p-3 rounded-xl flex justify-between"><span class="text-[10px] font-bold">FAIXA ${i+1}</span><a href="${u.url||u}" target="_blank" class="bg-[#00ff88] text-black px-4 py-2 rounded-lg text-[10px] font-black">BAIXAR</a></div>`).join('');
-  $('st').innerText='PRONTO!';$('btn').innerText='✅ FEITO';
- }catch(e){$('st').innerText='Erro: '+e;alert(e);$('btn').innerText='TENTAR DE NOVO';}
-};
+<script>
+let file=null; const $=id=>document.getElementById(id);
+f.onchange=e=>{file=e.target.files[0];$('st').innerText=file.name;btn.classList.remove('hidden');}
+btn.onclick=async()=>{
+ btn.disabled=true; btn.innerText='ACORDANDO SERVIDOR (30s)...';
+ // 1. acorda
+ try{ await fetch('https://r3gm-uvr5-webui.hf.space/',{mode:'no-cors'});}catch{}
+ $('st').innerText='Servidor acordando... aguarde 30s e vai começar';
+ // 2. sobe arquivo
+ btn.innerText='ENVIANDO MÚSICA...';
+ let fd=new FormData(); fd.append('files',file);
+ let up=await fetch('https://r3gm-uvr5-webui.hf.space/upload?upload_id='+Date.now(),{method:'POST',body:fd});
+ let upJ=await up.json();
+ let path=upJ[0];
+ // 3. separa
+ $('st').innerText='Separando... 1-2 min';
+ btn.innerText='SEPARANDO 6 FAIXAS...';
+ let pred=await fetch('https://r3gm-uvr5-webui.hf.space/run/predict',{
+  method:'POST', headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({data:[{"path":path,"meta":{"_type":"gradio.FileData"}},0,"UVR-MDX-NET-Voc_FT","",0],fn_index:0})
+ });
+ let res=await pred.json();
+ if(res.data){
+  $('out').innerHTML=res.data[0].map((u,i)=>`<div class="bg-zinc-900 p-3 rounded-xl flex justify-between"><span class="text-[10px] font-bold">FAIXA ${i+1}</span><a href="https://r3gm-uvr5-webui.hf.space/file=${u.path}" target="_blank" class="bg-[#00ff88] text-black px-4 py-2 rounded-lg text-[10px] font-black">BAIXAR</a></div>`).join('');
+  $('st').innerText='PRONTO!';
+ }
+ btn.innerText='✅ FEITO'; btn.disabled=false;
+}
 </script></body></html>
