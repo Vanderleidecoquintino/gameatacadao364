@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Moises V5.2</title><script src="https://cdn.tailwindcss.com"></script></head>
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Moises V5.3</title><script src="https://cdn.tailwindcss.com"></script></head>
 <body class="bg-black text-white"><div class="max-w-[480px] mx-auto p-3">
-<h1 class="bg-[#00ff88] text-black font-black p-3 rounded-xl text-center">MOISES V5.2 - TURBO<br><span class="text-[10px]">vanderleidecoquintino.github.io</span></h1>
-<input id="token" type="password" placeholder=" Cole seu token r8_" class="w-full mt-3 bg-zinc-900 border border-zinc-700 p-3 rounded-xl text-[11px]">
+<h1 class="bg-[#00ff88] text-black font-black p-3 rounded-xl text-center">MOISES V5.3 - FIX FINAL</h1>
+<input id="token" type="password" placeholder=" r8_..." class="w-full mt-3 bg-zinc-900 border border-zinc-700 p-3 rounded-xl text-[11px]">
 <button onclick="localStorage.setItem('rep_token',document.getElementById('token').value);alert('Token salvo!')" class="w-full mt-2 bg-zinc-800 h-10 rounded-xl text-[10px]">💾 SALVAR TOKEN</button>
 <input type="file" id="f" accept="audio/*" hidden>
 <button onclick="document.getElementById('f').click()" class="mt-4 w-full border-2 border-dashed border-[#00ff88] p-6 rounded-xl font-black">📁 MANDAR MÚSICA PRONTA</button>
@@ -11,38 +11,32 @@
 </div>
 <script>
 let audioFile=null; const $=id=>document.getElementById(id);
+const PX='https://corsproxy.io/?';
 $('f').onchange=e=>{audioFile=e.target.files[0]; $('st').innerText='Pronto: '+audioFile.name+' ('+Math.round(audioFile.size/1000)+'kb)'; $('btn').classList.remove('hidden'); $('btn').innerText='☁️ SEPARAR EM 6';}
 $('token').value=localStorage.getItem('rep_token')||'';
 $('btn').onclick=async()=>{
  const TOKEN=($('token').value||localStorage.getItem('rep_token')||'').trim();
- if(!TOKEN.startsWith('r8_')){alert('Cole token r8_ e salva');return;}
- $('btn').innerText='⏳ SUBINDO ARQUIVO...'; $('st').innerText='1/3 Subindo música...';
+ if(!TOKEN.startsWith('r8_')){alert('Cole token r8_');return;}
+ $('btn').innerText='⏳ SUBINDO...'; $('st').innerText='1/3 Subindo arquivo (pode demorar 1 min)...';
  try{
-  // 1 - sobe o mp3 pra um link temporário (sem CORS)
   let fd=new FormData(); fd.append('file',audioFile);
-  let up=await fetch('https://tmpfiles.org/api/v1/upload',{method:'POST',body:fd});
-  let upj=await up.json(); let fileUrl=upj.data.url.replace('tmpfiles.org/','tmpfiles.org/dl/');
-  $('st').innerText='2/3 Link: '+fileUrl; $('btn').innerText='⏳ ENVIANDO PRA IA...';
-  // 2 - chama Replicate com proxies alternativos
-  const proxies=['https://corsproxy.io/?','https://api.codetabs.com/v1/proxy?quest=','https://thingproxy.freeboard.io/fetch?url='];
-  let pred=null;
-  for(let px of proxies){
-   try{
-    let res=await fetch(px+encodeURIComponent('https://api.replicate.com/v1/models/cjwbw/demucs/predictions'),{method:'POST',headers:{'Authorization':'Token '+TOKEN,'Content-Type':'application/json'},body:JSON.stringify({input:{audio:fileUrl}})});
-    pred=await res.json(); if(pred.id) break;
-   }catch(e){}
-  }
-  if(!pred||!pred.id) throw 'Proxy bloqueado. Tenta de novo';
+  // sobe via proxy pra não dar Failed to fetch
+  let up=await fetch(PX+encodeURIComponent('https://tmpfiles.org/api/v1/upload'),{method:'POST',body:fd});
+  let upj=await up.json(); 
+  if(!upj.data||!upj.data.url) throw JSON.stringify(upj);
+  let fileUrl=upj.data.url.replace('tmpfiles.org/','tmpfiles.org/dl/');
+  $('st').innerText='2/3 Link ok: '+fileUrl;
+  $('btn').innerText='⏳ ENVIANDO PRA IA...';
+  let res=await fetch(PX+encodeURIComponent('https://api.replicate.com/v1/models/cjwbw/demucs/predictions'),{method:'POST',headers:{'Authorization':'Token '+TOKEN,'Content-Type':'application/json'},body:JSON.stringify({input:{audio:fileUrl}})});
+  let pred=await res.json(); if(pred.detail) throw pred.detail; if(!pred.id) throw JSON.stringify(pred);
   while(pred.status!=='succeeded'&&pred.status!=='failed'){
    await new Promise(r=>setTimeout(r,4000));
-   let r2=null;
-   for(let px of proxies){ try{ let rr=await fetch(px+encodeURIComponent('https://api.replicate.com/v1/predictions/'+pred.id),{headers:{'Authorization':'Token '+TOKEN}}); r2=await rr.json(); if(r2.status) break; }catch(e){} }
-   pred=r2; $('st').innerText='Status: '+pred.status+'... não fecha';
-   $('btn').innerText='⏳ '+pred.status.toUpperCase()+'...';
+   let r2=await fetch(PX+encodeURIComponent('https://api.replicate.com/v1/predictions/'+pred.id),{headers:{'Authorization':'Token '+TOKEN}});
+   pred=await r2.json(); $('st').innerText='Status: '+pred.status+' (não fecha a tela)'; $('btn').innerText='⏳ '+pred.status.toUpperCase();
   }
   if(pred.status==='succeeded'){
-   $('out').innerHTML=Object.entries(pred.output).map(([k,v])=>`<div class="bg-zinc-900 p-3 rounded-xl flex justify-between items-center"><span class="text-[11px] font-bold uppercase">${k}</span><a href="${v}" target="_blank" download class="bg-[#00ff88] text-black text-[10px] px-4 py-2 rounded-lg font-black">BAIXAR</a></div>`).join('');
-   $('btn').innerText='✅ 6 STEMS PRONTOS!'; $('st').innerText='Pronto! Clica em BAIXAR em cada um. Link dura 24h';
+   $('out').innerHTML=Object.entries(pred.output).map(([k,v])=>`<div class="bg-zinc-900 p-3 rounded-xl flex justify-between items-center"><span class="text-[11px] font-bold uppercase">${k}</span><a href="${v}" target="_blank" class="bg-[#00ff88] text-black text-[10px] px-4 py-2 rounded-lg font-black">BAIXAR</a></div>`).join('');
+   $('btn').innerText='✅ 6 STEMS PRONTOS!'; $('st').innerText='Pronto! Clique em BAIXAR em cada um. Link dura 24h';
   } else throw JSON.stringify(pred);
  }catch(e){alert('Erro: '+e); $('btn').innerText='TENTAR DE NOVO'; $('st').innerText='Erro: '+e;}
 }
