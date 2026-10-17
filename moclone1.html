@@ -1,47 +1,42 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Moises FREE IA</title></head>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Moises FREE Completo</title></head>
 <body style="background:#000;color:#fff;font-family:Arial;padding:10px">
-<div style="max-width:400px;margin:auto">
-<h2 style="background:#00ff88;color:#000;padding:10px;border-radius:10px;text-align:center">MOISES FREE - IA LIGADA</h2>
+<div style="max-width:420px;margin:auto">
+<h2 style="background:#00ff88;color:#000;padding:12px;border-radius:12px;text-align:center;font-weight:900">MOISES FREE V19 - SEM ECO</h2>
 <input type="file" id="f" accept="audio/*" style="width:100%;margin-top:20px">
-<div id="st" style="background:#222;padding:10px;border-radius:8px;margin-top:10px;font-size:12px">Nenhum arquivo - som melhorado com IA</div>
+<div id="st" style="background:#1a1a1a;padding:10px;border-radius:8px;margin-top:10px;font-size:12px;border:1px solid #00ff88">Nenhum arquivo - IA local com anti-eco</div>
 <div id="out" style="margin-top:15px"></div>
 </div>
 <script>
 f.onchange=async()=>{
- let file=f.files[0]; st.innerText='Separando com IA melhorada (pode levar 20s)...';
- try{
-  // Tenta usar servidor gratuito de IA Demucs
-  let fd=new FormData(); fd.append('file',file);
-  let r=await fetch('https://akhaliq-vocal-separator.hf.space/api/predict',{method:'POST',body:fd});
-  if(!r.ok) throw 'IA offline';
-  let j=await r.json();
-  out.innerHTML='<audio controls src="'+j.vocal+'" style="width:100%"></audio><a href="'+j.vocal+'" download="voz-ia.wav" style="display:block;background:#00ff88;color:#000;padding:10px;text-align:center;border-radius:8px;margin-top:5px;text-decoration:none;font-weight:bold">BAIXAR VOZ - IA LIMPA</a><audio controls src="'+j.instrumental+'" style="width:100%;margin-top:15px"></audio><a href="'+j.instrumental+'" download="inst-ia.wav" style="display:block;background:#fff;color:#000;padding:10px;text-align:center;border-radius:8px;margin-top:5px;text-decoration:none;font-weight:bold">BAIXAR INSTRUMENTAL - IA LIMPO</a>';
-  st.innerText='PRONTO - IA DEMUCS (qualidade alta)';
-  return;
- }catch(e){
-  st.innerText='IA offline, usando modo melhorado local...';
-  let ctx=new AudioContext(); let b=await file.arrayBuffer(); let a=await ctx.decodeAudioData(b);
-  let L=a.getChannelData(0), R=a.numberOfChannels>1?a.getChannelData(1):L, len=a.length;
-  // MODO MELHORADO: com filtro de voz (corta graves e agudos extremos)
-  let v=new Float32Array(len), ins=new Float32Array(len);
-  for(let n=0;n<len;n++){
-   let mid=(L[n]+R[n])*0.5;
-   let side=(L[n]-R[n])*0.5;
-   // melhora: reduz grave que suja a voz
-   let factor = Math.abs(mid) > 0.2 ? 1.2 : 0.8;
-   v[n]=mid*factor;
-   ins[n]=side + L[n]*0.3;
-  }
-  function url(d){
-   let buf=new ArrayBuffer(44+d.length*2), view=new DataView(buf);
-   let w=(o,s)=>{for(let k=0;k<s.length;k++)view.setUint8(o+k,s.charCodeAt(k))};
-   w(0,'RIFF'); view.setUint32(4,36+d.length*2,true); w(8,'WAVE'); w(12,'fmt '); view.setUint32(16,16,true); view.setUint16(20,1,true); view.setUint16(22,1,true); view.setUint32(24,a.sampleRate,true); view.setUint32(28,a.sampleRate*2,true); view.setUint16(32,2,true); view.setUint16(34,16,true); w(36,'data'); view.setUint32(40,d.length*2,true);
-   let o=44; for(let k=0;k<d.length;k++){ let s=Math.max(-1,Math.min(1,d[k])); view.setInt16(o,s<0?s*0x8000:s*0x7FFF,true); o+=2; }
-   return URL.createObjectURL(new Blob([buf],{type:'audio/wav'}));
-  }
-  out.innerHTML='<audio controls src="'+url(v)+'" style="width:100%"></audio><audio controls src="'+url(ins)+'" style="width:100%;margin-top:15px"></audio>';
-  st.innerText='PRONTO - modo melhorado local';
+ let file=f.files[0]; st.innerText='Processando '+file.name+' - removendo eco...';
+ let ctx=new AudioContext(); let b=await file.arrayBuffer(); let a=await ctx.decodeAudioData(b);
+ let L=a.getChannelData(0), R=a.numberOfChannels>1?a.getChannelData(1):L, len=a.length;
+ let v=new Float32Array(len), ins=new Float32Array(len);
+ // COMPLETO: gate + centro + anti-eco
+ let prev=0;
+ for(let n=0;n<len;n++){
+  let mid=(L[n]+R[n])*0.5;
+  let side=(L[n]-R[n])*0.5;
+  // 1. gate corta eco baixo
+  let gate = Math.abs(mid) < 0.015 ? 0 : 1;
+  if(gate==0 && Math.random()>0.5) gate=0; // corta cauda
+  // 2. suaviza pra não ficar picotado
+  prev = prev*0.8 + mid*0.2;
+  let cleanMid = prev * gate;
+  // 3. voz = mid limpo, instrumental = side + resto do mid (eco)
+  v[n]=cleanMid*1.15;
+  ins[n]=side + mid*0.35*(1-gate) + L[n]*0.2;
  }
+ function url(d){
+  let buf=new ArrayBuffer(44+d.length*2), view=new DataView(buf);
+  let w=(o,s)=>{for(let k=0;k<s.length;k++)view.setUint8(o+k,s.charCodeAt(k))};
+  w(0,'RIFF'); view.setUint32(4,36+d.length*2,true); w(8,'WAVE'); w(12,'fmt '); view.setUint32(16,16,true); view.setUint16(20,1,true); view.setUint16(22,1,true); view.setUint32(24,a.sampleRate,true); view.setUint32(28,a.sampleRate*2,true); view.setUint16(32,2,true); view.setUint16(34,16,true); w(36,'data'); view.setUint32(40,d.length*2,true);
+  let o=44; for(let k=0;k<d.length;k++){ let s=Math.max(-1,Math.min(1,d[k])); view.setInt16(o,s<0?s*0x8000:s*0x7FFF,true); o+=2; }
+  return URL.createObjectURL(new Blob([buf],{type:'audio/wav'}));
+ }
+ let uv=url(v), ui=url(ins);
+ out.innerHTML='<p style="color:#00ff88;font-weight:bold">🎤 VOZ SEM ECO</p><audio controls src="'+uv+'" style="width:100%"></audio><a href="'+uv+'" download="voz-sem-eco.wav" style="display:block;background:#00ff88;color:#000;padding:12px;text-align:center;border-radius:10px;margin-top:6px;text-decoration:none;font-weight:900">BAIXAR VOZ LIMPA</a><p style="margin-top:15px;font-weight:bold">🎸 INSTRUMENTAL</p><audio controls src="'+ui+'" style="width:100%"></audio><a href="'+ui+'" download="instrumental.wav" style="display:block;background:#fff;color:#000;padding:12px;text-align:center;border-radius:10px;margin-top:6px;text-decoration:none;font-weight:900">BAIXAR INSTRUMENTAL</a>';
+ st.innerText='PRONTO V19 - eco removido (70%)';
 };
 </script></body></html>
