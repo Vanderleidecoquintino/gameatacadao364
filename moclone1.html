@@ -1,71 +1,51 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>V88 MESA TURBO</title></head>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>V96 ESCOLA</title></head>
 <body style="background:#000;color:#fff;font-family:Arial;padding:10px">
-<div style="max-width:750px;margin:auto">
-<h2 style="background:linear-gradient(90deg,#ff0033,#ffcc00,#00ff88);color:#000;padding:16px;border-radius:14px;text-align:center;font-weight:900">V88 MESA - LASCA TUDO - 4 CANAIS</h2>
-<input type="file" id="f" accept="audio/*" style="width:100%;margin-top:12px;background:#222;padding:14px;border-radius:10px;border:2px solid #ff0033;color:#fff">
-<div id="st" style="background:#1a1a1a;padding:12px;border-radius:8px;margin-top:10px;font-size:12px;border-left:5px solid #ff0033">Escolhe a braba pra lascar</div>
+<div style="max-width:850px;margin:auto">
+<div style="background:#fff;color:#000;padding:12px;border-radius:12px;display:flex;gap:10px;align-items:center">
+<div style="flex:1"><input id="escola" placeholder="Nome da sua escola" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ccc;font-weight:900"><input id="prof" placeholder="Nome do professor" style="width:100%;margin-top:6px;padding:8px;border-radius:8px;border:1px solid #ccc"></div>
+<div><input type="file" id="logo" accept="image/*" style="font-size:10px"><div id="logoPrev" style="width:60px;height:60px;background:#eee;border-radius:8px;margin-top:4px;display:flex;align-items:center;justify-content:center;font-size:10px">LOGO</div></div>
+</div>
+<h2 style="background:linear-gradient(90deg,#ff0033,#ffcc00,#00ff88);color:#000;padding:12px;border-radius:14px;text-align:center;font-weight:900;margin-top:10px">V96 ESCOLA - LICENÇA PROFESSOR</h2>
+<input type="file" id="f" accept="audio/*" style="width:100%;margin-top:10px;background:#222;padding:12px;border-radius:10px;border:2px solid #ffcc00;color:#fff">
+<div id="st" style="background:#1a1a1a;padding:10px;border-radius:8px;margin-top:10px;font-size:12px;border-left:5px solid #ffcc00">V96 - Coloca logo da escola e exporta PDF pra aluno</div>
 <div id="mesa" style="margin-top:12px;display:none"></div>
+<div id="keys" style="margin-top:12px;background:#111;padding:12px;border-radius:12px;display:none"></div>
+<div id="partitura" style="margin-top:12px;background:#fff;border:2px solid #ffcc00;border-radius:12px;padding:12px;display:none;overflow-x:auto"></div>
+<div id="actions" style="margin-top:12px;display:none;grid-template-columns:1fr 1fr;gap:8px"><button onclick="window.print()" style="background:#ffcc00;color:#000;border:none;padding:12px;border-radius:10px;font-weight:900">🖨️ EXPORTAR PDF DA PARTITURA</button><button id="btnSave" style="background:#00ff88;color:#000;border:none;padding:12px;border-radius:10px;font-weight:900">💾 SALVAR AULA</button></div>
 <div id="cifra" style="margin-top:12px;background:#111;padding:12px;border-radius:12px;display:none"></div>
 </div>
 <script>
 const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-const MAP={'C':['C','G','Am','F'],'G':['G','D','Em','C'],'D':['D','A','Bm','G']};
-function turboSeparate(L,R){
- let len=L.length, v=new Float32Array(len), d=new Float32Array(len), b=new Float32Array(len), o=new Float32Array(len);
- for(let i=0;i<len;i++){ let mid=(L[i]+R[i])*0.5, side=(L[i]-R[i])*0.5; b[i]=((L[i]+(L[i-1]||0)+(L[i-2]||0))/3)*1.4; v[i]=mid*1.5-side*0.5; d[i]=side*0.9+(L[i]-L[Math.max(0,i-8)])*0.8; o[i]=side*0.6+mid*0.4; }
- return {v,d,b,o};
-}
+const CHORD_NOTES={'C':['C','E','G'],'G':['G','B','D'],'Am':['A','C','E'],'F':['F','A','C'],'D':['D','F#','A'],'Em':['E','G','B']};
+const MAP={'C':['C','G','Am','F'],'G':['G','D','Em','C']};
+const NOTE_Y={'C':80,'D':70,'E':60,'F':55,'G':45,'A':35,'B':25};
+let logoUrl='';
+logo.onchange=e=>{ let file=e.target.files[0]; if(!file) return; logoUrl=URL.createObjectURL(file); document.getElementById('logoPrev').innerHTML='<img src="'+logoUrl+'" style="width:100%;height:100%;object-fit:cover;border-radius:8px">'; };
+function drawKeyboard(active){ let whites=['C','D','E','F','G','A','B','C','D','E']; let h='<div style="display:flex;gap:2px;justify-content:center;background:#000;padding:8px;border-radius:10px">'; whites.forEach(n=>{ let on=active.includes(n)||active.some(a=>a[0]==n); h+='<div style="width:34px;height:80px;background:'+(on?'#ffcc00':'#fff')+';border-radius:0 0 6px 6px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;color:#000;font-size:9px;font-weight:900">'+n+'</div>'; }); return h+'</div>'; }
+function makeStaff(measures, curIdx){ let W=measures.length*88+50, html='<div style="min-width:'+W+'px"><div style="display:flex;justify-content:space-between;font-size:10px;font-weight:900;color:#000"><span>'+document.getElementById('escola').value.toUpperCase()+'</span><span>Prof: '+document.getElementById('prof').value+'</span></div><svg width="'+W+'" height="110"><text x="2" y="60" font-size="40">𝄞</text>'; for(let i=0;i<measures.length;i++){ let x=30+i*88, is=curIdx===i; html+='<rect x="'+x+'" y="0" width="82" height="100" fill="'+(is?'#00ff8844':'none')+'" stroke="'+(is?'#00ff88':'#ccc')+'" stroke-width="'+(is?'3':'1')+'" rx="8"/>'; for(let l=0;l<5;l++) html+='<line x1="'+x+'" y1="'+(15+l*13)+'" x2="'+(x+82)+'" y2="'+(15+l*13)+'" stroke="#000" stroke-width="1"/>'; html+='<text x="'+(x+6)+'" y="10" font-size="14" font-weight="900" fill="#000">'+measures[i].chord+'</text>'; let base=measures[i].chord[0]; let y=NOTE_Y[base]||60; html+='<ellipse cx="'+(x+30)+'" cy="'+y+'" rx="8" ry="5" fill="'+(is?'#00ff88':'#000')+'"/>'; } return html+'</svg></div>'; }
+function turboSeparate(L,R){ let len=L.length, v=new Float32Array(len), d=new Float32Array(len), b=new Float32Array(len), o=new Float32Array(len); for(let i=0;i<len;i++){ let mid=(L[i]+R[i])*0.5, side=(L[i]-R[i])*0.5; b[i]=((L[i]+(L[i-1]||0))/2)*1.3; v[i]=mid*1.4; d[i]=side*0.8; o[i]=side*0.5+mid*0.2; } return {v,d,b,o}; }
 f.onchange=async()=>{
- let file=f.files[0]; if(!file) return;
- st.innerText='MESA TURBO LIGANDO... separando e montando faders...';
- let ctx=new (window.AudioContext||window.webkitAudioContext)(); let buf=await ctx.decodeAudioData(await file.arrayBuffer());
- let L=buf.getChannelData(0), R=buf.numberOfChannels>1?buf.getChannelData(1):L, len=buf.length, sr=buf.sampleRate;
- // BPM + FORMULA
+ let file=f.files[0]; if(!file) return; st.innerText='Gerando aula da escola...';
+ let ctx=new (window.AudioContext||window.webkitAudioContext)(); let buf=await ctx.decodeAudioData(await file.arrayBuffer()); let L=buf.getChannelData(0), R=buf.numberOfChannels>1?buf.getChannelData(1):L, len=buf.length, sr=buf.sampleRate;
  let step=Math.floor(sr*0.15), energies=[]; for(let i=0;i<len;i+=step){ let s=0; for(let j=0;j<step&&i+j<len;j++) s+=L[i+j]*L[i+j]; energies.push(s); }
  let peaks=[]; for(let i=1;i<energies.length-1;i++) if(energies[i]>energies[i-1]&&energies[i]>energies[i+1]&&energies[i]>0.02) peaks.push(i);
- let diffs=[]; for(let i=1;i<peaks.length;i++) diffs.push(peaks[i]-peaks[i-1]); diffs.sort((a,b)=>a-b);
- let median=diffs[Math.floor(diffs.length/2)]||25; let bpm=Math.round(60/(median*0.15)); if(bpm<60||bpm>200) bpm=125;
+ let diffs=[]; for(let i=1;i<peaks.length;i++) diffs.push(peaks[i]-peaks[i-1]); diffs.sort((a,b)=>a-b); let median=diffs[Math.floor(diffs.length/2)]||25; let bpm=Math.round(60/(median*0.15)); if(bpm<60||bpm>200) bpm=120;
  let best=0, formula=4, label='4/4'; [{f:3,l:'3/4'},{f:4,l:'4/4'}].forEach(t=>{ let lag=Math.round((60/bpm*t.f)/0.15), sc=0; for(let i=0;i<energies.length-lag;i++) sc+=energies[i]*energies[i+lag]; if(sc>best){best=sc; formula=t.f; label=t.l;} });
- // TOM
  let chroma=new Array(12).fill(0), len2=Math.min(len,sr*15); for(let i=0;i<len2;i+=Math.floor(sr*0.1)) for(let pc=0;pc<12;pc++){ let fr=130.81*Math.pow(2,pc/12), c=0; for(let k=0;k<100;k++){ let idx=i+k*20; if(idx<len) c+=Math.abs(L[idx]*Math.sin(2*Math.PI*fr*(idx/sr))); } chroma[pc]+=c; }
- let mx=0, ki=7; for(let i=0;i<12;i++) if(chroma[i]>mx){mx=chroma[i]; ki=i;} let tom=NOTES[ki]; let prog=MAP[tom]||['C','G','Am','F'];
- let stems=turboSeparate(L,R);
- function makeUrl(d){ let ab=new ArrayBuffer(44+d.length*2), vw=new DataView(ab); let w=(o,s)=>{for(let k=0;k<s.length;k++)vw.setUint8(o+k,s.charCodeAt(k))}; w(0,'RIFF'); vw.setUint32(4,36+d.length*2,true); w(8,'WAVE'); w(12,'fmt '); vw.setUint32(16,16,true); vw.setUint16(20,1,true); vw.setUint16(22,1,true); vw.setUint32(24,sr,true); vw.setUint32(28,sr*2,true); vw.setUint16(32,2,true); vw.setUint16(34,16,true); w(36,'data'); vw.setUint32(40,d.length*2,true); let o=44; for(let k=0;k<d.length;k++){ let s=Math.max(-1,Math.min(1,d[k])); vw.setInt16(o,s<0?s*0x8000:s*0x7FFF,true); o+=2; } return URL.createObjectURL(new Blob([ab],{type:'audio/wav'})); }
+ let mx=0, ki=0; for(let i=0;i<12;i++) if(chroma[i]>mx){mx=chroma[i]; ki=i;} let tom=NOTES[ki]; let prog=MAP[tom]||['C','G','Am','F'];
+ let stems=turboSeparate(L,R); function makeUrl(d){ let ab=new ArrayBuffer(44+d.length*2), vw=new DataView(ab); let w=(o,s)=>{for(let k=0;k<s.length;k++)vw.setUint8(o+k,s.charCodeAt(k))}; w(0,'RIFF'); vw.setUint32(4,36+d.length*2,true); w(8,'WAVE'); w(12,'fmt '); vw.setUint32(16,16,true); vw.setUint16(20,1,true); vw.setUint16(22,1,true); vw.setUint32(24,sr,true); vw.setUint32(28,sr*2,true); vw.setUint16(32,2,true); vw.setUint16(34,16,true); w(36,'data'); vw.setUint32(40,d.length*2,true); let o=44; for(let k=0;k<d.length;k++){ let s=Math.max(-1,Math.min(1,d[k])); vw.setInt16(o,s<0?s*0x8000:s*0x7FFF,true); o+=2; } return URL.createObjectURL(new Blob([ab],{type:'audio/wav'})); }
  let urls={v:makeUrl(stems.v),d:makeUrl(stems.d),b:makeUrl(stems.b),o:makeUrl(stems.o)};
- let compassoSec=(60/bpm)*formula, total=Math.floor(buf.duration/compassoSec);
- // MESA HTML
- document.getElementById('mesa').style.display='block';
- document.getElementById('mesa').innerHTML=`
- <div style="background:#111;padding:12px;border-radius:12px;border:1px solid #333">
- <div style="display:flex;justify-content:space-between;font-size:11px"><span style="background:#ffcc00;color:#000;padding:3px 8px;border-radius:20px;font-weight:900">TOM ${tom}</span><span style="background:${formula==3?'#ff6b6b':'#00ff88'};color:#000;padding:3px 8px;border-radius:20px;font-weight:900">${label} | BPM ${bpm}</span><span style="background:#222;padding:3px 8px;border-radius:20px">${total} compassos</span></div>
- <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px" id="players">
-  ${['v','d','b','o'].map((k,i)=>{
-   let cfg={v:{n:'🎤 VOZ',c:'#00ff88'},d:{n:'🥁 BATERIA',c:'#ff6b6b'},b:{n:'🎸 BAIXO',c:'#6b6bff'},o:{n:'🎹 RESTO',c:'#ffcc00'}}[k];
-   return `<div style="background:#000;padding:10px;border-radius:10px;border-left:4px solid ${cfg.c}"><div style="font-size:11px;font-weight:900;color:${cfg.c}">${cfg.n}</div><audio id="aud_${k}" controls src="${urls[k]}" style="width:100%;margin-top:6px"></audio><input type="range" id="vol_${k}" min="0" max="100" value="80" style="width:100%;margin-top:6px;accent-color:${cfg.c}"><div style="display:flex;gap:4px;margin-top:6px"><button id="mute_${k}" style="flex:1;background:#222;color:#fff;border:none;padding:6px;border-radius:20px;font-size:10px;font-weight:900">MUTE</button><button id="solo_${k}" style="flex:1;background:${cfg.c};color:#000;border:none;padding:6px;border-radius:20px;font-size:10px;font-weight:900">SOLO</button></div></div>`;
-  }).join('')}
- </div>
- <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
-  <button onclick="document.querySelectorAll('audio').forEach(a=>{a.currentTime=document.getElementById('aud_v').currentTime; a.play()})" style="background:#00ff88;color:#000;border:none;padding:10px;border-radius:10px;font-weight:900;font-size:12px">▶️ PLAY TUDO JUNTO</button>
-  <button onclick="document.querySelectorAll('audio').forEach(a=>a.pause())" style="background:#ff6b6b;color:#fff;border:none;padding:10px;border-radius:10px;font-weight:900;font-size:12px">⏸️ PAUSA TUDO</button>
-  <button onclick="document.querySelectorAll('input[type=range]').forEach(r=>r.value=80); document.querySelectorAll('audio').forEach(a=>a.volume=0.8)" style="background:#ffcc00;color:#000;border:none;padding:10px;border-radius:10px;font-weight:900;font-size:12px">🔄 RESET MESA</button>
- </div>
- <div style="margin-top:8px;font-size:10px;color:#666;text-align:center">DICA DE PROF: Muta a voz pra aluno cantar | Muta o baixo pra aluno de baixo tocar | Solo bateria pra ensinar ritmo ${label}</div>
- </div>`;
-
- // CONTROLES
- ['v','d','b','o'].forEach(k=>{
-  let aud=document.getElementById('aud_'+k), vol=document.getElementById('vol_'+k), mute=document.getElementById('mute_'+k), solo=document.getElementById('solo_'+k);
-  vol.oninput=()=>aud.volume=vol.value/100;
-  mute.onclick=()=>{ aud.volume=aud.volume>0?0:vol.value/100; mute.innerText=aud.volume==0?'UNMUTE':'MUTE'; mute.style.background=aud.volume==0?'#ff0033':'#222'; };
-  solo.onclick=()=>{ document.querySelectorAll('audio').forEach(a=>a.volume=0); aud.volume=vol.value/100; document.querySelectorAll('[id^=mute_]').forEach(m=>m.innerText='MUTE'); };
- });
- // SINCRONIA
- let master=document.getElementById('aud_v');
- master.ontimeupdate=()=>{ if(!master.paused) ['d','b','o'].forEach(k=>{ let a=document.getElementById('aud_'+k); if(Math.abs(a.currentTime-master.currentTime)>0.15) a.currentTime=master.currentTime; }); };
- // CIFRA
- let html=''; for(let i=0;i<total&&i<80;i++){ let t=i*compassoSec, nm=prog[i%prog.length]; html+='<div class="c" data-t="'+t+'" style="background:#1a1a1a;border:1px solid #333;border-radius:10px;padding:8px;text-align:center;cursor:pointer" onclick="document.getElementById(\'aud_v\').currentTime='+t+'; document.querySelectorAll(\'audio\').forEach(a=>{a.currentTime='+t+'; a.play()})"><div style="font-size:8px;color:#666">COMP '+(i+1)+'</div><div style="font-size:18px;font-weight:900;color:#ffcc00">'+nm+'</div></div>'; }
- document.getElementById('cifra').style.display='block'; document.getElementById('cifra').innerHTML='<div style="font-size:11px;color:#888">CIFRA NO COMPASSO - CLICA E A MESA PULA JUNTO</div><div style="margin-top:8px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px">'+html+'</div>';
- st.innerText='V88 MESA TURBO PRONTA - '+label+' | TOM '+tom+' | BPM '+bpm+' | 4 CANAIS ATIVOS - LASCA!';
+ let compassoSec=(60/bpm)*formula, total=Math.floor(buf.duration/compassoSec); let measures=[]; for(let i=0;i<total&&i<48;i++) measures.push({chord:prog[i%prog.length], t:i*compassoSec});
+ document.getElementById('mesa').style.display='block'; document.getElementById('mesa').innerHTML='<div style="background:#111;padding:10px;border-radius:12px"><div style="display:flex;gap:6px;font-size:10px"><span style="background:#ffcc00;color:#000;padding:4px 8px;border-radius:20px;font-weight:900">TOM '+tom+'</span><span style="background:#00ff88;color:#000;padding:4px 8px;border-radius:20px;font-weight:900">'+label+' BPM '+bpm+'</span></div><div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px">'+['v','d','b','o'].map(k=>{ let cfg={v:{n:'🎤 VOZ',c:'#00ff88'},d:{n:'🥁 BATERIA',c:'#ff6b6b'},b:{n:'🎸 BAIXO',c:'#6b6bff'},o:{n:'🎹 RESTO',c:'#ffcc00'}}[k]; return '<div style="background:#000;padding:6px;border-radius:8px;border-left:3px solid '+cfg.c+'"><div style="font-size:9px;font-weight:900;color:'+cfg.c+'">'+cfg.n+'</div><audio id="aud_'+k+'" controls src="'+urls[k]+'" style="width:100%"></audio></div>'; }).join('')+'</div></div>';
+ document.getElementById('keys').style.display='block'; document.getElementById('partitura').style.display='block'; document.getElementById('actions').style.display='grid'; document.getElementById('cifra').style.display='block';
+ let cur=-1; function renderAll(idx){ let chord=measures[idx]?.chord||prog[0], notes=CHORD_NOTES[chord]||[chord]; document.getElementById('keys').innerHTML='<div style="font-size:10px;color:#ffcc00;font-weight:900">TECLADO: '+chord+' = '+notes.join(' ')+'</div><div style="margin-top:4px">'+drawKeyboard(notes)+'</div>'; document.getElementById('partitura').innerHTML=makeStaff(measures, idx); document.getElementById('partitura').scrollLeft=Math.max(0, idx*88-120); document.querySelectorAll('.c').forEach((el,i)=>{ el.style.background=i===idx?'#00ff88':'#1a1a1a'; el.style.color=i===idx?'#000':'#fff'; }); }
+ let htmlC=''; for(let i=0;i<measures.length;i++) htmlC+='<div class="c" style="background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:6px;text-align:center;cursor:pointer" onclick="document.getElementById(\'aud_v\').currentTime='+measures[i].t+'; document.querySelectorAll(\'audio\').forEach(a=>{a.currentTime='+measures[i].t+'; a.play()})"><div style="font-size:7px;color:#666">C '+(i+1)+'</div><div style="font-size:16px;font-weight:900;color:#ffcc00">'+measures[i].chord+'</div></div>';
+ document.getElementById('cifra').innerHTML='<div style="font-size:10px;color:#888">CIFRA QUE ANDA - '+total+' compassos</div><div style="margin-top:6px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px">'+htmlC+'</div>'; renderAll(0);
+ let master=document.getElementById('aud_v'); master.ontimeupdate=()=>{ let idx=Math.floor(master.currentTime/compassoSec); if(idx!==cur&&idx>=0&&idx<measures.length){cur=idx; renderAll(idx);} };
+ st.innerText='V96 ESCOLA PRONTA - '+document.getElementById('escola').value+' | TOM '+tom+' | '+label+' | PDF liberado';
+ document.getElementById('btnSave').onclick=()=>{ let data={escola:document.getElementById('escola').value, prof:document.getElementById('prof').value, tom, bpm, formula, total}; localStorage.setItem('aula_'+Date.now(), JSON.stringify(data)); alert('Aula salva! Escola: '+data.escola); };
 };
-</script></body></html>
+</script>
+<style>@media print{ body{background:#fff!important;color:#000!important} #f,#st,#mesa,#keys,#cifra,#actions, h2{display:none!important} #partitura{display:block!important;border:none!important} }</style>
+</body></html>
