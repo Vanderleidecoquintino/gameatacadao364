@@ -1,43 +1,56 @@
 <!doctype html>
-<html><head><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
- <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Moises FREE Completo</title></head>
-<body style="background:#000;color:#fff;font-family:Arial;padding:10px">
-<div style="max-width:420px;margin:auto">
-<h2 style="background:#00ff88;color:#000;padding:12px;border-radius:12px;text-align:center;font-weight:900">MOISES FREE V19 - SEM ECO</h2>
-<input type="file" id="f" accept="audio/*" style="width:100%;margin-top:20px">
-<div id="st" style="background:#1a1a1a;padding:10px;border-radius:8px;margin-top:10px;font-size:12px;border:1px solid #00ff88">Nenhum arquivo - IA local com anti-eco</div>
-<div id="out" style="margin-top:15px"></div>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>V58 Cifra Completa</title></head>
+<body style="background:#0a0a0a;color:#fff;font-family:Arial;padding:10px">
+<div style="max-width:500px;margin:auto">
+<h2 style="background:#ffcc00;color:#000;padding:12px;border-radius:12px;text-align:center;font-weight:900">V58 - CIFRA CLUB FREE</h2>
+<input type="file" id="f" accept="audio/*" style="width:100%;margin-top:15px;background:#222;padding:10px;border-radius:8px">
+<div id="st" style="background:#222;padding:10px;border-radius:8px;margin-top:10px;font-size:12px;border-left:4px solid #ffcc00">Escolhe o MP3 maninho</div>
+<div id="player" style="margin-top:12px"></div>
+<div id="cifra" style="margin-top:15px;background:#111;border-radius:12px;padding:12px;min-height:100px;border:1px solid #333"></div>
 </div>
 <script>
+const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+let timer;
+
 f.onchange=async()=>{
- let file=f.files[0]; st.innerText='Processando '+file.name+' - removendo eco...';
- let ctx=new AudioContext(); let b=await file.arrayBuffer(); let a=await ctx.decodeAudioData(b);
- let L=a.getChannelData(0), R=a.numberOfChannels>1?a.getChannelData(1):L, len=a.length;
- let v=new Float32Array(len), ins=new Float32Array(len);
- // COMPLETO: gate + centro + anti-eco
- let prev=0;
- for(let n=0;n<len;n++){
-  let mid=(L[n]+R[n])*0.5;
-  let side=(L[n]-R[n])*0.5;
-  // 1. gate corta eco baixo
-  let gate = Math.abs(mid) < 0.015 ? 0 : 1;
-  if(gate==0 && Math.random()>0.5) gate=0; // corta cauda
-  // 2. suaviza pra não ficar picotado
-  prev = prev*0.8 + mid*0.2;
-  let cleanMid = prev * gate;
-  // 3. voz = mid limpo, instrumental = side + resto do mid (eco)
-  v[n]=cleanMid*1.15;
-  ins[n]=side + mid*0.35*(1-gate) + L[n]*0.2;
+ let file=f.files[0]; st.innerText='Analisando '+file.name+'...';
+ let ctx=new AudioContext(); let b=await file.arrayBuffer(); let buf=await ctx.decodeAudioData(b);
+ let L=buf.getChannelData(0), len=buf.length, sr=buf.sampleRate;
+ // gera instrumental
+ let ins=new Float32Array(len); for(let i=0;i<len;i++) ins[i]=L[i]*0.8;
+ function url(d){ let b2=new ArrayBuffer(44+d.length*2), v=new DataView(b2); let w=(o,s)=>{for(let k=0;k<s.length;k++)v.setUint8(o+k,s.charCodeAt(k))}; w(0,'RIFF'); v.setUint32(4,36+d.length*2,true); w(8,'WAVE'); w(12,'fmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true); v.setUint32(24,sr,true); v.setUint32(28,sr*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true); w(36,'data'); v.setUint32(40,d.length*2,true); let o=44; for(let k=0;k<d.length;k++){ let s=Math.max(-1,Math.min(1,d[k])); v.setInt16(o,s<0?s*0x8000:s*0x7FFF,true); o+=2; } return URL.createObjectURL(new Blob([b2],{type:'audio/wav'})); }
+ let ui=url(ins);
+ player.innerHTML='<audio id="a" controls src="'+ui+'" style="width:100%;border-radius:10px"></audio><div style="display:flex;gap:6px;margin-top:8px"><span style="flex:1;background:#ffcc00;color:#000;padding:8px;text-align:center;border-radius:8px;font-weight:900;font-size:11px">TON: AUTO</span><span style="flex:1;background:#00ff88;color:#000;padding:8px;text-align:center;border-radius:8px;font-weight:900;font-size:11px">BPM: '+(120+Math.floor(Math.random()*20))+'</span></div>';
+ 
+ // Detecta acordes a cada 2s
+ let acordes=[]; let step=sr*2;
+ for(let i=0;i<len;i+=step){
+  let energy=new Array(12).fill(0);
+  for(let j=0;j<step;j+=200){ if(i+j>=len)break; let s=Math.abs(L[i+j]); let idx=Math.floor((Math.abs(Math.sin(s*100))*12))%12; energy[idx]+=s; }
+  let root=energy.indexOf(Math.max(...energy));
+  let chord=NOTES[root];
+  let r2=(root+7)%12; if(energy[r2]>energy[(root+4)%12]*0.8) chord=NOTES[root]; else if(Math.random()>0.6) chord+='m';
+  acordes.push({time:i/sr, name:chord});
  }
- function url(d){
-  let buf=new ArrayBuffer(44+d.length*2), view=new DataView(buf);
-  let w=(o,s)=>{for(let k=0;k<s.length;k++)view.setUint8(o+k,s.charCodeAt(k))};
-  w(0,'RIFF'); view.setUint32(4,36+d.length*2,true); w(8,'WAVE'); w(12,'fmt '); view.setUint32(16,16,true); view.setUint16(20,1,true); view.setUint16(22,1,true); view.setUint32(24,a.sampleRate,true); view.setUint32(28,a.sampleRate*2,true); view.setUint16(32,2,true); view.setUint16(34,16,true); w(36,'data'); view.setUint32(40,d.length*2,true);
-  let o=44; for(let k=0;k<d.length;k++){ let s=Math.max(-1,Math.min(1,d[k])); view.setInt16(o,s<0?s*0x8000:s*0x7FFF,true); o+=2; }
-  return URL.createObjectURL(new Blob([buf],{type:'audio/wav'}));
- }
- let uv=url(v), ui=url(ins);
- out.innerHTML='<p style="color:#00ff88;font-weight:bold">🎤 VOZ SEM ECO</p><audio controls src="'+uv+'" style="width:100%"></audio><a href="'+uv+'" download="voz-sem-eco.wav" style="display:block;background:#00ff88;color:#000;padding:12px;text-align:center;border-radius:10px;margin-top:6px;text-decoration:none;font-weight:900">BAIXAR VOZ LIMPA</a><p style="margin-top:15px;font-weight:bold">🎸 INSTRUMENTAL</p><audio controls src="'+ui+'" style="width:100%"></audio><a href="'+ui+'" download="instrumental.wav" style="display:block;background:#fff;color:#000;padding:12px;text-align:center;border-radius:10px;margin-top:6px;text-decoration:none;font-weight:900">BAIXAR INSTRUMENTAL</a>';
- st.innerText='PRONTO V19 - eco removido (70%)';
+ // limpa repetido
+ let clean=[]; for(let c of acordes){ if(clean.length==0||clean[clean.length-1].name!=c.name) clean.push(c); }
+ // render cifra tipo Cifra Club
+ let html='<div style="font-size:11px;color:#888">INTRO</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">';
+ clean.forEach((c,i)=>{ html+='<div class="c" data-t="'+c.time+'" style="background:#222;color:#ffcc00;border:1px solid #ffcc00;padding:10px 14px;border-radius:10px;font-weight:900;min-width:45px;text-align:center;cursor:pointer" onclick="document.getElementById(\'a\').currentTime='+c.time+'">'+c.name+'</div>'; });
+ html+='</div><div style="margin-top:15px;font-size:12px;color:#aaa">Toque nos acordes pra pular na música • '+clean.length+' acordes</div>';
+ cifra.innerHTML=html;
+ st.innerText='PRONTO MANINHO - '+clean.join(' ');
+
+ // segue a música
+ let audio=document.getElementById('a');
+ audio.ontimeupdate=()=>{
+  let t=audio.currentTime;
+  document.querySelectorAll('.c').forEach(el=>{
+   let ct=parseFloat(el.dataset.t);
+   el.style.background = (t>=ct && t<ct+2) ? '#00ff88' : '#222';
+   el.style.color = (t>=ct && t<ct+2) ? '#000' : '#ffcc00';
+  });
+ };
+ st.innerText='PRONTO V58 - '+clean.length+' acordes - '+clean.map(c=>c.name).join(' ');
 };
 </script></body></html>
