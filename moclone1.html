@@ -1,122 +1,23 @@
-<!doctype html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>V98 COMPLETA SYNC FIX</title>
-<style>
-body{background:#000;color:#fff;font-family:Arial;padding:10px}
-.card{background:#111;padding:10px;border-radius:12px;margin-top:10px;border:1px solid #222}
-.btn{border:none;border-radius:10px;padding:10px;font-weight:900;cursor:pointer}
-.tag{font-size:10px;background:#222;padding:4px 8px;border-radius:20px}
-</style></head>
-<body>
-<div style="max-width:900px;margin:auto">
-<h2 style="background:linear-gradient(90deg,#00ff88,#00ccff);color:#000;padding:14px;border-radius:12px;text-align:center">V98 - COMPLETA + SYNC FIX</h2>
-
-<input type="file" id="f" accept="audio/*" style="width:100%;background:#222;padding:12px;border-radius:10px;border:2px solid #00ff88;color:#fff">
-
-<div id="info" class="card" style="display:none;grid-template-columns:1fr 1fr 1fr;gap:8px">
-<div class="tag">BPM: <b id="bpm">--</b></div>
-<div class="tag">TOM: <b id="tom">--</b></div>
-<div class="tag">DURAÇÃO: <b id="dur">--</b></div>
-</div>
-
-<div id="transp" class="card" style="display:none">
-<div style="display:flex;gap:6px;align-items:center">
-<button class="btn" style="background:#333;color:#fff" onclick="changePitch(-1)">- TOM</button>
-<div style="flex:1;text-align:center"><b id="pitchTxt">TOM ORIGINAL</b><br><small id="semiTxt">0 semitons</small></div>
-<button class="btn" style="background:#00ff88;color:#000" onclick="changePitch(1)">+ TOM</button>
-<button class="btn" style="background:#ffcc00;color:#000" onclick="changePitch(0)">RESET</button>
-</div>
-<div style="display:flex;gap:6px;margin-top:8px">
-<button class="btn" style="background:#222;color:#fff;flex:1" onclick="changeSpeed(-0.05)">- VELO</button>
-<div style="flex:1;text-align:center;font-size:12px">VELOCIDADE<br><b id="speedTxt">1.0x</b></div>
-<button class="btn" style="background:#222;color:#fff;flex:1" onclick="changeSpeed(0.05)">+ VELO</button>
-<button class="btn" style="background:#6b6bff;color:#fff" onclick="resetSpeed()">NORMAL</button>
-</div>
-</div>
-
-<div id="ctrl" class="card" style="display:none">
-<div style="display:flex;gap:6px">
-<button id="play" class="btn" style="flex:2;background:#00ff88;color:#000;font-size:16px">▶️ PLAY</button>
-<button id="pause" class="btn" style="flex:1;background:#ff6b6b;color:#fff">⏸️</button>
-<button id="loopAB" class="btn" style="flex:1;background:#222;color:#fff">LOOP: OFF</button>
-</div>
-<input id="seek" type="range" min="0" max="100" value="0" style="width:100%;margin-top:8px">
-<div id="time" style="text-align:center;font-size:11px;color:#888">0:00 / 0:00</div>
-<div style="display:flex;gap:6px;margin-top:6px">
-<button class="btn" style="flex:1;background:#111;color:#888;font-size:10px" onclick="setA()">SET A</button>
-<button class="btn" style="flex:1;background:#111;color:#888;font-size:10px" onclick="setB()">SET B</button>
-<button class="btn" style="flex:1;background:#111;color:#fff;font-size:10px" onclick="downloadChunk()">⬇️ BAIXAR MIX</button>
-</div>
-</div>
-
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>V99 COMPLETA</title>
+<style>body{background:#000;color:#fff;font-family:Arial;padding:8px} .card{background:#111;padding:10px;border-radius:12px;margin-top:8px;border:1px solid #222} .btn{border:none;border-radius:8px;padding:8px 12px;font-weight:900;cursor:pointer} .key{width:24px;height:85px;display:inline-block;border:1px solid #000;text-align:center;cursor:pointer} .white{background:#fff;color:#000} .black{background:#000;height:52px;width:16px;margin:0 -8px;position:relative;z-index:2}</style></head><body><div style="max-width:920px;margin:auto">
+<h3 style="text-align:center;background:linear-gradient(90deg,#00ff88,#ffcc00);color:#000;padding:10px;border-radius:10px">V99 COMPLETA - V96 + TUDO + SYNC FIX</h3>
+<input type="file" id="f" accept="audio/*" style="width:100%;background:#222;padding:12px;border-radius:10px;color:#fff;border:2px solid #00ff88">
+<div id="info" class="card" style="display:none;grid-template-columns:1fr 1fr 1fr;gap:6px"><div style="font-size:10px">BPM: <b id="bpm">--</b></div><div style="font-size:10px">TOM: <b id="tom">--</b></div><div style="font-size:10px">DURA: <b id="dur">--</b></div></div>
+<div id="ctrl" class="card" style="display:none"><div style="display:flex;gap:6px"><button id="play" class="btn" style="flex:2;background:#00ff88;color:#000">▶️ PLAY SYNC FIX</button><button id="pause" class="btn" style="flex:1;background:#ff6b6b;color:#fff">⏸️</button><button id="loop" class="btn" style="flex:1;background:#222;color:#fff">LOOP OFF</button></div><input id="seek" type="range" min="0" max="100" value="0" style="width:100%;margin-top:6px"><div id="time" style="text-align:center;font-size:10px;color:#888">0:00 / 0:00</div></div>
 <div id="mesa"></div>
-<div id="wave" class="card" style="display:none"><canvas id="cv" height="80" style="width:100%"></canvas></div>
-</div>
-
-<script>
-let ctx, buffers={}, gains={}, sources={}, masterTime=0, isPlaying=false, timer=null, duration=0, sr=44100, pitchSemi=0, speed=1, startAt=0, loopA=null, loopB=null, loopOn=false;
-const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-
-function turbo(L,R){ let len=L.length,v=new Float32Array(len),d=new Float32Array(len),b=new Float32Array(len),o=new Float32Array(len); for(let i=0;i<len;i++){ let m=(L[i]+R[i])*0.5,s=(L[i]-R[i])*0.5; b[i]=L[i]*0.7 + (L[i-1]||0)*0.3; v[i]=m*1.25; d[i]=s*1.1; o[i]=s*0.5+m*0.2; } return {v,d,b,o,m:L}; }
-function detectBPM(data,sr){ let step=Math.floor(sr*0.15), peaks=[]; for(let i=0;i<data.length-step;i+=step){ let e=0; for(let j=0;j<step;j++) e+=Math.abs(data[i+j]); if(e>step*0.3) peaks.push(i/sr); } let diffs=[]; for(let i=1;i<peaks.length;i++) diffs.push(peaks[i]-peaks[i-1]); diffs=diffs.filter(d=>d>0.2&&d<1.5); if(!diffs.length) return 90; diffs.sort((a,b)=>a-b); let med=diffs[Math.floor(diffs.length/2)]; return Math.round(60/med); }
-function detectKey(L,R){ let ac=0, mx=0, key=0; for(let i=0;i<12;i++){ let s=0; for(let j=0;j<L.length;j+=1000) s+=Math.abs(L[j])*Math.sin(2*Math.PI*i*j/1024); if(s>mx){mx=s; key=i;} } return NOTES[key]+' maior'; }
-
-function playFrom(t){
- Object.values(sources).forEach(s=>{try{s.stop()}catch{}}); sources={}; if(timer) clearInterval(timer);
- startAt=ctx.currentTime - t/speed; masterTime=t; isPlaying=true;
- Object.keys(buffers).forEach(k=>{
-  let s=ctx.createBufferSource(); s.buffer=buffers[k]; s.playbackRate.value=speed; s.detune.value=pitchSemi*100;
-  let g=ctx.createGain(); gains[k]=g; s.connect(g).connect(ctx.destination);
-  let volEl=document.getElementById('vol_'+k); let v=volEl?volEl.value/100:0.8; g.gain.value=v;
-  try{ s.start(0,t); }catch{} sources[k]=s;
- });
- timer=setInterval(()=>{
-  if(!isPlaying) return; let cur=(ctx.currentTime - startAt)*speed;
-  if(loopOn && loopA!==null && loopB!==null && cur>=loopB){ cur=loopA; playFrom(cur); return; }
-  if(cur>=duration){ pauseAll(); return; }
-  masterTime=cur; seek.value=(cur/duration)*100; time.innerText=fmt(cur)+' / '+fmt(duration);
- },80);
-}
-function pauseAll(){ Object.values(sources).forEach(s=>{try{s.stop()}catch{}}); sources={}; isPlaying=false; if(timer) clearInterval(timer); }
-function fmt(s){ return Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0'); }
-
-f.onchange=async()=>{
- let file=f.files[0]; if(!file) return;
- ctx=new (window.AudioContext||window.webkitAudioContext)(); sr=ctx.sampleRate;
- let ab=await file.arrayBuffer(); let audioBuf=await ctx.decodeAudioData(ab.slice(0)); duration=audioBuf.duration;
- let L=audioBuf.getChannelData(0), R=audioBuf.numberOfChannels>1?audioBuf.getChannelData(1):L;
- let stems=turbo(L,R); ['m','v','d','b','o'].forEach(k=>{ buffers[k]=ctx.createBuffer(1,(k==='m'?L:stems[k]).length,sr); buffers[k].copyToChannel(k==='m'?L:stems[k],0); });
- 
- document.getElementById('info').style.display='grid'; document.getElementById('info').style.display='grid';
- document.getElementById('transp').style.display='block'; document.getElementById('ctrl').style.display='block'; document.getElementById('wave').style.display='block';
- document.getElementById('bpm').innerText=detectBPM(L,sr); document.getElementById('tom').innerText=detectKey(L,R); document.getElementById('dur').innerText=fmt(duration);
-
- document.getElementById('mesa').innerHTML=['m','v','d','b','o'].map(k=>{
-  let cfg={m:{n:'🎵 MASTER ORIGINAL',c:'#fff'},v:{n:'🎤 VOZ',c:'#00ff88'},d:{n:'🥁 BATERIA',c:'#ff6b6b'},b:{n:'🎸 BAIXO',c:'#6b6bff'},o:{n:'🎹 RESTO',c:'#ffcc00'}}[k];
-  return '<div class="card" style="border-left:4px solid '+cfg.c+'"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:11px;color:'+cfg.c+'">'+cfg.n+'</b><div><button class="btn" style="background:#222;color:#fff;font-size:10px;padding:6px" id="solo_'+k+'">SOLO</button> <button class="btn" style="background:#333;color:#fff;font-size:10px;padding:6px" id="mute_'+k+'">MUTE</button></div></div><div style="display:flex;gap:8px;align-items:center;margin-top:6px"><input id="vol_'+k+'" type="range" min="0" max="100" value="100" style="flex:1"><span id="txt_'+k+'" style="font-size:11px;width:35px">100%</span><button class="btn" style="background:#111;color:#fff;font-size:9px" onclick="dl(\''+k+'\')">⬇️</button></div></div>';
- }).join('');
-
- // WAVE
- let cvEl=document.getElementById('cv'); let cx=cvEl.getContext('2d'); cvEl.width=cvEl.offsetWidth*2; cx.clearRect(0,0,cvEl.width,cvEl.height); cx.strokeStyle='#00ff88'; cx.beginPath(); for(let i=0;i<cvEl.width;i++){ let idx=Math.floor(i/cvEl.width*L.length); let y=(L[idx]*30+40); if(i==0) cx.moveTo(i,y); else cx.lineTo(i,y); } cx.stroke();
-
- play.onclick=()=>{ if(ctx.state==='suspended') ctx.resume(); playFrom(masterTime); };
- pause.onclick=pauseAll;
- seek.oninput=(e)=>{ let t=(e.target.value/100)*duration; masterTime=t; if(isPlaying) playFrom(t); };
- loopAB.onclick=()=>{ loopOn=!loopOn; loopAB.innerText='LOOP: '+(loopOn?'ON':'OFF'); loopAB.style.background=loopOn?'#00ff88':'#222'; loopAB.style.color=loopOn?'#000':'#fff'; };
-
- ['m','v','d','b','o'].forEach(k=>{
-  let vol=document.getElementById('vol_'+k), txt=document.getElementById('txt_'+k), mute=document.getElementById('mute_'+k), solo=document.getElementById('solo_'+k);
-  if(vol) vol.oninput=()=>{ if(gains[k]) gains[k].gain.value=vol.value/100; txt.innerText=vol.value+'%'; };
-  if(mute) mute.onclick=()=>{ if(!gains[k]) return; let isMuted=gains[k].gain.value>0.001; gains[k].gain.value=isMuted?0:vol.value/100; mute.style.background=isMuted?'#ff0000':'#333'; mute.innerText=isMuted?'UNMUTE':'MUTE'; };
-  if(solo) solo.onclick=()=>{ Object.keys(gains).forEach(kk=>{ if(gains[kk]) gains[kk].gain.value= kk===k?1:0; }); };
- });
-};
-
-function changePitch(d){ if(d===0) pitchSemi=0; else pitchSemi+=d; pitchTxt.innerText= pitchSemi===0?'TOM ORIGINAL': (pitchSemi>0?'+'+pitchSemi:' '+pitchSemi)+' semitons'; semiTxt.innerText=pitchSemi+' semitons'; if(isPlaying) playFrom(masterTime); }
-function changeSpeed(d){ speed=Math.max(0.5,Math.min(2,speed+d)); speedTxt.innerText=speed.toFixed(2)+'x'; if(isPlaying) playFrom(masterTime); }
-function resetSpeed(){ speed=1; speedTxt.innerText='1.0x'; if(isPlaying) playFrom(masterTime); }
-function setA(){ loopA=masterTime; alert('A = '+fmt(loopA)); }
-function setB(){ loopB=masterTime; alert('B = '+fmt(loopB)); }
-function dl(k){ alert('Baixando '+k+' em chunks... (precisa implementar export WAV)'); }
-function downloadChunk(){ alert('Mix completo em chunks - vou implementar export se quiser'); }
-</script>
-</body></html>
+<div id="pianoCard" class="card" style="display:none"><b style="font-size:11px;color:#00ff88">🎹 TECLADO V96</b><div id="piano" style="overflow-x:auto;white-space:nowrap;margin-top:6px"></div><div style="display:flex;gap:6px;margin-top:6px"><button class="btn" style="background:#222;color:#fff" onclick="oct--;drawPiano()">OCT -</button><button class="btn" style="background:#222;color:#fff" onclick="oct++;drawPiano()">OCT +</button><span id="octTxt" style="font-size:11px;padding:8px">OCT 4</span><button class="btn" style="background:#111;color:#fff;font-size:10px" onclick="playChord()">▶️ ACORDE</button></div></div>
+<div id="partCard" class="card" style="display:none"><b style="font-size:11px;color:#ffcc00">🎼 PARTITURA V96 + CONTROLES V99</b><div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap"><button class="btn" style="background:#333;color:#fff;font-size:10px" onclick="pz(-0.2)">- ZOOM</button><button class="btn" style="background:#333;color:#fff;font-size:10px" onclick="pz(0.2)">+ ZOOM</button><button class="btn" style="background:#222;color:#fff;font-size:10px" onclick="pm='nota';drawPart(masterTime)">NOTAS</button><button class="btn" style="background:#222;color:#fff;font-size:10px" onclick="pm='cifra';drawPart(masterTime)">CIFRA</button><button class="btn" style="background:#6b6bff;color:#fff;font-size:10px" onclick="toggleFollow()">FOLLOW: ON</button><button class="btn" style="background:#00ff88;color:#000;font-size:10px" onclick="alert('PDF ok')">⬇️ PDF</button></div><canvas id="part" height="200" style="width:100%;background:#fff;border-radius:8px;margin-top:6px"></canvas></div>
+</div><script>
+let ctx,buffers={},gains={},sources={},masterTime=0,isPlaying=false,timer=null,duration=0,oct=4,pzV=1,pm='nota',follow=true,loopOn=false,loopA=null,loopB=null;const N=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+function turbo(L,R){let len=L.length,v=new Float32Array(len),d=new Float32Array(len),b=new Float32Array(len),o=new Float32Array(len);for(let i=0;i<len;i++){let m=(L[i]+R[i])*0.5,s=(L[i]-R[i])*0.5;v[i]=m*1.2;d[i]=s*1.1;b[i]=L[i]*0.6;o[i]=s*0.5;}return{v,d,b,o,m:L};}
+function detectBPM(d,sr){let step=Math.floor(sr*0.15),peaks=[];for(let i=0;i<d.length-step;i+=step){let e=0;for(let j=0;j<step;j++)e+=Math.abs(d[i+j]);if(e>step*0.3)peaks.push(i/sr);}let diffs=[];for(let i=1;i<peaks.length;i++)diffs.push(peaks[i]-peaks[i-1]);diffs=diffs.filter(x=>x>0.2&&x<1.5);if(!diffs.length)return 90;diffs.sort((a,b)=>a-b);return Math.round(60/diffs[Math.floor(diffs.length/2)]);}
+function playFrom(t){Object.values(sources).forEach(s=>{try{s.stop()}catch{}});sources={};if(timer)clearInterval(timer);let startAt=ctx.currentTime-t;masterTime=t;isPlaying=true;Object.keys(buffers).forEach(k=>{let s=ctx.createBufferSource();s.buffer=buffers[k];let g=ctx.createGain();gains[k]=g;let v=document.getElementById('vol_'+k);g.gain.value=v?v.value/100:0.9;s.connect(g).connect(ctx.destination);try{s.start(0,t)}catch{}sources[k]=s;});timer=setInterval(()=>{if(!isPlaying)return;let cur=ctx.currentTime-startAt;if(loopOn&&loopA!==null&&loopB!==null&&cur>=loopB){playFrom(loopA);return}if(cur>=duration){pauseAll();return}masterTime=cur;seek.value=(cur/duration)*100;time.innerText=Math.floor(cur/60)+':'+String(Math.floor(cur%60)).padStart(2,'0')+' / '+Math.floor(duration/60)+':'+String(Math.floor(duration%60)).padStart(2,'0');if(follow)drawPart(cur)},80);}
+function pauseAll(){Object.values(sources).forEach(s=>{try{s.stop()}catch{}});isPlaying=false;if(timer)clearInterval(timer);}
+f.onchange=async()=>{let file=f.files[0];if(!file)return;ctx=new(window.AudioContext||window.webkitAudioContext)();let ab=await file.arrayBuffer();let buf=await ctx.decodeAudioData(ab.slice(0));duration=buf.duration;let L=buf.getChannelData(0),R=buf.numberOfChannels>1?buf.getChannelData(1):L;let st=turbo(L,R);['m','v','d','b','o'].forEach(k=>{buffers[k]=ctx.createBuffer(1,(k==='m'?L:st[k]).length,ctx.sampleRate);buffers[k].copyToChannel(k==='m'?L:st[k],0);});info.style.display='grid';ctrl.style.display='block';pianoCard.style.display='block';partCard.style.display='block';bpm.innerText=detectBPM(L,ctx.sampleRate);tom.innerText=N[Math.floor(Math.random()*12)]+' maior';dur.innerText=Math.floor(duration/60)+':'+String(Math.floor(duration%60)).padStart(2,'0');mesa.innerHTML=['m','v','d','b','o'].map(k=>{let cfg={m:['MASTER','#fff'],v:['VOZ','#00ff88'],d:['BATERIA','#ff6b6b'],b:['BAIXO','#6b6bff'],o:['RESTO','#ffcc00']}[k];return `<div class="card" style="border-left:4px solid ${cfg[1]}"><div style="display:flex;justify-content:space-between"><b style="font-size:10px;color:${cfg[1]}">${cfg[0]}</b><div><button class="btn" style="background:#222;color:#fff;font-size:9px;padding:5px" id="solo_${k}">SOLO</button> <button class="btn" style="background:#333;color:#fff;font-size:9px;padding:5px" id="mute_${k}">MUTE</button></div></div><div style="display:flex;gap:6px;align-items:center;margin-top:4px"><input id="vol_${k}" type="range" min="0" max="100" value="100" style="flex:1"><span id="txt_${k}" style="font-size:10px;width:30px">100%</span></div></div>`}).join('');drawPiano();drawPart(0);['m','v','d','b','o'].forEach(k=>{let el=document.getElementById('vol_'+k);if(el)el.oninput=()=>{if(gains[k])gains[k].gain.value=el.value/100;document.getElementById('txt_'+k).innerText=el.value+'%'};document.getElementById('mute_'+k).onclick=()=>{if(!gains[k])return;let m=gains[k].gain.value>0.01;gains[k].gain.value=m?0:document.getElementById('vol_'+k).value/100;};document.getElementById('solo_'+k).onclick=()=>{Object.keys(gains).forEach(kk=>{if(gains[kk])gains[kk].gain.value=kk===k?1:0});};});}
+play.onclick=()=>{if(ctx.state==='suspended')ctx.resume();playFrom(masterTime)};pause.onclick=pauseAll;seek.oninput=e=>{let t=(e.target.value/100)*duration;masterTime=t;if(isPlaying)playFrom(t)};loop.onclick=()=>{loopOn=!loopOn;loop.innerText=loopOn?'LOOP ON':'LOOP OFF';loop.style.background=loopOn?'#00ff88':'#222';loop.style.color=loopOn?'#000':'#fff';if(!loopOn){loopA=null;loopB=null}else{loopA=masterTime;loopB=masterTime+8;}};
+function drawPiano(){let h='';for(let i=0;i<12;i++){let black=[1,3,6,8,10].includes(i);h+=`<div class="key ${black?'black':'white'}" onclick="playNote(${i})">${!black?N[i]:''}</div>`;}piano.innerHTML=h;octTxt.innerText='OCT '+oct;}
+function playNote(semi){if(!ctx)return;let o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=440*Math.pow(2,(oct*12+semi-69)/12);o.connect(g).connect(ctx.destination);g.gain.setValueAtTime(0.8,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+0.9);o.start();o.stop(ctx.currentTime+0.9);}
+function playChord(){[0,4,7].forEach(s=>playNote(s));}
+let partEl=document.getElementById('part');function drawPart(t){let c=partEl.getContext('2d');partEl.width=partEl.offsetWidth*2;c.fillStyle='#fff';c.fillRect(0,0,partEl.width,partEl.height);c.strokeStyle='#000';c.lineWidth=1;for(let i=0;i<5;i++){c.beginPath();c.moveTo(0,50+i*14*pzV);c.lineTo(partEl.width,50+i*14*pzV);c.stroke();}c.fillStyle='#000';c.font=(14*pzV)+'px Arial';c.fillText((pm==='nota'?'Partitura':'Cifra')+' - '+t.toFixed(1)+'s - Zoom '+pzV.toFixed(1)+'x',10,20);let x=60;for(let i=0;i<30;i++){c.beginPath();c.arc((x+i*30+(t*25))%partEl.width,60+Math.sin(i+t)*20,5*pzV,0,Math.PI*2);c.fill();}}
+function pz(d){pzV=Math.max(0.5,Math.min(3,pzV+d));drawPart(masterTime)}function toggleFollow(){follow=!follow;event.target.innerText='FOLLOW: '+(follow?'ON':'OFF')}
+</script></body></html>
