@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mix Mesa - Multitrack</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,system-ui}
+  body{background:#0f0f0f;color:#fff;min-height:100vh;padding:12px}
+  h1{font-size:18px;text-align:center;margin:12px 0;letter-spacing:1px}
+  .transport{display:flex;gap:8px;justify-content:center;margin:10px 0;flex-wrap:wrap}
+  button{border:0;border-radius:8px;padding:10px 16px;font-weight:700;cursor:pointer}
+  .play{background:#1DB954;color:#000}
+  .stop{background:#333;color:#fff}
+  .rec{background:#ff2a2a;color:#fff}
+  .mesa{display:flex;gap:10px;overflow-x:auto;padding:10px 2px;scroll-snap-type:x mandatory}
+  .canal{min-width:82px;width:82px;background:#1a1a1a;border-radius:14px;padding:10px 6px;display:flex;flex-direction:column;align-items:center;gap:8px;scroll-snap-align:start;border:1px solid #2a2a2a}
+  .canal.solo{border-color:#1DB954}
+  .canal.muted{opacity:0.5}
+  .canal-nome{font-size:11px;font-weight:800;text-transform:uppercase;text-align:center;white-space:nowrap}
+  .led{width:8px;height:40px;background:#222;border-radius:4px;overflow:hidden;display:flex;flex-direction:column-reverse}
+  .led-fill{height:0%;background:linear-gradient(to top,#1DB954,#f5ff00,#ff2a2a);transition:height 0.08s}
+  input[type=range]{writing-mode:bt-lr;-webkit-appearance:slider-vertical;width:8px;height:110px}
+  .fader{accent-color:#1DB954}
+  .pan{width:60px;height:6px;writing-mode:horizontal-tb;-webkit-appearance:auto}
+  .btns{display:flex;gap:4px}
+  .btn-sm{padding:4px 6px;font-size:10px;border-radius:6px;background:#2a2a2a;color:#aaa}
+  .btn-sm.active{background:#1DB954;color:#000}
+  .btn-sm.mute.active{background:#ff2a2a;color:#fff}
+  .load{margin:12px auto;display:block;background:#2a2a2a;color:#fff;border:1px dashed #555;padding:12px;border-radius:10px;width:100%;max-width:400px;text-align:center}
+  .hint{font-size:12px;color:#888;text-align:center;margin-top:8px}
+</style>
+</head>
+<body>
+<h1>🎛️ MIX MESA - 6 CANAIS</h1>
+<div class="transport">
+  <button class="play" id="playBtn">▶ PLAY</button>
+  <button class="stop" id="stopBtn">■ STOP</button>
+  <button class="rec" id="recBtn">● REC MIX</button>
+</div>
+<label class="load">
+    + Carregar stems (vocals.mp3, bass.mp3, guitar.mp3, piano.mp3, drums.mp3, other.mp3)
+  <input type="file" id="fileInput" multiple accept="audio/*" style="display:none">
+</label>
+<div id="mesa" class="mesa"></div>
+<p class="hint">Carregue os 6 arquivos do htdemucs_6s. Cada um vira um canal. Use M / S / volume / pan. REC grava o mix final.</p>
+<script>
+const CANAIS=[{id:'vocals',nome:'VOZ',color:'#1DB954'},{id:'drums',nome:'BATERIA',color:'#ff8a00'},{id:'bass',nome:'BAIXO',color:'#00d0ff'},{id:'guitar',nome:'GUITARRA',color:'#ff2a2a'},{id:'piano',nome:'TECLADO',color:'#a970ff'},{id:'other',nome:'OUTRO',color:'#888'}];
+let audioCtx,masterGain,channels={},isPlaying=false,buffers={};
+function initAudio(){if(!audioCtx){audioCtx=new(window.AudioContext||window.webkitAudioContext)();masterGain=audioCtx.createGain();masterGain.connect(audioCtx.destination);}}
+function createMesa(){const mesa=document.getElementById('mesa');mesa.innerHTML='';CANAIS.forEach(ch=>{const el=document.createElement('div');el.className='canal';el.id='ch-'+ch.id;el.innerHTML=`<div class="canal-nome" style="color:${ch.color}">${ch.nome}</div><div class="led"><div class="led-fill" id="led-${ch.id}"></div></div><input type="range" min="0" max="1.5" step="0.01" value="1" class="fader" data-ch="${ch.id}"><input type="range" min="-1" max="1" step="0.1" value="0" class="pan" data-ch="${ch.id}"><div class="btns"><button class="btn-sm mute" data-ch="${ch.id}">M</button><button class="btn-sm solo" data-ch="${ch.id}">S</button></div>`;mesa.appendChild(el);channels[ch.id]={gain:1,pan:0,muted:false,solo:false,gainNode:null,panNode:null,source:null};});
+document.querySelectorAll('.fader').forEach(s=>s.addEventListener('input',e=>{const id=e.target.dataset.ch;channels[id].gain=parseFloat(e.target.value);if(channels[id].gainNode)channels[id].gainNode.gain.value=channels[id].muted?0:channels[id].gain;}));
+document.querySelectorAll('.pan').forEach(s=>s.addEventListener('input',e=>{const id=e.target.dataset.ch;channels[id].pan=parseFloat(e.target.value);if(channels[id].panNode)channels[id].panNode.pan.value=channels[id].pan;}));
+document.querySelectorAll('.btn-sm.mute').forEach(b=>b.addEventListener('click',e=>{const id=e.target.dataset.ch;channels[id].muted=!channels[id].muted;e.target.classList.toggle('active',channels[id].muted);document.getElementById('ch-'+id).classList.toggle('muted',channels[id].muted);updateSoloMute();}));
+document.querySelectorAll('.btn-sm.solo').forEach(b=>b.addEventListener('click',e=>{const id=e.target.dataset.ch;channels[id].solo=!channels[id].solo;e.target.classList.toggle('active',channels[id].solo);document.getElementById('ch-'+id).classList.toggle('solo',channels[id].solo);updateSoloMute();}));}
+function updateSoloMute(){const anySolo=Object.values(channels).some(c=>c.solo);for(let id in channels){const ch=channels[id];let shouldMute=ch.muted||(anySolo&&!ch.solo);if(ch.gainNode)ch.gainNode.gain.value=shouldMute?0:ch.gain;}}
+async function loadFiles(files){initAudio();for(let file of files){const name=file.name.toLowerCase();let key=CANAIS.find(c=>name.includes(c.id))?.id||'other';const arrayBuffer=await file.arrayBuffer();const audioBuffer=await audioCtx.decodeAudioData(arrayBuffer);buffers[key]=audioBuffer;document.getElementById('ch-'+key).style.borderColor=CANAIS.find(c=>c.id===key).color;}alert('Stems carregados! Aperta PLAY');}
+function playAll(){initAudio();if(isPlaying)stopAll();isPlaying=true;for(let id in buffers){const ch=channels[id];const src=audioCtx.createBufferSource();src.buffer=buffers[id];const pan=audioCtx.createStereoPanner();pan.pan.value=ch.pan;const gain=audioCtx.createGain();gain.gain.value=ch.muted?0:ch.gain;src.connect(gain);gain.connect(pan);pan.connect(masterGain);ch.source=src;ch.gainNode=gain;ch.panNode=pan;src.start();}updateSoloMute();}
+function stopAll(){isPlaying=false;for(let id in channels){if(channels[id].source){try{channels[id].source.stop()}catch{}}}}
+document.getElementById('playBtn').addEventListener('click',playAll);
+document.getElementById('stopBtn').addEventListener('click',stopAll);
+document.getElementById('fileInput').addEventListener('change',e=>loadFiles(e.target.files));
+createMesa();
+</script>
+</body>
+</html>
