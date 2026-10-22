@@ -63,4 +63,19 @@ window.clearMesa=()=>{localStorage.clear(); location.reload();}
 let allSongs=[],queue=[],currentShow=null;
 const DB_NAME='ShowDB100'; const STORE='songs';
 function openDB(){return new Promise(res=>{const r=indexedDB.open(DB_NAME,1); r.onupgradeneeded=e=>e.target.result.createObjectStore(STORE,{keyPath:'id',autoIncrement:true}); r.onsuccess=e=>res(e.target.result);});}
-async function loadFromDB(){const db=await openDB(); const
+async function loadFromDB(){const db=await openDB(); const tx=db.transaction(STORE,'readonly'); const req=tx.objectStore(STORE).getAll(); req.onsuccess=()=>{allSongs=req.result.map(o=>({name:o.name,file:new File([o.blob],o.name)})); renderShow(); const q=JSON.parse(localStorage.getItem('queue_names')||'[]'); queue=allSongs.filter(s=>q.includes(s.name)); updateQueue(); if(allSongs.length) document.getElementById('saveStatus').innerText=`💾 ${allSongs.length} músicas restauradas!`;}}
+async function saveToDB(file){const db=await openDB(); const tx=db.transaction(STORE,'readwrite'); tx.objectStore(STORE).add({name:file.name,blob:file});}
+function renderShow(filter=''){const list=document.getElementById('showList');list.innerHTML='';allSongs.filter(s=>s.name.toLowerCase().includes(filter.toLowerCase())).forEach(s=>{const d=document.createElement('div');d.className='song';d.innerHTML=`<b style="font-size:12px">${s.name}</b><button onclick="addQueueByName('${s.name.replace(/'/g,"\\'")}')" style="background:#2a2a2a;color:#fff;padding:6px 10px;font-size:11px;border-radius:6px">+ FILA</button>`;list.appendChild(d);});}
+window.addQueueByName=name=>{const f=allSongs.find(s=>s.name===name); if(f){queue.push(f); saveQueue(); updateQueue();}};
+function saveQueue(){localStorage.setItem('queue_names',JSON.stringify(queue.map(s=>s.name)));}
+function updateQueue(){document.getElementById('queueCount').innerText=queue.length;document.getElementById('queueList').innerText=queue.map((s,i)=> (i+1)+'. '+s.name).join(' | ')||'Vazia';}
+document.getElementById('fileShow').onchange=async e=>{for(let f of e.target.files){await saveToDB(f); allSongs.push({name:f.name,file:f});} renderShow(); saveQueue();};
+document.getElementById('search').oninput=e=>renderShow(e.target.value);
+document.getElementById('playShow').onclick=()=>{if(!queue.length)return alert('Fila vazia'); getCtx(); playNext();};
+async function playNext(){if(!queue.length)return; const song=queue.shift(); saveQueue(); updateQueue(); const ab=await song.file.arrayBuffer(); const buf=await ctx.decodeAudioData(ab); if(currentShow) try{currentShow.stop()}catch{} const src=ctx.createBufferSource();src.buffer=buf;src.connect(master);src.start();currentShow=src;document.getElementById('queueList').innerText='▶ Tocando: '+song.name; src.onended=()=>{if(queue.length)playNext();};}
+document.getElementById('nextShow').onclick=()=>playNext();
+window.clearShow=async()=>{const db=await openDB(); db.transaction(STORE,'readwrite').objectStore(STORE).clear(); localStorage.removeItem('queue_names'); allSongs=[]; queue=[]; renderShow(); updateQueue(); alert('Banco limpo');}
+loadFromDB();
+</script>
+</body>
+</html>
