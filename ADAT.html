@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ADAT PLAYER • DIGITAL</title>
+<style>
+  :root{--bg:#0f0f10;--panel:#1a1a1d;--orange:#ff8c1a;--red:#e53935;--green:#4caf50;--yellow:#ffeb3b}
+  *{box-sizing:border-box;font-family:system-ui,Segoe UI,Roboto}
+  body{margin:0;background:#000;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px}
+  .app{width:100%;max-width:820px;background:var(--panel);border-radius:18px;padding:22px 28px;box-shadow:0 20px 60px rgba(0,0,0,.8);border:1px solid #2a2a2e}
+  .top{display:flex;justify-content:space-between;align-items:center;color:#9a9aa0;font-size:12px;letter-spacing:1px}
+  .time{font-family:monospace;font-size:clamp(48px,10vw,86px);color:var(--orange);text-align:center;letter-spacing:6px;font-weight:900;text-shadow:0 0 20px rgba(255,140,26,.6);margin:10px 0}
+  .meters{display:flex;gap:18px;margin:12px 0}
+  .meter{flex:1;display:flex;gap:4px}
+  .meter span{height:18px;flex:1;border-radius:2px;background:#222}
+  .meter span.on.g{background:var(--green);box-shadow:0 0 8px var(--green)}
+  .meter span.on.y{background:var(--yellow);box-shadow:0 0 8px var(--yellow)}
+  .meter span.on.r{background:var(--red);box-shadow:0 0 8px var(--red)}
+  .wave{height:90px;background:#111;border-radius:8px;margin:18px 0;position:relative;overflow:hidden;border:1px solid #222}
+  canvas{width:100%;height:100%}
+  .controls{display:flex;gap:16px;justify-content:center;margin-top:14px}
+  button{border:0;border-radius:10px;padding:14px 26px;font-weight:800;letter-spacing:.5px;cursor:pointer;font-size:15px;transition:.15s}
+  button:active{transform:scale(.97)}
+  .rec{background:var(--red);color:white}
+  .play{background:#2e343b;color:white;min-width:190px}
+  .eject{background:var(--red);color:white}
+  .info{margin-top:18px;display:flex;justify-content:space-between;color:#8a8a90;font-size:11px}
+  input[type=file]{display:none}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top"><b style="color:white;font-size:18px">ADAT PLAYER</b><span>8-TRACK DIGITAL • 48kHz • v2.1 • 192k READY</span></div>
+  <div id="time" class="time">00:00:00</div>
+  <div style="text-align:center;color:#888;font-size:12px;margin-top:-8px" id="status">TIME / STOPPED - CLICK EJECT TO LOAD</div>
+  <div class="meters">
+    <div style="color:#888">L</div><div id="meterL" class="meter"></div>
+    <div id="meterR" class="meter"></div><div style="color:#888">R</div>
+  </div>
+  <div class="wave"><canvas id="wave"></canvas></div>
+  <div class="controls">
+    <button class="rec" onclick="rec()">● REC</button>
+    <button class="play" id="playBtn" onclick="toggle()">▶ II PLAY / PAUSE</button>
+    <button class="eject" onclick="eject()">⏏ EJECT</button>
+  </div>
+  <div class="info">
+    <span id="track">TRACK: -- • NO TAPE</span>
+    <span>INPUT: ADAT | SAMPLE: 192kHz / 32bit float</span>
+    <span id="dur">STATUS: STOPPED</span>
+  </div>
+</div>
+<audio id="audio" crossorigin="anonymous"></audio>
+<input type="file" id="file" accept="audio/*">
+<script>
+const audio=document.getElementById('audio'), timeEl=document.getElementById('time'), statusEl=document.getElementById('status'), trackEl=document.getElementById('track'), durEl=document.getElementById('dur'), fileIn=document.getElementById('file'), playBtn=document.getElementById('playBtn');
+const mL=document.getElementById('meterL'), mR=document.getElementById('meterR');
+for(let i=0;i<16;i++){mL.innerHTML+=`<span></span>`; mR.innerHTML+=`<span></span>`}
+const spansL=[...mL.children], spansR=[...mR.children];
+const canvas=document.getElementById('wave'), ctx=canvas.getContext('2d');
+let analyser, dataArray, raf, ctxAudio;
+function fmt(s){let m=Math.floor(s/60),sc=Math.floor(s%60),f=Math.floor((s%1)*100);return `${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}:${String(f).padStart(2,'0')}`}
+function loop(){raf=requestAnimationFrame(loop); if(!audio.src) return; timeEl.textContent=fmt(audio.currentTime||0); durEl.textContent=`${fmt(audio.currentTime||0)} / ${fmt(audio.duration||0)}`; if(analyser){analyser.getByteFrequencyData(dataArray); let avgL=0,avgR=0; for(let i=0;i<8;i++) avgL+=dataArray[i]; for(let i=8;i<16;i++) avgR+=dataArray[i]; avgL/=8; avgR/=8; let lvlL=Math.floor(avgL/16), lvlR=Math.floor(avgR/16); spansL.forEach((sp,i)=>{sp.className=i<lvlL?(i<5?'on g':i<10?'on y':'on r'):''}); spansR.forEach((sp,i)=>{sp.className=i<lvlR?(i<5?'on g':i<10?'on y':'on r'):''}); // wave
+ctx.clearRect(0,0,canvas.width,canvas.height); ctx.beginPath(); ctx.strokeStyle='#ff8c1a'; ctx.lineWidth=2; let slice=canvas.width/dataArray.length; for(let i=0;i<dataArray.length;i++){let v=dataArray[i]/128; let y=v*canvas.height/2; let x=i*slice; if(i==0) ctx.moveTo(x,y); else ctx.lineTo(x,y)} ctx.stroke();}}
+function ensureCtx(){if(!ctxAudio){ctxAudio=new (window.AudioContext||window.webkitAudioContext)(); analyser=ctxAudio.createAnalyser(); analyser.fftSize=32; dataArray=new Uint8Array(analyser.frequencyBinCount); const src=ctxAudio.createMediaElementSource(audio); src.connect(analyser); analyser.connect(ctxAudio.destination); canvas.width=canvas.clientWidth*2; canvas.height=canvas.clientHeight*2; loop();}}
+function toggle(){ensureCtx(); if(!audio.src){eject();return} if(audio.paused){audio.play(); statusEl.textContent='TIME / RUNNING'; playBtn.textContent='⏸ PLAY / PAUSE'} else{audio.pause(); statusEl.textContent='TIME / PAUSED';}}
+function eject(){fileIn.click()}
+fileIn.onchange=e=>{const f=e.target.files[0]; if(!f)return; audio.src=URL.createObjectURL(f); trackEl.textContent=`TRACK: ${f.name}`; statusEl.textContent='TIME / READY'; ensureCtx(); audio.play().then(()=>{playBtn.textContent='⏸ PLAY / PAUSE'; statusEl.textContent='TIME / RUNNING'}); }
+function rec(){alert('REC - Modo NASA 192kHz pronto! Esse aqui grava em 32bit float, igual fita de 2 polegadas alinhada!')}
+audio.onended=()=>{statusEl.textContent='TIME / STOPPED'; playBtn.textContent='▶ II PLAY / PAUSE'}
+loop();
+</script>
+</body>
+</html>
