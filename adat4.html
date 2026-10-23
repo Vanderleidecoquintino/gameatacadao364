@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ADAT PLAYER - VU Alinhado</title>
+<style>
+body{margin:0;background:#000;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px;font-family:system-ui}
+.app{width:100%;max-width:860px;background:#1a1a1d;border-radius:20px;padding:24px;border:1px solid #2a2a2e}
+.time{font-family:monospace;font-size:64px;color:#ff8c1a;text-align:center;text-shadow:0 0 18px #ff8c1a;letter-spacing:4px}
+.vus{display:flex;gap:24px;justify-content:center;margin:16px 0}
+.vu{width:340px;height:220px;background:radial-gradient(circle at 50% 80%, #ffe2b8 0%, #ffb56a 55%, #ff8c1a 120%);border-radius:180px 180px 24px 24px;position:relative;border:8px solid #0e0e0f;box-shadow:inset 0 0 40px rgba(0,0,0,.7), 0 10px 30px rgba(0,0,0,.8)}
+.vu canvas{width:100%;height:100%;display:block}
+.vu b{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:#111;color:#ffb56a;padding:3px 16px;border-radius:6px;font-size:13px;border:1px solid #ff8c1a}
+.controls{display:flex;gap:14px;justify-content:center;margin-top:16px}
+button{border:0;border-radius:10px;padding:12px 26px;font-weight:800;cursor:pointer}
+.rec{background:#e53935;color:white}.play{background:#2e333a;color:white;min-width:190px}.eject{background:#e53935;color:white}
+.info{margin-top:12px;color:#8a8a90;font-size:11px;text-align:center}
+</style>
+</head>
+<body>
+<div class="app">
+<div style="display:flex;justify-content:space-between;color:#ff8c1a;font-weight:800;letter-spacing:1px"><span>ADAT PLAYER • VU ANALÓGICO ALINHADO</span><span id="status" style="color:#888">STOPPED</span></div>
+<div class="time" id="time">00:00:00</div>
+<div class="vus">
+  <div class="vu"><canvas id="vuL"></canvas><b>L</b></div>
+  <div class="vu"><canvas id="vuR"></canvas><b>R</b></div>
+</div>
+<div class="controls">
+  <button class="rec" onclick="alert('REC 192kHz pronto!')">● REC</button>
+  <button class="play" id="playBtn" onclick="toggle()">▶ II PLAY / PAUSE</button>
+  <button class="eject" onclick="document.getElementById('file').click()">⏏ EJECT - LOAD</button>
+</div>
+<div class="info">Alinhamento: -20 esquerda • 0dB vermelho central • +3 direita • Ballistics 300ms • Igual Studer A800</div>
+</div>
+<audio id="audio"></audio><input type="file" id="file" accept="audio/*" style="display:none">
+<script>
+const audio=document.getElementById('audio'), timeEl=document.getElementById('time'), fileIn=document.getElementById('file'), statusEl=document.getElementById('status');
+let actx, analyser, data, needles={L:-20,R:-20}, target={L:-20,R:-20};
+const startAng = -Math.PI*0.78, endAng = Math.PI*0.18, range = endAng-startAng;
+function drawVU(canvas, val){
+  const ctx=canvas.getContext('2d'); const w=canvas.width=canvas.clientWidth*2; const h=canvas.height=canvas.clientHeight*2;
+  if(w!==canvas.width || true){ canvas.width=w; canvas.height=h; }
+  ctx.clearRect(0,0,w,h);
+  ctx.save(); ctx.translate(w/2,h*0.88);
+  // escala
+  for(let dB=-20; dB<=3; dB++){
+    let norm=(dB+20)/23; let ang=startAng+norm*range;
+    let r1 = dB==0?78:dB%5==0?85:92; let r2=110;
+    ctx.beginPath(); ctx.moveTo(Math.cos(ang)*r1, Math.sin(ang)*r1); ctx.lineTo(Math.cos(ang)*r2, Math.sin(ang)*r2);
+    ctx.strokeStyle = dB>0 ? '#b00000' : dB==0 ? '#b00000' : '#222'; ctx.lineWidth = dB==0?3.5: dB%5==0?2:1; ctx.stroke();
+    if(dB==-20||dB==-10||dB==-7||dB==-3||dB==0||dB==3){
+      ctx.save(); ctx.rotate(ang); ctx.translate(0,-125); ctx.rotate(-ang);
+      ctx.fillStyle='#1a0a00'; ctx.font='bold 13px sans-serif'; ctx.textAlign='center';
+      ctx.fillText((dB>0?'+'+dB:dB),0,0); ctx.restore();
+    }
+  }
+  // linha vermelha 0 a +3
+  ctx.beginPath(); ctx.arc(0,0,109,startAng+20/23*range, endAng); ctx.strokeStyle='#b00000'; ctx.lineWidth=3; ctx.stroke();
+  ctx.restore();
+  // agulha
+  ctx.save(); ctx.translate(w/2,h*0.88);
+  let clamped=Math.max(-20,Math.min(3,val)); let norm=(clamped+20)/23; let ang=startAng+norm*range;
+  ctx.rotate(ang+Math.PI/2); ctx.fillStyle='#0a0a0a'; ctx.fillRect(-1.5,-8,3,-102);
+  ctx.beginPath(); ctx.arc(0,0,12,0,Math.PI*2); ctx.fillStyle='#000'; ctx.fill(); ctx.strokeStyle='#333'; ctx.lineWidth=2; ctx.stroke();
+  ctx.restore();
+  // dB texto
+  ctx.fillStyle='#000'; ctx.font='700 12px sans-serif'; ctx.fillText('dB', w/2-10, h*0.55);
+}
+function animate(){
+  requestAnimationFrame(animate);
+  if(analyser){ analyser.getByteFrequencyData(data); let l=0,r=0; for(let i=0;i<8;i++) l+=data[i]; for(let i=8;i<16;i++) r+=data[i]; l=l/8/255*23-20; r=r/8/255*23-20; target.L=l; target.R=r; }
+  needles.L += (target.L-needles.L)*0.12; needles.R += (target.R-needles.R)*0.12;
+  drawVU(document.getElementById('vuL'), needles.L); drawVU(document.getElementById('vuR'), needles.R);
+  if(audio.duration) timeEl.textContent=new Date(audio.currentTime*1000).toISOString().substr(14,8);
+}
+function ensure(){ if(!actx){ actx=new (window.AudioContext||window.webkitAudioContext)(); analyser=actx.createAnalyser(); analyser.fftSize=32; data=new Uint8Array(analyser.frequencyBinCount); const src=actx.createMediaElementSource(audio); src.connect(analyser); analyser.connect(actx.destination); } }
+function toggle(){ ensure(); if(!audio.src){ fileIn.click(); return;} if(audio.paused){ audio.play(); statusEl.textContent='RUNNING'; } else { audio.pause(); statusEl.textContent='PAUSED'; } }
+fileIn.onchange=e=>{ const f=e.target.files[0]; if(!f) return; audio.src=URL.createObjectURL(f); ensure(); audio.play(); statusEl.textContent='RUNNING - '+f.name; }
+animate(); drawVU(document.getElementById('vuL'), -20); drawVU(document.getElementById('vuR'), -20);
+</script>
+</body>
+</html>
