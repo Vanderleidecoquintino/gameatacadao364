@@ -2,81 +2,169 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ADAT PLAYER - VU Alinhado</title>
+<title>ADAT V88 MESA TURBO - PLAYLIST FULL</title>
 <style>
-body{margin:0;background:#000;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px;font-family:system-ui}
-.app{width:100%;max-width:860px;background:#1a1a1d;border-radius:20px;padding:24px;border:1px solid #2a2a2e}
-.time{font-family:monospace;font-size:64px;color:#ff8c1a;text-align:center;text-shadow:0 0 18px #ff8c1a;letter-spacing:4px}
-.vus{display:flex;gap:24px;justify-content:center;margin:16px 0}
-.vu{width:340px;height:220px;background:radial-gradient(circle at 50% 80%, #ffe2b8 0%, #ffb56a 55%, #ff8c1a 120%);border-radius:180px 180px 24px 24px;position:relative;border:8px solid #0e0e0f;box-shadow:inset 0 0 40px rgba(0,0,0,.7), 0 10px 30px rgba(0,0,0,.8)}
-.vu canvas{width:100%;height:100%;display:block}
-.vu b{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:#111;color:#ffb56a;padding:3px 16px;border-radius:6px;font-size:13px;border:1px solid #ff8c1a}
-.controls{display:flex;gap:14px;justify-content:center;margin-top:16px}
-button{border:0;border-radius:10px;padding:12px 26px;font-weight:800;cursor:pointer}
-.rec{background:#e53935;color:white}.play{background:#2e333a;color:white;min-width:190px}.eject{background:#e53935;color:white}
-.info{margin-top:12px;color:#8a8a90;font-size:11px;text-align:center}
+body{margin:0;background:#000;color:#fff;font-family:system-ui;display:flex;justify-content:center;padding:12px}
+.app{width:100%;max-width:980px;background:#1a1a1d;border-radius:20px;padding:18px;border:1px solid #2a2a2e}
+.top{display:flex;justify-content:space-between;font-weight:900;color:#ff8c1a}
+.time{font-family:monospace;font-size:48px;color:#ff8c1a;text-align:center;text-shadow:0 0 18px #ff8c1a}
+.vus{display:flex;gap:16px;justify-content:center;margin:10px 0}
+.vu{width:360px;height:200px;background:radial-gradient(circle at 50% 80%, #ffe2b8 0%, #ffb56a 55%, #ff8c1a 120%);border-radius:180px 180px 20px 20px;border:8px solid #0e0e0f;position:relative}
+.vu canvas{width:100%;height:100%}
+.vu b{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:#111;color:#ffb56a;padding:2px 12px;border-radius:6px;font-size:11px}
+.controls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+button{border:0;border-radius:10px;padding:11px 18px;font-weight:900;cursor:pointer}
+.play{background:#00ff88;color:#000;min-width:200px}.eject{background:#e53935;color:#fff}.pause{background:#333;color:#fff}
+.mesa{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.chan{background:#000;padding:10px;border-radius:12px;border-left:4px solid #666}
+.chan input{width:100%;accent-color:inherit;margin-top:6px}
+.playlist{margin-top:12px;background:#111;border-radius:12px;padding:8px;max-height:240px;overflow:auto}
+.track{padding:10px;border-radius:8px;display:flex;justify-content:space-between;cursor:pointer;font-size:13px;border:1px solid #222;margin-bottom:4px}
+.track.active{background:#ff8c1a;color:#000;font-weight:900}
+.cifra{margin-top:10px;background:#111;padding:10px;border-radius:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.c{padding:8px;text-align:center;background:#1a1a1a;border-radius:8px;cursor:pointer;font-size:12px}
+.c b{color:#ffcc00;display:block;font-size:14px}
 </style>
 </head>
 <body>
 <div class="app">
-<div style="display:flex;justify-content:space-between;color:#ff8c1a;font-weight:800;letter-spacing:1px"><span>ADAT PLAYER • VU ANALÓGICO ALINHADO</span><span id="status" style="color:#888">STOPPED</span></div>
-<div class="time" id="time">00:00:00</div>
-<div class="vus">
-  <div class="vu"><canvas id="vuL"></canvas><b>L</b></div>
-  <div class="vu"><canvas id="vuR"></canvas><b>R</b></div>
-</div>
+<div class="top"><span>ADAT PLAYER • V88 MESA TURBO + PLAYLIST</span><span id="status" style="color:#888">STOPPED</span></div>
+<div class="time" id="time">00:00:00 / 00:00:00</div>
+<div class="vus"><div class="vu"><canvas id="vuL"></canvas><b>L</b></div><div class="vu"><canvas id="vuR"></canvas><b>R</b></div></div>
+
 <div class="controls">
-  <button class="rec" onclick="alert('REC 192kHz pronto!')">● REC</button>
-  <button class="play" id="playBtn" onclick="toggle()">▶ II PLAY / PAUSE</button>
-  <button class="eject" onclick="document.getElementById('file').click()">⏏ EJECT - LOAD</button>
+  <button class="play" id="playAll">▶️ PLAY TUDO JUNTO</button>
+  <button class="pause" id="pauseAll">⏸️ PAUSA</button>
+  <button class="eject" id="loadBtn">⏏ LOAD MÚSICAS</button>
+  <button class="pause" id="nextBtn">⏭ NEXT FAIXA</button>
 </div>
-<div class="info">Alinhamento: -20 esquerda • 0dB vermelho central • +3 direita • Ballistics 300ms • Igual Studer A800</div>
+
+<div id="st" style="background:#111;padding:10px;border-radius:8px;font-size:12px;color:#888;border-left:4px solid #ff8c1a;margin-top:8px">Carrega as brabas pra montar a mesa. Agora toca inteira sem cortar.</div>
+<div class="mesa" id="mesa"></div>
+<div class="playlist" id="list"></div>
+<div id="cifraBox" style="display:none"><div style="font-size:11px;color:#666;margin-top:10px">CIFRA NO COMPASSO</div><div class="cifra" id="cifra"></div></div>
 </div>
-<audio id="audio"></audio><input type="file" id="file" accept="audio/*" style="display:none">
+
+<input type="file" id="file" accept="audio/*" multiple style="display:none">
 <script>
-const audio=document.getElementById('audio'), timeEl=document.getElementById('time'), fileIn=document.getElementById('file'), statusEl=document.getElementById('status');
-let actx, analyser, data, needles={L:-20,R:-20}, target={L:-20,R:-20};
-const startAng = -Math.PI*0.78, endAng = Math.PI*0.18, range = endAng-startAng;
-function drawVU(canvas, val){
-  const ctx=canvas.getContext('2d'); const w=canvas.width=canvas.clientWidth*2; const h=canvas.height=canvas.clientHeight*2;
-  if(w!==canvas.width || true){ canvas.width=w; canvas.height=h; }
-  ctx.clearRect(0,0,w,h);
-  ctx.save(); ctx.translate(w/2,h*0.88);
-  // escala
+const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const MAP={'C':['C','G','Am','F'],'G':['G','D','Em','C'],'D':['D','A','Bm','G']};
+let playlist=[], cur=0, audios={}, actx, analyser, data, needles={L:-20,R:-20}, target={L:-20,R:-20}, currentBuf=null;
+const startAng=-Math.PI*0.78, endAng=Math.PI*0.18, range=endAng-startAng;
+const statusEl=document.getElementById('status'), timeEl=document.getElementById('time'), listEl=document.getElementById('list'), st=document.getElementById('st');
+
+function drawVU(id,val){
+  const c=document.getElementById(id), ctx=c.getContext('2d'); const w=c.width=c.clientWidth*2, h=c.height=c.clientHeight*2;
+  ctx.clearRect(0,0,w,h); ctx.save(); ctx.translate(w/2,h*0.88);
   for(let dB=-20; dB<=3; dB++){
-    let norm=(dB+20)/23; let ang=startAng+norm*range;
-    let r1 = dB==0?78:dB%5==0?85:92; let r2=110;
-    ctx.beginPath(); ctx.moveTo(Math.cos(ang)*r1, Math.sin(ang)*r1); ctx.lineTo(Math.cos(ang)*r2, Math.sin(ang)*r2);
-    ctx.strokeStyle = dB>0 ? '#b00000' : dB==0 ? '#b00000' : '#222'; ctx.lineWidth = dB==0?3.5: dB%5==0?2:1; ctx.stroke();
-    if(dB==-20||dB==-10||dB==-7||dB==-3||dB==0||dB==3){
-      ctx.save(); ctx.rotate(ang); ctx.translate(0,-125); ctx.rotate(-ang);
-      ctx.fillStyle='#1a0a00'; ctx.font='bold 13px sans-serif'; ctx.textAlign='center';
-      ctx.fillText((dB>0?'+'+dB:dB),0,0); ctx.restore();
-    }
+    let norm=(dB+20)/23, ang=startAng+norm*range;
+    ctx.beginPath(); ctx.moveTo(Math.cos(ang)*78, Math.sin(ang)*78); ctx.lineTo(Math.cos(ang)*110, Math.sin(ang)*110);
+    ctx.strokeStyle=dB>=0?'#b00000':'#222'; ctx.lineWidth=dB==0?3:1; ctx.stroke();
   }
-  // linha vermelha 0 a +3
-  ctx.beginPath(); ctx.arc(0,0,109,startAng+20/23*range, endAng); ctx.strokeStyle='#b00000'; ctx.lineWidth=3; ctx.stroke();
-  ctx.restore();
-  // agulha
-  ctx.save(); ctx.translate(w/2,h*0.88);
-  let clamped=Math.max(-20,Math.min(3,val)); let norm=(clamped+20)/23; let ang=startAng+norm*range;
+  ctx.restore(); ctx.save(); ctx.translate(w/2,h*0.88);
+  let cl=Math.max(-20,Math.min(3,val)), norm=(cl+20)/23, ang=startAng+norm*range;
   ctx.rotate(ang+Math.PI/2); ctx.fillStyle='#0a0a0a'; ctx.fillRect(-1.5,-8,3,-102);
-  ctx.beginPath(); ctx.arc(0,0,12,0,Math.PI*2); ctx.fillStyle='#000'; ctx.fill(); ctx.strokeStyle='#333'; ctx.lineWidth=2; ctx.stroke();
-  ctx.restore();
-  // dB texto
-  ctx.fillStyle='#000'; ctx.font='700 12px sans-serif'; ctx.fillText('dB', w/2-10, h*0.55);
+  ctx.beginPath(); ctx.arc(0,0,12,0,Math.PI*2); ctx.fillStyle='#000'; ctx.fill(); ctx.restore();
 }
 function animate(){
   requestAnimationFrame(animate);
-  if(analyser){ analyser.getByteFrequencyData(data); let l=0,r=0; for(let i=0;i<8;i++) l+=data[i]; for(let i=8;i<16;i++) r+=data[i]; l=l/8/255*23-20; r=r/8/255*23-20; target.L=l; target.R=r; }
-  needles.L += (target.L-needles.L)*0.12; needles.R += (target.R-needles.R)*0.12;
-  drawVU(document.getElementById('vuL'), needles.L); drawVU(document.getElementById('vuR'), needles.R);
-  if(audio.duration) timeEl.textContent=new Date(audio.currentTime*1000).toISOString().substr(14,8);
+  if(analyser && audios.v && !audios.v.paused){
+    analyser.getByteFrequencyData(data);
+    let l=0,r=0; for(let i=0;i<8;i++) l+=data[i]; for(let i=8;i<16;i++) r+=data[i];
+    target.L=l/8/255*23-20; target.R=r/8/255*23-20;
+  }
+  needles.L+=(target.L-needles.L)*0.12; needles.R+=(target.R-needles.R)*0.12;
+  drawVU('vuL',needles.L); drawVU('vuR',needles.R);
+  if(audios.v && audios.v.duration){
+    let c=new Date(audios.v.currentTime*1000).toISOString().substr(14,5), d=new Date(audios.v.duration*1000).toISOString().substr(14,5);
+    timeEl.textContent=c+' / '+d;
+  }
 }
-function ensure(){ if(!actx){ actx=new (window.AudioContext||window.webkitAudioContext)(); analyser=actx.createAnalyser(); analyser.fftSize=32; data=new Uint8Array(analyser.frequencyBinCount); const src=actx.createMediaElementSource(audio); src.connect(analyser); analyser.connect(actx.destination); } }
-function toggle(){ ensure(); if(!audio.src){ fileIn.click(); return;} if(audio.paused){ audio.play(); statusEl.textContent='RUNNING'; } else { audio.pause(); statusEl.textContent='PAUSED'; } }
-fileIn.onchange=e=>{ const f=e.target.files[0]; if(!f) return; audio.src=URL.createObjectURL(f); ensure(); audio.play(); statusEl.textContent='RUNNING - '+f.name; }
-animate(); drawVU(document.getElementById('vuL'), -20); drawVU(document.getElementById('vuR'), -20);
+function ensure(){ if(!actx){ actx=new (window.AudioContext||window.webkitAudioContext)(); analyser=actx.createAnalyser(); analyser.fftSize=32; data=new Uint8Array(analyser.frequencyBinCount); } }
+function turboSeparate(L,R){
+ let len=L.length, v=new Float32Array(len), d=new Float32Array(len), b=new Float32Array(len), o=new Float32Array(len);
+ for(let i=0;i<len;i++){ let mid=(L[i]+R[i])*0.5, side=(L[i]-R[i])*0.5; b[i]=((L[i]+(L[i-1]||0)+(L[i-2]||0))/3)*1.4; v[i]=mid*1.5-side*0.5; d[i]=side*0.9+(L[i]-L[Math.max(0,i-8)])*0.8; o[i]=side*0.6+mid*0.4; }
+ return {v,d,b,o};
+}
+function makeUrl(d,sr){
+ let ab=new ArrayBuffer(44+d.length*2), vw=new DataView(ab);
+ let w=(o,s)=>{for(let k=0;k<s.length;k++)vw.setUint8(o+k,s.charCodeAt(k))};
+ w(0,'RIFF'); vw.setUint32(4,36+d.length*2,true); w(8,'WAVE'); w(12,'fmt '); vw.setUint32(16,16,true); vw.setUint16(20,1,true); vw.setUint16(22,1,true); vw.setUint32(24,sr,true); vw.setUint32(28,sr*2,true); vw.setUint16(32,2,true); vw.setUint16(34,16,true); w(36,'data'); vw.setUint32(40,d.length*2,true);
+ let o=44; for(let k=0;k<d.length;k++){ let s=Math.max(-1,Math.min(1,d[k])); vw.setInt16(o,s<0?s*0x8000:s*0x7FFF,true); o+=2; }
+ return URL.createObjectURL(new Blob([ab],{type:'audio/wav'}));
+}
+
+async function loadAndBuild(file, idx){
+  st.textContent='Montando mesa da faixa '+(idx+1)+': '+file.name;
+  let ctx=new (window.AudioContext||window.webkitAudioContext)(); let buf=await ctx.decodeAudioData(await file.arrayBuffer());
+  currentBuf=buf;
+  let L=buf.getChannelData(0), R=buf.numberOfChannels>1?buf.getChannelData(1):L, sr=buf.sampleRate;
+  // BPM simples
+  let step=Math.floor(sr*0.15), energies=[]; for(let i=0;i<buf.length;i+=step){ let s=0; for(let j=0;j<step&&i+j<buf.length;j++) s+=L[i+j]*L[i+j]; energies.push(s); }
+  let peaks=[]; for(let i=1;i<energies.length-1;i++) if(energies[i]>energies[i-1]&&energies[i]>energies[i+1]&&energies[i]>0.02) peaks.push(i);
+  let diffs=[]; for(let i=1;i<peaks.length;i++) diffs.push(peaks[i]-peaks[i-1]); diffs.sort((a,b)=>a-b); let median=diffs[Math.floor(diffs.length/2)]||25; let bpm=Math.round(60/(median*0.15)); if(bpm<60||bpm>200) bpm=125;
+  // TOM
+  let chroma=new Array(12).fill(0), len2=Math.min(buf.length,sr*15); for(let i=0;i<len2;i+=Math.floor(sr*0.1)) for(let pc=0;pc<12;pc++){ let fr=130.81*Math.pow(2,pc/12), c=0; for(let k=0;k<100;k++){ let ii=i+k*20; if(ii<buf.length) c+=Math.abs(L[ii]*Math.sin(2*Math.PI*fr*(ii/sr))); } chroma[pc]+=c; }
+  let mx=0, ki=7; for(let i=0;i<12;i++) if(chroma[i]>mx){mx=chroma[i]; ki=i;} let tom=NOTES[ki]; let prog=MAP[tom]||['C','G','Am','F'];
+  let stems=turboSeparate(L,R);
+  let urls={v:makeUrl(stems.v,sr),d:makeUrl(stems.d,sr),b:makeUrl(stems.b,sr),o:makeUrl(stems.o,sr)};
+  let compassoSec=(60/bpm)*4, total=Math.floor(buf.duration/compassoSec);
+
+  document.getElementById('mesa').innerHTML=['v','d','b','o'].map(k=>{
+    let cfg={v:{n:'🎤 VOZ',c:'#00ff88'},d:{n:'🥁 BATERIA',c:'#ff6b6b'},b:{n:'🎸 BAIXO',c:'#6b6bff'},o:{n:'🎹 RESTO',c:'#ffcc00'}}[k];
+    return `<div class="chan" style="border-left-color:${cfg.c}"><div style="font-weight:900;color:${cfg.c};font-size:11px">${cfg.n}</div><audio id="aud_${k}" src="${urls[k]}" preload="metadata"></audio><input type="range" id="vol_${k}" min="0" max="100" value="80" style="accent-color:${cfg.c}"><div style="display:flex;gap:4px;margin-top:6px"><button id="mute_${k}" style="flex:1;background:#222;color:#fff;padding:6px;border-radius:20px;font-size:10px">MUTE</button><button id="solo_${k}" style="flex:1;background:${cfg.c};color:#000;padding:6px;border-radius:20px;font-size:10px">SOLO</button></div></div>`;
+  }).join('');
+
+  // liga audios
+  audios={}; ['v','d','b','o'].forEach(k=>{ audios[k]=document.getElementById('aud_'+k); });
+  ensure();
+  // conecta VOZ no VU
+  try{
+    let src=actx.createMediaElementSource(audios.v); src.connect(analyser); analyser.connect(actx.destination);
+    ['d','b','o'].forEach(k=>{ let s=actx.createMediaElementSource(audios[k]); s.connect(actx.destination); });
+  }catch(e){}
+
+  ['v','d','b','o'].forEach(k=>{
+    let aud=audios[k], vol=document.getElementById('vol_'+k), mute=document.getElementById('mute_'+k), solo=document.getElementById('solo_'+k);
+    vol.oninput=()=>aud.volume=vol.value/100;
+    mute.onclick=()=>{ aud.volume=aud.volume>0?0:vol.value/100; mute.textContent=aud.volume==0?'UNMUTE':'MUTE'; };
+    solo.onclick=()=>{ Object.values(audios).forEach(a=>a.volume=0); aud.volume=vol.value/100; };
+  });
+
+  // CIFRA
+  let html=''; for(let i=0;i<total&&i<64;i++){ let t=i*compassoSec, nm=prog[i%prog.length]; html+=`<div class="c" data-t="${t}"><span style="font-size:8px;color:#666">C${i+1}</span><b>${nm}</b></div>`; }
+  document.getElementById('cifraBox').style.display='block'; document.getElementById('cifra').innerHTML=html;
+  document.querySelectorAll('.c').forEach(el=>el.onclick=()=>{ let t=parseFloat(el.dataset.t); Object.values(audios).forEach(a=>{a.currentTime=t; a.play();}); });
+
+  st.textContent=`MESA PRONTA - TOM ${tom} | BPM ${bpm} | Faixa ${idx+1}/${playlist.length} - TOCA INTEIRA`;
+
+  // FIX CRUCIAL: master é a voz
+  let master=audios.v;
+  master.onended=()=>{ // SÓ QUANDO ACABA MESMO
+    if(cur+1<playlist.length){ cur++; loadAndBuild(playlist[cur].file, cur); } else { statusEl.textContent='END PLAYLIST'; }
+  };
+  // SINCRONIA SUAVE - não trava
+  master.ontimeupdate=()=>{ if(!master.paused) ['d','b','o'].forEach(k=>{ let a=audios[k]; if(Math.abs(a.currentTime-master.currentTime)>0.2) a.currentTime=master.currentTime; }); };
+  
+  // PLAY AUTOMATICO
+  Object.values(audios).forEach(a=>{a.currentTime=0; a.play();});
+  statusEl.textContent='RUNNING - '+(idx+1)+'/'+playlist.length;
+}
+
+document.getElementById('file').onchange=e=>{
+  let files=[...e.target.files]; playlist=files.map(f=>({name:f.name,file:f}));
+  cur=0; renderList(); loadAndBuild(playlist[0].file,0);
+};
+function renderList(){
+  listEl.innerHTML=playlist.map((t,i)=>`<div class="track ${i==cur?'active':''}" data-i="${i}"><span>${i+1}. ${t.name}</span><span>▶</span></div>`).join('');
+  listEl.querySelectorAll('.track').forEach(el=>el.onclick=()=>{ cur=parseInt(el.dataset.i); loadAndBuild(playlist[cur].file,cur); renderList(); });
+}
+document.getElementById('loadBtn').onclick=()=>document.getElementById('file').click();
+document.getElementById('playAll').onclick=()=>{ Object.values(audios).forEach(a=>{a.play();}); statusEl.textContent='RUNNING'; };
+document.getElementById('pauseAll').onclick=()=>{ Object.values(audios).forEach(a=>{a.pause();}); statusEl.textContent='PAUSED'; };
+document.getElementById('nextBtn').onclick=()=>{ if(cur+1<playlist.length){ cur++; loadAndBuild(playlist[cur].file,cur); renderList(); } };
+
+animate(); drawVU('vuL',-20); drawVU('vuR',-20);
 </script>
 </body>
 </html>
