@@ -1,66 +1,71 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>VIRTUAL DJ TECLADISTA PRO</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADAT MESA SHOW - FULL PLAYLIST</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}body{background:#000;color:#fff;font-family:Arial;overflow-x:hidden}
-.top{text-align:center;padding:15px;background:#000;border-bottom:2px solid #1DB954;box-shadow:0 0 30px #1DB95455}
-.top h1{letter-spacing:3px;text-shadow:0 0 15px #1DB954;font-size:20px}
-.deck{margin:10px;background:linear-gradient(#111,#0a0a0a);border-radius:15px;padding:15px;border:1px solid #222;transition:0.5s}
-.deck.loading{border-color:#1DB954;box-shadow:0 0 30px #1DB95488;transform:scale(1.02)}
-.wave{height:70px;background:#000;border-radius:10px;border:1px solid #333;position:relative;overflow:hidden}
-.wave-bar{position:absolute;bottom:0;width:3px;background:#1DB954;box-shadow:0 0 5px #1DB954}
-.mesa{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:10px}
-.canal{background:#0a0a0a;border-radius:15px;padding:12px;text-align:center;border:1px solid #222;opacity:0.2;transform:translateY(20px);transition:0.6s cubic-bezier(.34,1.56,.64,1)}
-.canal.acende{opacity:1;transform:translateY(0);border-color:#1DB954;box-shadow:0 0 25px #1DB95466}
-.canal h3{font-size:11px;color:#666;margin-bottom:10px;letter-spacing:1px}
-.led{width:12px;height:12px;border-radius:50%;background:#222;margin:0 auto 8px;transition:0.3s}
-.canal.acende .led{background:#1DB954;box-shadow:0 0 15px #1DB954,0 0 30px #1DB954;animation:pulse 1s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
-input[type=range]{width:100%;accent-color:#1DB954}
-.btn{width:100%;padding:14px;border:none;border-radius:10px;font-weight:bold;margin-top:8px}
-.play{background:#1DB954;color:#000;box-shadow:0 0 20px #1DB954;font-size:16px}
-.mute{padding:8px;font-size:11px}
-.mute.on{background:#1DB954;color:#000}
-.mute.off{background:#311;color:#f55}
-#fileInput{display:none}
-.load-area{border:2px dashed #1DB95455;padding:20px;text-align:center;border-radius:12px;margin:10px;color:#1DB954}
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui}
+body{background:#000;color:#fff;padding:10px;display:flex;justify-content:center}
+.app{width:100%;max-width:1050px;background:#1a1a1d;border-radius:20px;padding:14px;border:1px solid #2a2a2e}
+.top{display:flex;justify-content:space-between;font-weight:900;color:#ff8c1a;font-size:13px}
+.time{font-family:monospace;font-size:42px;color:#ff8c1a;text-align:center;text-shadow:0 0 18px #ff8c1a;margin:6px 0}
+.vus{display:flex;gap:12px;justify-content:center}
+.vu{width:360px;height:170px;background:radial-gradient(circle at 50% 80%, #ffe2b8 0%, #ffb56a 55%, #ff8c1a 120%);border-radius:180px 180px 20px 20px;border:7px solid #0e0e0f;position:relative}
+.vu canvas{width:100%;height:100%}
+.vu b{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);background:#111;color:#ffb56a;padding:2px 10px;border-radius:6px;font-size:10px}
+.tabs{display:flex;gap:8px;justify-content:center;margin:10px 0}
+.tab{padding:9px 16px;border-radius:20px;background:#222;color:#888;border:1px solid #333;cursor:pointer;font-weight:800;font-size:12px}
+.tab.active{background:#ff8c1a;color:#000}
+.panel{display:none} .panel.active{display:block}
+.mesa{display:flex;gap:8px;overflow-x:auto;padding:10px;background:#111;border-radius:12px;min-height:110px}
+.canal{min-width:95px;background:#1a1a1a;border-radius:12px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:6px;border-top:3px solid #ff8c1a}
+.fader{width:100%;accent-color:#ff8c1a}
+button{padding:10px 14px;border:0;border-radius:8px;font-weight:800;cursor:pointer;font-size:12px}
+.play{background:#ff8c1a;color:#000} .stop{background:#333;color:#fff}
+#queue{background:#ff8c1a15;border:1px solid #ff8c1a55;border-radius:12px;padding:10px}
+#showList{max-height:45vh;overflow-y:auto;background:#151515;border-radius:12px;padding:6px;margin-top:8px}
+.song{padding:10px;border-bottom:1px solid #222;display:flex;justify-content:space-between;align-items:center}
+.status{font-size:11px;color:#ff8c1a;text-align:center;margin:4px}
+input[type=file]{width:100%;background:#222;padding:10px;border-radius:8px;margin:6px 0;color:#fff}
 </style>
 </head>
 <body>
-<div class="top"><h1>VIRTUAL DJ TECLADISTA</h1><div style="color:#1DB954;font-size:11px">CELULAR VIROU NOTE • MESA PROFISSIONAL</div></div>
+<div class="app">
+<div class="top"><span>ADAT PLAYER • MESA + SHOW FULL</span><span id="status">STOPPED</span></div>
+<div class="time" id="time">00:00 / 00:00</div>
+<div class="vus"><div class="vu"><canvas id="vuL"></canvas><b>L</b></div><div class="vu"><canvas id="vuR"></canvas><b>R</b></div></div>
+<div class="status" id="saveStatus">💾 Escolhe vários arquivos - agora é playlist de verdade!</div>
 
-<div class="deck" id="deckA">
-<div style="display:flex;justify-content:space-between;margin-bottom:10px"><b>DECK A</b><span id="status" style="color:#666">AGUARDANDO...</span></div>
-<div class="wave" id="wave"></div>
-<div class="load-area" onclick="document.getElementById('fileInput').click()">📂 CLIQUE PARA CARREGAR MÚSICA<br><small>mp3, wav - 100 músicas</small></div>
-<input type="file" id="fileInput" accept="audio/*">
-<button class="btn play" id="playBtn">▶ PLAY / PAUSE</button>
+<div class="tabs">
+<div class="tab active" id="tabMesa" onclick="switchTab('mesa')">MODO MESA</div>
+<div class="tab" id="tabShow" onclick="switchTab('show')">MODO SHOW (100)</div>
 </div>
 
-<div class="mesa">
-<div class="canal" id="cVoz"><div class="led"></div><h3>🎤 VOZ</h3><input type="range" value="0"><button class="btn mute off">MUTADO</button></div>
-<div class="canal" id="cSolo"><div class="led"></div><h3>🎹 SOLO</h3><input type="range" value="0"><button class="btn mute off">MUTADO</button></div>
-<div class="canal" id="cBase"><div class="led"></div><h3>🥁 BASE</h3><input type="range" value="100"><button class="btn mute on">BASE ON</button></div>
+<div id="panel-mesa" class="panel active">
+<div style="text-align:center;display:flex;gap:6px;justify-content:center;flex-wrap:wrap">
+<button class="play" id="playMesa">▶ PLAY MESA</button><button class="stop" id="stopMesa">⏹ STOP</button><button class="stop" onclick="clearMesa()">LIMPAR</button>
+</div>
+<input type="file" id="fileMesa" multiple accept="audio/*">
+<div id="mesa" class="mesa"><span style="color:#555;font-size:11px;padding:20px">Carrega os stems - pode escolher vários de uma vez</span></div>
+</div>
+
+<div id="panel-show" class="panel">
+<div id="queue"><b style="color:#ff8c1a">FILA: <span id="queueCount">0</span> músicas</b><div id="queueList" style="font-size:11px;color:#aaa;margin-top:4px">Vazia - carrega várias músicas que já entra na fila</div><div style="display:flex;gap:6px;margin-top:8px"><button class="play" id="playShow">▶ TOCAR FILA</button><button class="stop" id="nextShow">⏭ NEXT</button></div></div>
+<input id="search" placeholder="🔍 Buscar na playlist..." style="width:100%;padding:10px;background:#222;border:1px solid #333;color:#fff;border-radius:10px;margin:8px 0">
+<input type="file" id="fileShow" multiple accept="audio/*">
+<div id="showList"></div>
+<button class="stop" onclick="clearShow()" style="width:100%;margin-top:8px;font-size:11px">🗑️ LIMPAR BANCO SHOW</button>
+</div>
 </div>
 
 <script>
-const wave=document.getElementById('wave');for(let i=0;i<80;i++){let b=document.createElement('div');b.className='wave-bar';b.style.left=i*1.25+'%';b.style.height=(10+Math.random()*60)+'%';b.style.opacity=0.3;wave.appendChild(b)}
-const fileInput=document.getElementById('fileInput'),deck=document.getElementById('deckA'),status=document.getElementById('status');
-fileInput.onchange=e=>{
- let file=e.target.files[0];if(!file)return;
- status.textContent='CARREGANDO...';deck.classList.add('loading');
- let bars=document.querySelectorAll('.wave-bar');bars.forEach(b=>{b.style.background='#1DB954';b.style.opacity=1;b.style.transition='height 0.2s'});
- // EFEITO QUE VC CURTIU: vai acendendo canal por canal
- setTimeout(()=>{document.getElementById('cVoz').classList.add('acende');status.textContent='VOZ OK ✓'},400);
- setTimeout(()=>{document.getElementById('cSolo').classList.add('acende');status.textContent='SOLO OK ✓'},800);
- setTimeout(()=>{document.getElementById('cBase').classList.add('acende');status.textContent='BASE OK ✓ - PRONTO PRO SHOW';deck.classList.remove('loading');deck.style.boxShadow='0 0 40px #1DB954'},1200);
- // anima wave
- let h=0;setInterval(()=>{bars.forEach(b=>b.style.height=(20+Math.sin(h+i/5)*30+Math.random()*20)+'%');h+=0.2},100);
-};
-document.querySelectorAll('.mute').forEach(b=>b.onclick=()=>{b.classList.toggle('on');b.classList.toggle('off');b.textContent=b.classList.contains('on')?'LIGADO':'MUTADO'})
-</script>
-</body>
-</html>
+const startAng=-Math.PI*0.78, endAng=Math.PI*0.18, range=endAng-startAng;
+let needles={L:-20,R:-20}, target={L:-20,R:-20};
+function drawVU(id,val){
+  const c=document.getElementById(id), ctx2=c.getContext('2d'); const w=c.width=c.clientWidth*2, h=c.height=c.clientHeight*2;
+  ctx2.clearRect(0,0,w,h); ctx2.save(); ctx2.translate(w/2,h*0.88);
+  for(let dB=-20; dB<=3; dB++){ let norm=(dB+20)/23, ang=startAng+norm*range; ctx2.beginPath(); ctx2.moveTo(Math.cos(ang)*78, Math.sin(ang)*78); ctx2.lineTo(Math.cos(ang)*110, Math.sin(ang)*110); ctx2.strokeStyle=dB>=0?'#b00000':'#222'; ctx2.lineWidth=dB==0?3:1; ctx2.stroke(); }
+  ctx2.restore(); ctx2.save(); ctx2.translate(w/2,h*0.88);
+  let cl=Math.max(-20,Math.min(3,val)), norm=(cl+20)/23, ang=startAng+norm*range;
+  ctx2.rotate(ang+Math.PI
