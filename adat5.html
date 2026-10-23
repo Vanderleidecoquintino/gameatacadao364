@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>VIRTUAL DJ TECLADISTA PRO</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{background:#000;color:#fff;font-family:Arial;overflow-x:hidden}
+.top{text-align:center;padding:15px;background:#000;border-bottom:2px solid #1DB954;box-shadow:0 0 30px #1DB95455}
+.top h1{letter-spacing:3px;text-shadow:0 0 15px #1DB954;font-size:20px}
+.deck{margin:10px;background:linear-gradient(#111,#0a0a0a);border-radius:15px;padding:15px;border:1px solid #222;transition:0.5s}
+.deck.loading{border-color:#1DB954;box-shadow:0 0 30px #1DB95488;transform:scale(1.02)}
+.wave{height:70px;background:#000;border-radius:10px;border:1px solid #333;position:relative;overflow:hidden}
+.wave-bar{position:absolute;bottom:0;width:3px;background:#1DB954;box-shadow:0 0 5px #1DB954}
+.mesa{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:10px}
+.canal{background:#0a0a0a;border-radius:15px;padding:12px;text-align:center;border:1px solid #222;opacity:0.2;transform:translateY(20px);transition:0.6s cubic-bezier(.34,1.56,.64,1)}
+.canal.acende{opacity:1;transform:translateY(0);border-color:#1DB954;box-shadow:0 0 25px #1DB95466}
+.canal h3{font-size:11px;color:#666;margin-bottom:10px;letter-spacing:1px}
+.led{width:12px;height:12px;border-radius:50%;background:#222;margin:0 auto 8px;transition:0.3s}
+.canal.acende .led{background:#1DB954;box-shadow:0 0 15px #1DB954,0 0 30px #1DB954;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
+input[type=range]{width:100%;accent-color:#1DB954}
+.btn{width:100%;padding:14px;border:none;border-radius:10px;font-weight:bold;margin-top:8px}
+.play{background:#1DB954;color:#000;box-shadow:0 0 20px #1DB954;font-size:16px}
+.mute{padding:8px;font-size:11px}
+.mute.on{background:#1DB954;color:#000}
+.mute.off{background:#311;color:#f55}
+#fileInput{display:none}
+.load-area{border:2px dashed #1DB95455;padding:20px;text-align:center;border-radius:12px;margin:10px;color:#1DB954}
+</style>
+</head>
+<body>
+<div class="top"><h1>VIRTUAL DJ TECLADISTA</h1><div style="color:#1DB954;font-size:11px">CELULAR VIROU NOTE • MESA PROFISSIONAL</div></div>
+
+<div class="deck" id="deckA">
+<div style="display:flex;justify-content:space-between;margin-bottom:10px"><b>DECK A</b><span id="status" style="color:#666">AGUARDANDO...</span></div>
+<div class="wave" id="wave"></div>
+<div class="load-area" onclick="document.getElementById('fileInput').click()">📂 CLIQUE PARA CARREGAR MÚSICA<br><small>mp3, wav - 100 músicas</small></div>
+<input type="file" id="fileInput" accept="audio/*">
+<button class="btn play" id="playBtn">▶ PLAY / PAUSE</button>
+</div>
+
+<div class="mesa">
+<div class="canal" id="cVoz"><div class="led"></div><h3>🎤 VOZ</h3><input type="range" value="0"><button class="btn mute off">MUTADO</button></div>
+<div class="canal" id="cSolo"><div class="led"></div><h3>🎹 SOLO</h3><input type="range" value="0"><button class="btn mute off">MUTADO</button></div>
+<div class="canal" id="cBase"><div class="led"></div><h3>🥁 BASE</h3><input type="range" value="100"><button class="btn mute on">BASE ON</button></div>
+</div>
+
+<script>
+const wave=document.getElementById('wave');for(let i=0;i<80;i++){let b=document.createElement('div');b.className='wave-bar';b.style.left=i*1.25+'%';b.style.height=(10+Math.random()*60)+'%';b.style.opacity=0.3;wave.appendChild(b)}
+const fileInput=document.getElementById('fileInput'),deck=document.getElementById('deckA'),status=document.getElementById('status');
+fileInput.onchange=e=>{
+ let file=e.target.files[0];if(!file)return;
+ status.textContent='CARREGANDO...';deck.classList.add('loading');
+ let bars=document.querySelectorAll('.wave-bar');bars.forEach(b=>{b.style.background='#1DB954';b.style.opacity=1;b.style.transition='height 0.2s'});
+ // EFEITO QUE VC CURTIU: vai acendendo canal por canal
+ setTimeout(()=>{document.getElementById('cVoz').classList.add('acende');status.textContent='VOZ OK ✓'},400);
+ setTimeout(()=>{document.getElementById('cSolo').classList.add('acende');status.textContent='SOLO OK ✓'},800);
+ setTimeout(()=>{document.getElementById('cBase').classList.add('acende');status.textContent='BASE OK ✓ - PRONTO PRO SHOW';deck.classList.remove('loading');deck.style.boxShadow='0 0 40px #1DB954'},1200);
+ // anima wave
+ let h=0;setInterval(()=>{bars.forEach(b=>b.style.height=(20+Math.sin(h+i/5)*30+Math.random()*20)+'%');h+=0.2},100);
+};
+document.querySelectorAll('.mute').forEach(b=>b.onclick=()=>{b.classList.toggle('on');b.classList.toggle('off');b.textContent=b.classList.contains('on')?'LIGADO':'MUTADO'})
+</script>
+</body>
+</html>
