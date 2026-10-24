@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mesa + Show - Com Memória [FIX]</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui}
+body{background:#0f0f0f;color:#fff;padding:12px}
+.tabs{display:flex;gap:8px;justify-content:center;margin:10px 0}
+.tab{padding:10px 18px;border-radius:20px;background:#222;color:#888;border:1px solid #333;cursor:pointer;font-weight:800;font-size:13px}
+.tab.active{background:#1DB954;color:#000}
+.panel{display:none} .panel.active{display:block}
+.mesa{display:flex;gap:10px;overflow-x:auto;padding:10px;min-height:130px}
+.canal{min-width:85px;background:#1a1a1a;border-radius:12px;padding:10px;display:flex;flex-direction:column;align-items:center;gap:8px;border:1px solid #2a2a2a}
+.fader{width:8px;height:100px;accent-color:#1DB954}
+button{padding:10px 16px;border:0;border-radius:8px;font-weight:700;cursor:pointer}
+.play{background:#1DB954;color:#000} .stop{background:#333;color:#fff}
+#queue{background:#1DB95415;border:1px solid #1DB95455;border-radius:12px;padding:12px}
+#showList{max-height:55vh;overflow-y:auto;background:#151515;border-radius:12px;padding:8px;margin-top:10px}
+.song{padding:10px;border-bottom:1px solid #222;display:flex;justify-content:space-between;align-items:center}
+.status{font-size:11px;color:#1DB954;text-align:center;margin:6px}
+</style>
+</head>
+<body>
+<h1 style="text-align:center;font-size:16px">🎛️ MESA + SHOW [SALVA AUTOMÁTICO - FIX]</h1>
+<div class="status" id="saveStatus">💾 Salvamento automático ativo</div>
+
+<div class="tabs">
+<div class="tab active" id="t-mesa" onclick="switchTab('mesa')">MODO MESA</div>
+<div class="tab" id="t-show" onclick="switchTab('show')">MODO SHOW (100)</div>
+</div>
+
+<div id="panel-mesa" class="panel active">
+<div style="text-align:center;display:flex;gap:6px;justify-content:center"><button class="play" id="playMesa">▶ PLAY MESA</button><button class="stop" id="stopMesa">⏹ STOP</button><button class="stop" onclick="clearMesa()" style="font-size:11px">LIMPAR</button></div>
+<input type="file" id="fileMesa" multiple accept="audio/*" style="margin:10px 0;width:100%;background:#222;padding:10px;border-radius:8px">
+<div id="mesa" class="mesa"></div>
+</div>
+
+<div id="panel-show" class="panel">
+<div id="queue"><b>FILA: <span id="queueCount">0</span></b><div id="queueList" style="font-size:11px;color:#aaa;margin-top:4px">Vazia</div><div style="margin-top:8px;display:flex;gap:6px"><button class="play" id="playShow">▶ TOCAR FILA</button><button class="stop" id="nextShow">⏭ NEXT</button></div></div>
+<input id="search" placeholder="🔍 Buscar..." style="width:100%;padding:12px;background:#222;border:1px solid #333;color:#fff;border-radius:10px;margin:10px 0">
+<input type="file" id="fileShow" multiple accept="audio/*" style="width:100%;background:#222;padding:10px;border-radius:8px">
+<div id="showList"></div>
+<button class="stop" onclick="clearShow()" style="width:100%;margin-top:10px;font-size:11px">🗑️ LIMPAR BANCO</button>
+</div>
+
+<script>
+let ctx,master;
+async function getCtx(){if(!ctx){ctx=new(window.AudioContext||window.webkitAudioContext)();master=ctx.createGain();master.connect(ctx.destination);} if(ctx.state==='suspended') await ctx.resume(); return ctx;}
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(e=>e.classList.remove('active'));
+  document.getElementById('panel-'+t).classList.add('active');
+  document.getElementById('t-'+t).classList.add('active');
+  localStorage.setItem('lastTab',t);
+}
+const lastTab=localStorage.getItem('lastTab'); if(lastTab) setTimeout(()=>switchTab(lastTab),200);
+
+// --- DB UNIFICADO QUE SALVA MESMO ---
+const DB_NAME='ShowDB100_FIX'; const STORE_SHOW='songs'; const STORE_MESA='mesa';
+function openDB(){return new Promise(res=>{const r=indexedDB.open(DB_NAME,2); r.onupgradeneeded=e=>{let db=e.target.result; if(!db.objectStoreNames.contains(STORE_SHOW)) db.createObjectStore(STORE_SHOW,{keyPath:'name'}); if(!db.objectStoreNames.contains(STORE_MESA)) db.createObjectStore(STORE_MESA,{keyPath:'name'});}; r.onsuccess=e=>res(e.target.result);});}
+
+// --- MESA QUE ABRE E SALVA ---
+let mesaBufs={},mesaNodes={};const CANAIS=['vocals','drums','bass','guitar','piano','other'];
+function buildMesaUI(){
+  const m=document.getElementById('mesa'); m.innerHTML='';
+  const keys=Object.keys(mesaBufs);
+  if(!keys.length){ m.innerHTML='<span style="color:#555;font-size:12px;padding:20px">Nenhum canal carregado - escolhe os stems</span>'; return; }
+  keys.forEach(id=>{
+    const d=document.createElement('div'); d.className='canal';
+    d.innerHTML=`<b style="font-size:10px">${id.toUpperCase().substring(0,8)}</b><input type="range" min="0" max="1.5" step="0.01" value="${localStorage.getItem('vol_'+id)||1}" class="fader" data-id="${id}"><span style="font-size:9px;color:#888">${id.substring(0,10)}</span>`;
+    m.appendChild(d);
+  });
+  document.querySelectorAll('.fader').forEach(f=>{
+    f.oninput=e=>{const id=e.target.dataset.id; const v=parseFloat(e.target.value); localStorage.setItem('vol_'+id,v); if(mesaNodes[id]) mesaNodes[id].gain.gain.value=v; document.getElementById('saveStatus').innerText='💾 Volume '+id+' salvo!';}
+  });
+}
+document.getElementById('fileMesa').onchange=async e=>{
+  await getCtx(); const db=await openDB();
+  for(let file of e.target.files){
+    let k=CANAIS.find(c=>file.name.toLowerCase().includes(c))||file.name.replace(/\.[^/.]+$/,"").toLowerCase().substring(0,20);
+    document.getElementById('saveStatus').innerText='💾 Salvando '+file.name+'...';
+    try{
+      const ab=await file.arrayBuffer();
+      const buf=await ctx.decodeAudioData(ab.slice(0));
+      mesaBufs[k]=buf;
+      const tx=db.transaction(STORE_MESA,'readwrite'); tx.objectStore(STORE_MESA).put({name:k,blob:file,fileName:file.name});
+    }catch(err){ console.error(err); }
+  }
+  buildMesaUI();
+  document.getElementById('saveStatus').innerText=`💾 MESA com ${Object.keys(mesaBufs).length} canais salva! Fecha e abre que volta.`;
+};
+async function loadMesaFromDB(){
+  const db=await openDB(); const tx=db.transaction(STORE_MESA,'readonly'); const req=tx.objectStore(STORE_MESA).getAll();
+  req.onsuccess=async()=>{ await getCtx(); for(let o of req.result){ try{ const ab=await o.blob.arrayBuffer(); mesaBufs[o.name]=await ctx.decodeAudioData(ab); }catch{} } buildMesaUI(); if(req.result.length) document.getElementById('saveStatus').innerText=`💾 ${req.result.length} canais da mesa restaurados!`; }
+}
+document.getElementById('playMesa').onclick=async()=>{
+  await getCtx(); if(!Object.keys(mesaBufs).length) return alert('Carrega a mesa primeiro');
+  Object.values(mesaNodes).forEach(n=>{try{n.src.stop(); n.src.disconnect();}catch{}}); mesaNodes={};
+  const now=ctx.currentTime+0.1;
+  for(let id in mesaBufs){ const src=ctx.createBufferSource(); src.buffer=mesaBufs[id]; const g=ctx.createGain(); g.gain.value=parseFloat(localStorage.getItem('vol_'+id)||1); src.connect(g); g.connect(master); src.start(now); mesaNodes[id]={src,gain:g}; }
+};
+document.getElementById('stopMesa').onclick=()=>{ Object.values(mesaNodes).forEach(n=>{try{n.src.stop(); n.src.disconnect();}catch{}}); };
+window.clearMesa=async()=>{ const db=await openDB(); db.transaction(STORE_MESA,'readwrite').objectStore(STORE_MESA).clear(); localStorage.clear(); location.reload(); }
+
+// --- SHOW QUE SALVA LISTA ---
+let allSongs=[],queue=[],currentShow=null;
+async function loadFromDB(){const db=await openDB(); const tx=db.transaction(STORE_SHOW,'readonly'); const req=tx.objectStore(STORE_SHOW).getAll(); req.onsuccess=()=>{allSongs=req.result.map(o=>({name:o.name,file:new File([o.blob],o.name)})); renderShow(); const q=JSON.parse(localStorage.getItem('queue_names')||'[]'); queue=allSongs.filter(s=>q.includes(s.name)); updateQueue(); if(allSongs.length) document.getElementById('saveStatus').innerText=`💾 ${allSongs.length} músicas restauradas!`;}}
+async function saveToDB(file){const db=await openDB(); const tx=db.transaction(STORE_SHOW,'readwrite'); tx.objectStore(STORE_SHOW).put({name:file.name,blob:file});}
+function renderShow(filter=''){const list=document.getElementById('showList');list.innerHTML='';allSongs.filter(s=>s.name.toLowerCase().includes(filter.toLowerCase())).forEach(s=>{const d=document.createElement('div');d.className='song';d.innerHTML=`<b style="font-size:12px;width:70%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.name}</b><button onclick="addQueueByName('${s.name.replace(/'/g,"\\'")}')" style="background:#2a2a2a;color:#fff;padding:6px 10px;font-size:11px;border-radius:6px">+ FILA</button>`;list.appendChild(d);});}
+window.addQueueByName=name=>{const f=allSongs.find(s=>s.name===name); if(f){queue.push(f); saveQueue(); updateQueue();}};
+function saveQueue(){localStorage.setItem('queue_names',JSON.stringify(queue.map(s=>s.name)));}
+function updateQueue(){document.getElementById('queueCount').innerText=queue.length;document.getElementById('queueList').innerText=queue.map((s,i)=> (i+1)+'. '+s.name).join(' | ')||'Vazia';}
+document.getElementById('fileShow').onchange=async e=>{ await getCtx(); for(let f of e.target.files){await saveToDB(f); if(!allSongs.find(s=>s.name===f.name)) allSongs.push({name:f.name,file:f});} renderShow(); document.getElementById('saveStatus').innerText=`💾 ${e.target.files.length} músicas salvas!`; };
+document.getElementById('search').oninput=e=>renderShow(e.target.value);
+document.getElementById('playShow').onclick=async()=>{if(!queue.length)return alert('Fila vazia'); await getCtx(); playNext();};
+async function playNext(){if(!queue.length)return; const song=queue.shift(); saveQueue(); updateQueue(); const ab=await song.file.arrayBuffer(); const buf=await ctx.decodeAudioData(ab); if(currentShow) try{currentShow.stop(); currentShow.disconnect();}catch{} const src=ctx.createBufferSource();src.buffer=buf;src.connect(master);src.start();currentShow=src;document.getElementById('queueList').innerText='▶ Tocando: '+song.name; src.onended=()=>{if(queue.length)playNext();};}
+document.getElementById('nextShow').onclick=()=>playNext();
+window.clearShow=async()=>{const db=await openDB(); db.transaction(STORE_SHOW,'readwrite').objectStore(STORE_SHOW).clear(); localStorage.removeItem('queue_names'); allSongs=[]; queue=[]; renderShow(); updateQueue(); document.getElementById('saveStatus').innerText='💾 Banco limpo';}
+
+loadFromDB(); loadMesaFromDB();
+</script>
+</body>
+</html>
