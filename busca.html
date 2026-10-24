@@ -1,44 +1,27 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Buscador HTML - Nordestino é Foda</title>
-<style>
-  body { background: #111; color: #fff; font-family: sans-serif; padding: 20px; }
-  input { width: 100%; padding: 15px; font-size: 18px; border-radius: 8px; border: 2px solid #00ff88; background: #222; color: #fff; margin-bottom: 10px; }
-  #lista a { display: block; background: #222; padding: 12px; margin: 6px 0; border-radius: 6px; color: #00ff88; text-decoration: none; border-left: 4px solid #00ff88; }
-  #lista a:hover { background: #333; }
-  #contador { color: #888; margin: 10px 0; }
-</style>
-</head>
-<body>
-  <h2>📁 SELETOR DE HTML</h2>
-  <p>Selecione sua pasta:</p>
-  <input type="file" id="pasta" webkitdirectory directory multiple>
-  <input type="text" id="busca" placeholder="🔍 Digita pra buscar... ex: plugin, voz, killer">
-  <div id="contador"></div>
-  <div id="lista"></div>
+
+<label>Pasta / Arquivo:</label>
+<select id="comboHtmls"></select>
 
 <script>
-let todosArquivos = [];
-document.getElementById('pasta').addEventListener('change', e => {
-  todosArquivos = [...e.target.files].filter(f => f.name.toLowerCase().endsWith('.html') || f.name.toLowerCase().endsWith('.htm'));
-  mostrar(todosArquivos);
-});
+  // lista que tu já tem no repo
+  const arquivos = [
+    "adat1.html",
+    "adat2.html", 
+    "adat4.html",
+    "adat5.html",
+    "admin.html",
+    "backlista.html"
+  ];
 
-document.getElementById('busca').addEventListener('input', e => {
-  const termo = e.target.value.toLowerCase();
-  const filtrados = todosArquivos.filter(f => f.name.toLowerCase().includes(termo));
-  mostrar(filtrados);
-});
+  const combo = document.getElementById('comboHtmls');
+  arquivos.forEach(arq => {
+    let opt = document.createElement('option');
+    opt.value = arq;
+    opt.textContent = arq;
+    combo.appendChild(opt);
+  });
 
-function mostrar(lista) {
-  document.getElementById('contador').innerText = `${lista.length} arquivos .html encontrados`;
-  document.getElementById('lista').innerHTML = lista.map(f => 
-    `<a href="${f.name}" target="_blank">${f.webkitRelativePath || f.name}</a>`
-  ).join('');
-}
+  combo.addEventListener('change', () => {
+    window.location.href = combo.value; // abre o html
+  });
 </script>
-</body>
-</html>
