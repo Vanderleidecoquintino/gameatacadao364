@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ATACADÃO 364 - V60.8c</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui;background:#000;color:#00ff88;padding:12px;max-width:480px;margin:auto}
+.header{border:2px solid #00ff88;border-radius:14px;padding:10px;text-align:center;margin-bottom:10px}
+.search{width:100%;padding:14px;border-radius:12px;border:2px solid #00ff88;background:#000;color:#00ff88;font-size:16px}
+.list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.card{background:#0a0a0a;border:1px solid #222;border-radius:12px;padding:12px;display:flex;justify-content:space-between;align-items:center}
+.b{padding:10px 16px;border-radius:10px;border:1px solid #00ff88;background:#000;color:#00ff88;font-weight:700}
+#mapa{width:100%;height:420px;border:2px solid #00ff88;border-radius:12px;position:relative;background:#000;margin-top:10px;overflow:hidden}
+.gondola{position:absolute;background:#1e40af;border:1px solid #00ff88;opacity:0.6}
+.ponto{position:absolute;transform:translate(-50%,-50%);font-size:20px}
+.robo{position:absolute;transform:translate(-50%,-50%);font-size:26px;z-index:10;transition:all 0.5s linear}
+.path{position:absolute;background:#00ff88;opacity:0.4}
+</style>
+</head>
+<body>
+<div class="header">
+<h2>🛒 ATACADÃO 364 - V60.8c</h2>
+<small>ENTRADA ESQ 25-26 → DIR 1-2</small>
+</div>
+<input id="busca" class="search" placeholder="🔍 Buscar produto..." oninput="renderLista()">
+<div id="lista" class="list"></div>
+<div id="mapa"></div>
+<div style="display:flex;gap:6px;margin-top:8px">
+<button class="b" style="flex:1;background:#00ff88;color:#000" onclick="iniciar()">▶️ INICIAR ROTA</button>
+<button class="b" style="flex:1" onclick="reset()">🔄 RESET</button>
+</div>
+<div id="status" style="margin-top:8px;font-size:12px;text-align:center">Pronto</div>
+
+<script>
+const COLS=27,ROWS=19;
+const MAP_G={'25-26':1,'23-24':3,'21-22':5,'19-20':7,'17-18':9,'15-16':11,'13-14':13,'11-12':15,'9-10':17,'7-8':19,'5-6':21,'3-4':23,'1-2':25};
+function getGByX(x){let best='25-26',dist=99;for(let k in MAP_G){let d=Math.abs(x-MAP_G[k]);if(d<dist){dist=d;best=k;}}return best;}
+function getXByG(g){return MAP_G[g]||1;}
+function isGondola(x,y){if(y==0||y==8||y==17||x==0||x==COLS-1) return true; if(x%2==1) return true; return false;}
+const KEY='atacadao364_FINAL';
+let produtos=[]; try{produtos=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){}
+let alvo=null; let roboPos={x:1,y:1};
+
+function renderLista(){
+  const q=document.getElementById('busca').value.toLowerCase();
+  const f=produtos.filter(p=>p.nome.toLowerCase().includes(q));
+  document.getElementById('lista').innerHTML=f.map((p,i)=>`<div class="card"><div><b>${p.emoji} ${p.nome}</b><br><small>G:${p.corredor||p.g} X:${p.x} Y:${p.y} R$${p.preco}</small></div><button class="b" onclick='selecionar(${JSON.stringify(p).replace(/'/g,"&#39;")})'>IR</button></div>`).join('');
+  desenhaMapa();
+}
+function desenhaMapa(caminho=[]){
+  const mapa=document.getElementById('mapa'); mapa.innerHTML='';
+  for(let y=0;y<ROWS;y++) for(let x=0;x<COLS;x++){
+    if(isGondola(x,y)){
+      let d=document.createElement('div'); d.className='gondola';
+      d.style.left=(x/COLS*100)+'%'; d.style.top=(y/ROWS*100)+'%'; d.style.width=(100/COLS)+'%'; d.style.height=(100/ROWS)+'%';
+      if(x%2==1){ let lab=document.createElement('div'); lab.style.position='absolute'; lab.style.fontSize='7px'; lab.style.color='#fff'; lab.style.left='50%'; lab.style.top='50%'; lab.style.transform='translate(-50%,-50%)'; lab.innerText=getGByX(x); d.appendChild(lab); }
+      mapa.appendChild(d);
+    }
+  }
+  caminho.forEach(pt=>{
+    let d=document.createElement('div'); d.className='path';
+    d.style.left=(pt.x/COLS*100)+'%'; d.style.top=(pt.y/ROWS*100)+'%'; d.style.width=(100/COLS)+'%'; d.style.height=(100/ROWS)+'%';
+    mapa.appendChild(d);
+  });
+  produtos.forEach(p=>{
+    let d=document.createElement('div'); d.className='ponto'; d.style.left=(p.x/COLS*100)+'%'; d.style.top=(p.y/ROWS*100)+'%'; d.textContent=p.emoji; mapa.appendChild(d);
+  });
+  let r=document.createElement('div'); r.className='robo'; r.style.left=(roboPos.x/COLS*100)+'%'; r.style.top=(roboPos.y/ROWS*100)+'%'; r.textContent='🤖'; mapa.appendChild(r);
+  if(alvo){ let d=document.createElement('div'); d.className='ponto'; d.style.left=(alvo.x/COLS*100)+'%'; d.style.top=(alvo.y/ROWS*100)+'%'; d.textContent='🎯'; d.style.fontSize='28px'; mapa.appendChild(d); }
+}
+function selecionar(p){ alvo=p; document.getElementById('status').innerText=`Alvo: ${p.nome} G:${p.corredor}`; const rota=achar(roboPos, alvo); desenhaMapa(rota); }
+function lab(){ let g=[]; for(let y=0;y<ROWS;y++){ let row=[]; for(let x=0;x<COLS;x++){ row.push(isGondola(x,y)?1:0); } g.push(row); } return g; }
+function achar(ini,fim){
+  const grid=lab(); const open=[{x:ini.x,y:ini.y,g:0,f:0,p:null}]; const closed
