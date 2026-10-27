@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>V60.8 FINAL - 25-26 ESQ / ENTRADA 1-2 DIR</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#000;color:#fff;font-family:monospace;height:100dvh;overflow:hidden}
+#tela1{height:100dvh;display:flex;flex-direction:column}
+#t1top{background:#00ff88;color:#000;padding:12px;text-align:center;font-weight:900;font-size:12px}
+#t1lista{background:#0a0a0a;padding:8px;min-height:45px;max-height:75px;overflow:auto;border-bottom:2px solid #00ff88;font-size:11px;color:#00ff88}
+#t1produtos{flex:1;overflow:auto;padding:6px;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.prod{border:2px solid #222;background:#111;border-radius:12px;padding:8px;text-align:center}
+.prod.sel{border-color:#00ff88;background:#002a12;box-shadow:0 0 10px #00ff88}
+.prod button{width:100%;margin-top:5px;height:28px;border-radius:8px;border:1px solid #00ff88;background:#00ff88;color:#000;font-weight:bold;font-size:9px}
+#t1btns{padding:8px;display:flex;justify-content:center;gap:6px;flex-wrap:wrap}
+#t1btns button{height:44px;min-width:60px;flex:1;max-width:120px;border-radius:10px;border:2px solid #00ff88;font-weight:900;font-size:10px}
+#btnGo{background:#00ff88;color:#000;max-width:180px;flex:1.5}
+#totalBar{background:#001a0a;border-top:2px solid #00ff88;padding:6px;text-align:center;font-weight:900;color:#00ff88;font-size:12px}
+#tela2{display:none;height:100dvh;flex-direction:column;position:relative}
+#gps{background:#00ff88;color:#000;padding:5px;text-align:center;font-size:10px;font-weight:bold}
+#console{background:#111;color:#00ff88;padding:4px;font-size:9px;border-bottom:1px solid #00ff88}
+canvas{flex:1;width:100%;background:#000;border:2px solid #00ff88;display:block}
+.btns{display:grid;grid-template-columns:36px 36px 36px 36px 1fr 56px;gap:4px;padding:4px;background:#0a0a0a}
+button{height:36px;border-radius:8px;border:1.5px solid #00ff88;font-weight:bold}
+.bm{background:#222;color:#00ff88}
+.bway{background:#00ff88;color:#000;font-size:8px}
+#combo{height:36px;border-radius:8px;border:1.5px solid #00ff88;background:#fff;color:#000;font-weight:bold;font-size:10px;width:100%}
+#modalPego{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;color:#000;padding:16px;border-radius:18px;border:3px solid #00ff88;z-index:100;display:none;text-align:center;min-width:260px}
+</style>
+</head>
+<body>
+<div id="tela1">
+<div id="t1top">> V60.8 - 25-26 ESQ / ENTRADA 1-2 DIR_</div>
+<div id="t1lista">Carregando...</div>
+<div id="t1produtos"></div>
+<div id="totalBar">TOTAL: R$ 0,00 (0) | PÁG 1/1</div>
+<div id="t1btns">
+<button onclick="pagina(-1)" style="background:#222;color:#00ff88">◀</button>
+<button onclick="limparT1()" style="background:#333;color:#fff;border-color:#333">🗑️</button>
+<button onclick="salvarLista()" style="background:#1e40af;color:#fff">💾</button>
+<button onclick="pagina(1)" style="background:#222;color:#00ff88">▶</button>
+<button id="btnGo" onclick="irParaMercado()">🗺️ IR (0)</button>
+</div>
+</div>
+<div id="tela2">
+<div id="gps">V60.8 - ENTRADA 1-2 DIR / GÔNDOLAS 25-26 ESQ</div>
+<div id="console">Pronto</div>
+<canvas id="c"></canvas>
+<div id="modalPego">
+<div style="font-weight:bold;color:#16a34a">📍 CHEGOU!</div>
+<div id="modalProd" style="font-size:44px;margin:8px 0"></div>
+<div id="modalNome" style="font-weight:900;font-size:14px"></div>
+<div id="modalGond" style="font-size:10px;color:#000;background:#00ff88;padding:2px 6px;border-radius:4px;font-weight:bold"></div>
+<div id="modalPreco" style="color:#16a34a;font-weight:900;font-size:22px"></div>
+<div id="modalProgress" style="font-size:10px;color:#666;margin:4px 0"></div>
+<div id="modalTotal" style="font-size:11px;color:#000;font-weight:bold;background:#facc15;padding:3px;border-radius:6px;margin:4px 0"></div>
+<button onclick="confirmarPego()" style="width:100%;height:48px;background:#00ff88;color:#000;border:2px solid #000;border-radius:10px;margin-top:10px;font-weight:900">✅ PEGUEI! →</button>
+<button onclick="pularItem()" style="width:100%;height:32px;background:#fff;color:#666;border:1px solid #ccc;border-radius:8px;margin-top:5px;font-size:10px">PULAR</button>
+</div>
+<div class="btns">
+<button class="bm" onclick="mover(-1,0)">←</button>
+<button class="bm" onclick="mover(0,-1)">↑</button>
+<button class="bm" onclick="mover(0,1)">↓</button>
+<button class="bm" onclick="mover(1,0)">→</button>
+<select id="combo"></select>
+<button class="bway" onclick="ir(24,15)">ENTRADA 1-2</button>
+</div>
+<div class="btns" style="padding-top:2px">
+<button onclick="voltarLista()" style="background:#333;color:#fff;font-size:8px">← LISTA</button>
+<button onclick="gerarRotaDaLista()" style="grid-column:span 2;background:#00ff88;color:#000;font-size:11px">🗺️ INICIAR 1-2 →</button>
+<button onclick="falarLista()" style="background:#1e40af;color:#fff;font-size:8px">🔊</button>
+<button class="bm" onclick="mudaVel(-40)">↑↑</button>
+<button class="bm" onclick="mudaVel(40)">↓↓</button>
+</div>
+</div>
+<script>
+const COLS=27,ROWS=19,W=40,H=26;
+// GÔNDOLAS INVERTIDAS: 25-26 ESQ X=1, 1-2 DIR X=25
+const MAP_G = {'25-26':1,'23-24':3,'21-22':5,'19-20':7,'17-18':9,'15-16':11,'13-14':13,'11-12':15,'9-10':17,'7-8':19,'5-6':21,'3-4':23,'1-2':25};
+function getXByG(g){ g=(g||'').toUpperCase(); if(MAP_G[g]) return MAP_G[g]; for(let k in MAP_G){ if(g.includes(k)) return MAP_G[k]; } return 25; }
+function getGByX(x){ let best='25-26',dist=99; for(let k in MAP_G){ let d=Math.abs(x-MAP_G[k]); if(d<dist){dist=d; best=k;} } return best; }
+function isGondola(x,y){ if(y==0||y==8||y==17||x==0||x==COLS-1) return true; if(x%2==1) return true; return false; }
+function distribuiY(x,g){ const linhas=[2,4,6,10,12,14]; let h=(g||'').split('').reduce((a,b)=>a+b.charCodeAt(0),0); return linhas[h%linhas.length]; }
+
+let produtos=[]; let listaT1=JSON.parse(localStorage.getItem('atacadao364_v56')||'[]');
+let paginaT1=0; const porPagina=40;
+
+async function carregarProdutos(){
+  let raw=null;
+  try{ raw=JSON.parse(localStorage.getItem('atacadao364_FINAL')||'null'); }catch(e){}
+  if(!raw){ try{ raw=JSON.parse(localStorage.getItem('produtos')||'null'); }catch(e){} }
+  if(!raw ||!raw.length){
+    raw=[
+{nome:"ARROZ 5KG",corredor:"25-26",g:"25-26",preco:"26.90",emoji:"🍚",x:2,y:2},{nome:"FEIJAO 1KG",corredor:"25-26",g:"25-26",preco:"8.49",emoji:"🫘",x:2,y:4},{nome:"ACUCAR 1KG",corredor:"25-26",g:"25-26",preco:"4.29",emoji:"🍬",x:2,y:6},{nome:"OLEO SOJA",corredor:"23-24",g:"23-24",preco:"7.99",emoji:"🫒",x:4,y:2},{nome:"CAFE 500G",corredor:"23-24",g:"23-24",preco:"18.90",emoji:"☕",x:4,y:4},
+{nome:"LEITE CAIXA",corredor:"21-22",g:"21-22",preco:"5.49",emoji:"🥛",x:6,y:2},{nome:"REFRIGERANTE 2L",corredor:"21-22",g:"21-22",preco:"8.99",emoji:"🥤",x:6,y:4},{nome:"AGUA 1.5L",corredor:"19-20",g:"19-20",preco:"3.50",emoji:"💧",x:8,y:2},{nome:"SUCO CAIXA",corredor:"19-20",g:"19-20",preco:"6.90",emoji:"🧃",x:8,y:4},{nome:"CERVEJA LATA",corredor:"17-18",g:"17-18",preco:"4.99",emoji:"🍺",x:10,y:2}
+    ];
+    localStorage.setItem('atacadao364_FINAL', JSON.stringify(raw));
+  }
+  produtos = raw.map(p=>{
+      try{
+        let g=(p.corredor||p.g||'25-26').toUpperCase();
+        let x=parseInt(p.x); if(isNaN(x)) x=getXByG(g); if(x%2==1) x++;
+        let y=parseInt(p.y); if(isNaN(y)) y=distribuiY(x,g);
+        if(isGondola(x,y)){ if(x>1 &&!isGondola(x-1,y)) x--; }
+        return { x:x, y:y, nome:(p.nome||'').toUpperCase().trim(), emo:p.emoji||p.emo||'📦', preco:String(p.preco||'').includes('R$')?p.preco:`R$ ${p.preco}`, g:getGByX(x) };
+      }catch(e){return null}
+    }).filter(Boolean);
+  renderT1();
+}
+function falar(t){if('speechSynthesis' in window){let u=new SpeechSynthesisUtterance(t);u.lang='pt-BR';u.rate=1.1;speechSynthesis.cancel();speechSynthesis.speak(u);}}
+function falarLista(){if(!listaT1.length){falar('Lista vazia');return;}falar(`Rota de ${listaT1.length} itens`);}
+function calcTotal(){return listaT1.reduce((s,p)=>{let v=parseFloat(String(p.preco||'').replace('R$','').replace(',','.').trim());return isNaN(v)?s:s+v;},0);}
+let saveT=null; function salvarLista(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem('atacadao364_v56',JSON.stringify(listaT1));document.getElementById('t1lista').innerHTML='💾 Salvo!';setTimeout(()=>renderT1(),600);}catch(e){}},300);}
+function pagina(d){let max=Math.ceil(produtos.length/porPagina)-1; paginaT1+=d; if(paginaT1<0) paginaT1=0; if(paginaT1>max) paginaT1=max; renderT1();}
+function renderT1(){
+ let cont=document.getElementById('t1produtos'); cont.innerHTML='';
+ let slice=produtos.slice(paginaT1*porPagina,(paginaT1+1)*porPagina);
+ let frag=document.createDocumentFragment();
+ slice.forEach((p,iG)=>{
+   let i=paginaT1*porPagina+iG;
+   let sel=listaT1.find(l=>l.nome==p.nome);
+   let div=document.createElement('div'); div.className='prod'+(sel?' sel':'');
+   div.innerHTML=`<div style="font-size:32px">${p.emo}</div><div style="font-size:10px;font-weight:bold">${p.nome}</div><div style="font-size:10px;color:#00ff88">${p.preco}</div><div style="font-size:8px;background:#00ff88;color:#000;padding:2px;border-radius:4px">[${p.g}] X:${p.x}</div><button onclick="toggleProd(${i})">${sel?'✓':'+ ADD'}</button>`;
+   frag.appendChild(div);
+ });
+ cont.appendChild(frag);
+ let total=calcTotal();
+ document.getElementById('t1lista').innerHTML=listaT1.length==0?`✅ ${produtos.length} produtos - 25-26 ESQ / ENTRADA 1-2 DIR - PÁG ${paginaT1+1}`:listaT1.map(l=>`${l.emo} ${l.nome} [${l.g}]`).join(' | ');
+ document.getElementById('totalBar').innerText=`TOTAL: R$ ${total.toFixed(2).replace('.',',')} (${listaT1.length}) | PÁG ${paginaT1+1}/${Math.ceil(produtos.length/porPagina)}`;
+ document.getElementById('btnGo').innerText=`🗺️ IR (${listaT1.length})`;
+ let combo=document.getElementById('combo'); combo.innerHTML=''; produtos.forEach(p=>{let o=document.createElement('option');o.value=p.x+','+p.y;o.innerText=`${p.emo} ${p.nome} [${p.g}]`;combo.appendChild(o);});
+}
+function toggleProd(i){let p=produtos[i];let idx=listaT1.findIndex(l=>l.nome==p.nome);if(idx>=0) listaT1.splice(idx,1);else listaT1.push({...p}); salvarLista(); renderT1(); if(navigator.vibrate) navigator.vibrate(50);}
+function limparT1(){if(!confirm('Limpar?')) return; listaT1=[]; localStorage.removeItem('atacadao364_v56'); renderT1();}
+function irParaMercado(){if(!listaT1.length){alert('Adicione 1 produto!');return;}document.getElementById('tela1').style.display='none';document.getElementById('tela2').style.display='flex';init();resize();draw();loop();setTimeout(()=>{gerarRotaDaLista();},400);}
+function voltarLista(){document.getElementById('tela2').style.display='none';document.getElementById('tela1').style.display='flex';if(tm){clearInterval(tm);tm=null;}document.getElementById('modalPego').style.display='none';}
+
+let lab=[],px=24,py=15,tx=24,ty=15,cam=[],tm=null,camX=0,camY=0,rastro=[],vw=0,vh=0,vel=250;
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+let idxRota=0,esperando=false,listaOrdenada=[];
+function mudaVel(d){vel+=d;if(vel<30) vel=30;if(vel>5000) vel=5000;document.getElementById('gps').innerText='VEL '+vel+'ms - ENTRADA 1-2 DIR';if(tm){ clearInterval(tm); tm=setInterval(step,vel); }}
+function gerarRotaDaLista(){
+  listaT1.forEach(l=>l.visitado=false);
+  let resto=[...listaT1];
+  let atual={x:24,y:15};
+  let ordem=[];
+  while(resto.length){
+    resto.sort((a,b)=>(Math.abs(atual.x-a.x)+Math.abs(atual.y-a.y))-(Math.abs(atual.x-b.x)+Math.abs(atual.y-b.y)));
+    let prox=resto.shift(); ordem.push(prox); atual=prox;
+  }
+  listaOrdenada=ordem; idxRota=0; irParaProximoDaLista();
+}
+function irParaProximoDaLista(){if(idxRota>=listaOrdenada.length){let total=calcTotal();document.getElementById('console').innerText='🎉 COMPLETA!';alert(`🎉 FINALIZADO! ${listaOrdenada.length} itens - R$ ${total.toFixed(2).replace('.',',')}`);return;}ir(listaOrdenada[idxRota].x,listaOrdenada[idxRota].y);}
+function mostrarModalPego(item){document.getElementById('modalProd').innerText=item.emo;document.getElementById('modalNome').innerText=item.nome;document.getElementById('modalGond').innerText='GÔNDOLA ['+item.g+'] X:'+item.x;document.getElementById('modalPreco').innerText=item.preco;document.getElementById('modalProgress').innerText='Item '+(idxRota+1)+'/'+listaOrdenada.length;let total=calcTotal();document.getElementById('modalTotal').innerText=`TOTAL: R$ ${total.toFixed(2).replace('.',',')}`;document.getElementById('modalPego').style.display='block';falar(`Chegou na gôndola ${item.g}, ${item.nome}`);if(navigator.vibrate) navigator.vibrate([200,100,200]);}
+function confirmarPego(){listaOrdenada[idxRota].visitado=true;document.getElementById('modalPego').style.display='none';idxRota++;esperando=false;setTimeout(()=>{irParaProximoDaLista();},500);}
+function pularItem(){document.getElementById('modalPego').style.display='none';idxRota++;irParaProximoDaLista();}
+function init(){lab=[];for(let y=0;y<ROWS;y++){lab[y]=[];for(let x=0;x<COLS;x++){if(y==0||y==8||y==17||x==0||x==COLS-1) lab[y][x]=0; else if(x%2==1) lab[y][x]=1; else lab[y][x]=0;}}}
+function livre(x,y){return x>=0&&x<COLS&&y>=0&&y<ROWS&&lab[y][x]!=1}
+function achar(sx,sy,ex,ey){let q=[{x:sx,y:sy,p:[]}],v={};v[sx+','+sy]=1;while(q.length){let c=q.shift();if(c.x==ex&&c.y==ey)return c.p;for(let d of [[1,0],[-1,0],[0,1],[0,-1]]){let nx=c.x+d[0],ny=c.y+d[1],k=nx+','+ny;if(!v[k]&&livre(nx,ny)){v[k]=1;q.push({x:nx,y:ny,p:c.p.concat([{x:nx,y:ny}])})}}}return []}
+function resize(){let r=cv.getBoundingClientRect();vw=r.width;vh=r.height||400;cv.width=vw;cv.height=vh;draw();}
+function updateCam(){let tX=px*W - vw/2 + W/2, tY=py*H - vh/2 + H/2; camX+=(tX-camX)*0.12; camY+=(tY-camY)*0.12;let maxX=Math.max(0,COLS*W-vw),maxY=Math.max(0,ROWS*H-vh);camX=Math.max(0,Math.min(maxX,camX));camY=Math.max(0,Math.min(maxY,camY));}
+function draw(){
+  updateCam();ctx.fillStyle='#000';ctx.fillRect(0,0,vw,vh);ctx.save();ctx.translate(-camX,-camY);
+  for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){
+    if(lab[y][x]==1){
+      ctx.fillStyle='#0a194e';ctx.fillRect(x*W,y*H,W,H);
+      ctx.fillStyle='#1e40af';ctx.fillRect(x*W+1,y*H+1,W-2,H-2);
+      ctx.fillStyle='#00ff88';ctx.font='bold 9px monospace';ctx.textAlign='center';
+      let n='';
+      if(x==1)n='25-26'; else if(x==3)n='23-24'; else if(x==5)n='21-22'; else if(x==7)n='19-20'; else if(x==9)n='17-18'; else if(x==11)n='15-16'; else if(x==13)n='13-14'; else if(x==15)n='11-12'; else if(x==17)n='9-10'; else if(x==19)n='7-8'; else if(x==21)n='5-6'; else if(x==23)n='3-4'; else if(x==25)n='1-2';
+      if(n) ctx.fillText(n,x*W+20,y*H+16);
+    }
+  }
+  ctx.fillStyle='#00ff88';ctx.fillRect(24*W,15*H,W,H);ctx.fillStyle='#000';ctx.font='bold 7px monospace';ctx.textAlign='center';ctx.fillText('ENTRADA 1-2',24*W+20,15*H+16);
+  for(let i=0;i<rastro.length;i++){let p=rastro[i];let a=(i+1)/rastro.length;ctx.fillStyle='rgba(0,255,136,'+(0.4+a*0.6)+')';ctx.beginPath();ctx.arc(p.x*W+20,p.y*H+13,6*a+2,0,6.28);ctx.fill();}
+  if(!(tx==24&&ty==15)){ctx.fillStyle='#ef4444';ctx.fillRect(tx*W-2,ty*H-2,W+4,H+4);}
+  listaOrdenada.forEach((it,i)=>{if(it.visitado||i<idxRota) return;ctx.fillStyle=i==idxRota?'#00ff88':'#ef4444';ctx.beginPath();ctx.arc(it.x*W+20,it.y*H+13,i==idxRota?12:9,0,6.28);ctx.fill();ctx.fillStyle=i==idxRota?'#000':'#fff';ctx.font='bold 10px Arial';ctx.textAlign='center';ctx.fillText(i+1,it.x*W+20,it.y*H+17);});
+  ctx.fillStyle='#00ff88';ctx.beginPath();ctx.arc(px*W+20,py*H+13,11,0,6.28);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.stroke();ctx.restore();
+  let pend=listaOrdenada.filter(l=>!l.visitado).length;
+  document.getElementById('console').innerText=pend>0?`📍 ${idxRota+1}/${listaOrdenada.length} - ${listaOrdenada[idxRota]?.nome} [${listaOrdenada[idxRota]?.g}]`:'🎉 Pronto!';
+}
+function step(){if(cam.length==0){clearInterval(tm);tm=null;let alvo=listaOrdenada[idxRota];if(alvo&&px==alvo.x&&py==alvo.y&&!alvo.visitado&&!esperando){esperando=true;mostrarModalPego(alvo);}draw();return;}let p=cam.shift();rastro.push({x:px,y:py});if(rastro.length>25) rastro.shift();px=p.x;py=p.y;draw();}
+function mover(dx,dy){if(tm){clearInterval(tm);tm=null;}let nx=px+dx,ny=py+dy;if(!livre(nx,ny))return;rastro.push({x:px,y:py});if(rastro.length>25) rastro.shift();px=nx;py=ny;draw();}
+function ir(x,y){
+  if(tm){clearInterval(tm);tm=null;}
+  x=Math.max(1,Math.min(COLS-2,parseInt(x)||24));
+  y=Math.max(1,Math.min(ROWS-2,parseInt(y)||15));
+  if(lab[y] && lab[y][x]==1){ if(x>0 && lab[y][x-1]!=1) x--; else if(x<COLS-1 && lab[y][x+1]!=1) x++; }
+  if(x==24&&y==15) rastro=[];
+  tx=x;ty=y;cam=achar(px,py,x,y);
+  if(cam.length==0){ if(px!=x || py!=y){ px=x; py=y; } let alvo=listaOrdenada[idxRota]; if(alvo&&px==alvo.x&&py==alvo.y&&!alvo.visitado&&!esperando){esperando=true;mostrarModalPego(alvo);} draw(); return; }
+  tm=setInterval(step,vel);draw();
+}
+function loop(){updateCam();draw();requestAnimationFrame(loop);}
+carregarProdutos();
+window.addEventListener('resize',resize);
+document.getElementById('combo').addEventListener('change',()=>{let v=document.getElementById('combo').value.split(',');ir(parseInt(v[0]),parseInt(v[1]));});
+</script>
+</body>
+</html>
