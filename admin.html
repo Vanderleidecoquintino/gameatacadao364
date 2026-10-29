@@ -1,300 +1,154 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width">
-<title>ADM V60.8 - 25-26 DIREITA + 40 DEMO</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ADM V61.3 ESQ - 25-26 ESQ / 1-2 DIR + RESET</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:monospace;padding:12px;max-width:480px;margin:auto;background:#000;color:#00ff88}
-.top{display:flex;gap:8px;position:sticky;top:0;background:#000;padding:8px 0;z-index:5;border-bottom:1px solid #00ff88}
-input,textarea{padding:12px;border:1px solid #00ff88;border-radius:10px;width:100%;margin-top:6px;background:#000;color:#00ff88}
-.card{background:#0a0a0a;padding:12px;border-radius:12px;margin:8px 0;display:flex;justify-content:space-between;align-items:center;border:1px solid #222}
-.b{padding:8px 12px;border-radius:8px;border:1px solid #00ff88;font-weight:700;background:#000;color:#00ff88}
-#formEdit{background:#111;padding:16px;border-radius:16px;position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:auto;display:none;z-index:20;max-height:90vh;overflow:auto;border:2px solid #00ff88}
-#mapa{width:100%;height:380px;border:2px solid #00ff88;border-radius:12px;position:relative;background:#000;margin:10px 0;cursor:crosshair}
+.top{display:flex;gap:8px;position:sticky;top:0;background:#000;padding:8px 0;z-index:5}
+input{padding:12px;border:1px solid #00ff88;border-radius:10px;width:100%;margin-top:6px;background:#111;color:#00ff88}
+.card{background:#0a0a0a;padding:12px;border-radius:12px;margin:8px 0;display:flex;justify-content:space-between;border:1px solid #222}
+.b{padding:10px 12px;border-radius:8px;border:1px solid #00ff88;font-weight:700;background:#000;color:#00ff88}
+#formEdit{background:#111;padding:16px;border-radius:16px;position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:auto;display:none;z-index:20;border:2px solid #00ff88;max-height:90vh;overflow:auto}
+#mapa{width:100%;height:380px;border:2px solid #00ff88;border-radius:12px;position:relative;background:#000;margin:10px 0}
 .ponto{position:absolute;transform:translate(-50%,-50%);font-size:22px}
 .gondola{position:absolute;background:#1e40af;border:1px solid #00ff88;opacity:0.5}
-#gpsInfo{background:#00ff88;color:#000;padding:4px;font-size:9px;text-align:center;font-weight:bold}
 </style>
 </head>
 <body>
-<h2>> ADM V60.8 25-26 DIREITA + 40 DEMO - <span id="total">0</span></h2>
-<div style="font-size:9px;border:1px dashed #00ff88;padding:4px;border-radius:6px">DIREITA 25-26 (ENTRADA) → ESQUERDA 1-2 | 40 PRODUTOS DEMO</div>
-<div class="top"><input id="busca" placeholder="BUSCAR..." oninput="debounceRender()"><button class="b" onclick="openForm()" style="background:#00ff88;color:#000">+ NOVO</button></div>
-<div style="display:flex;gap:6px"><button class="b" style="flex:1;background:#00ff88;color:#000" onclick="carregar40Demo()">📦 CARREGAR 40 DEMO</button><button class="b" style="flex:1;border-color:#ff3b30;color:#ff3b30" onclick="limparDemo()">🗑️ LIMPAR</button></div>
+<h2>> ADM V61.3 ESQ - <span id="total">0</span></h2>
+<div style="font-size:10px;border:1px dashed #00ff88;padding:6px;border-radius:6px;margin:6px 0">✅ UNIFICADO: 25-26 ESQ (X=1) → ENTRADA 1-2 DIR (X=25) | X = gôndola+1</div>
+
+<div class="top"><input id="busca" placeholder="BUSCAR..." oninput="render()"><button class="b" onclick="openForm()" style="background:#00ff88;color:#000">+ NOVO</button></div>
+
+<div style="display:flex;gap:6px;margin:6px 0">
+<button class="b" style="flex:1;background:#00ff88;color:#000" onclick="carregar40Demo()">📦 40 DEMO ESQ</button>
+<button class="b" style="flex:1;border-color:#ff3b30;color:#ff3b30" onclick="limparDemo()">🗑️ LIMPAR</button>
+</div>
+
+<button class="b" style="width:100%;background:#ff3b30;color:#fff;border-color:#ff3b30;margin:8px 0" onclick="resetTotal()">💥 RESET TOTAL - APAGAR LOCALSTORAGE</button>
+
 <div id="lista"></div>
-<div id="gpsInfo">CLIQUE NO CORREDOR - AUTO GÔNDOLA</div>
+<div id="gpsInfo" style="background:#00ff88;color:#000;padding:6px;font-size:10px;text-align:center;font-weight:bold;border-radius:6px">CLIQUE NO MAPA - CORREDOR LIVRE</div>
 <div id="mapa" onclick="pegaXY(event)"></div>
-<button class="b" style="width:100%;background:#00ff88;color:#000;margin-top:12px" onclick="exportar()">💾 SALVAR V60.8</button>
-<textarea id="jsonOut" style="height:60px;margin-top:8px;font-size:8px"></textarea>
+
+<button class="b" style="width:100%;background:#00ff88;color:#000;margin-top:12px;height:50px" onclick="exportar()">💾 SALVAR V61.3 ESQ</button>
+<div id="jsonOut" style="font-size:9px;color:#666;margin-top:6px"></div>
 
 <div id="formEdit">
 <h3 id="formTitle">EDITAR</h3>
 <input id="f_nome" placeholder="NOME">
-<div style="display:flex;gap:6px"><input id="f_emoji" placeholder="🍚"><input id="f_corredor" placeholder="GÔNDOLA"></div>
-<div style="display:flex;gap:6px"><input id="f_preco" placeholder="22.90"><input id="f_x" type="number" min="0" max="26"><input id="f_y" type="number" min="0" max="18"></div>
+<div style="display:flex;gap:6px"><input id="f_emoji" placeholder="🍚"><input id="f_corredor" placeholder="25-26"></div>
+<div style="display:flex;gap:6px"><input id="f_preco" placeholder="22.90"><input id="f_x" type="number" readonly style="background:#222"><input id="f_y" type="number" min="2" max="16"></div>
 <div style="display:flex;gap:8px;margin-top:10px"><button class="b" style="flex:1" onclick="closeForm()">CANCELAR</button><button class="b" style="flex:1;background:#00ff88;color:#000" onclick="salvar()">SALVAR</button></div>
 </div>
 
 <script>
 const COLS=27,ROWS=19;
-const MAP_G={ '25-26':25,'23-24':23,'21-22':21,'19-20':19,'17-18':17,'15-16':15,'13-14':13,'11-12':11,'9-10':9,'7-8':7,'5-6':5,'3-4':3,'1-2':1 };
-function getXByG(g){ return MAP_G[g]||25; }
-function getGByX(x){ let best='25-26',dist=99; for(let k in MAP_G){ let d=Math.abs(x-MAP_G[k]); if(d<dist){dist=d;best=k;} } return best; }
+// UNIFICADO: 25-26 ESQ X=1 / 1-2 DIR X=25 (ENTRADA)
+const MAP_G={'25-26':1,'23-24':3,'21-22':5,'19-20':7,'17-18':9,'15-16':11,'13-14':13,'11-12':15,'9-10':17,'7-8':19,'5-6':21,'3-4':23,'1-2':25};
+function getXByG(g){ g=(g||'').toUpperCase().trim(); return MAP_G[g]||1; }
+function getGByX(x){ let gx=x-1; let best='25-26',dist=99; for(let k in MAP_G){ let d=Math.abs(gx-MAP_G[k]); if(d<dist){dist=d;best=k;} } return best; }
 function isGondola(x,y){ if(y==0||y==8||y==17||x==0||x==COLS-1) return true; if(x%2==1) return true; return false; }
+function isParedeY(y){ return [0,1,8,9,17,18].includes(y); }
+
 const KEY='atacadao364_FINAL';
 let produtos=[]; try{produtos=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){}
-let editIndex=-1; let debounceTimer=null;
-function debounceRender(){ clearTimeout(debounceTimer); debounceTimer=setTimeout(render,200); }
+let editIndex=-1;
 
-const PRODUTOS_40_DEMO = [
-{nome:"ARROZ 5KG",corredor:"3-4",g:"3-4",preco:"3.99",emoji:"🍚",x:2,y:1},
-{nome:"FEIJAO CARIOCA",corredor:"5-6",g:"5-6",preco:"5.29",emoji:"🫘",x:4,y:1},
-{nome:"FEIJAO PRETO",corredor:"7-8",g:"7-8",preco:"6.59",emoji:"🫘",x:6,y:1},
-{nome:"ACUCAR CRISTAL",corredor:"9-10",g:"9-10",preco:"7.89",emoji:"🍬",x:8,y:1},
-{nome:"ACUCAR REFINADO",corredor:"11-12",g:"11-12",preco:"9.19",emoji:"🍬",x:10,y:1},
-{nome:"OLEO SOJA 900ML",corredor:"13-14",g:"13-14",preco:"10.49",emoji:"🫒",x:12,y:1},
-{nome:"AZEITE 500ML",corredor:"15-16",g:"15-16",preco:"11.79",emoji:"🫒",x:14,y:1},
-{nome:"CAFE 500G",corredor:"17-18",g:"17-18",preco:"13.09",emoji:"☕",x:16,y:1},
-{nome:"CAFE CAPSULA",corredor:"19-20",g:"19-20",preco:"14.39",emoji:"☕",x:18,y:1},
-{nome:"LEITE INTEGRAL",corredor:"21-22",g:"21-22",preco:"12.99",emoji:"🥛",x:20,y:1},
-{nome:"LEITE DESNATADO",corredor:"23-24",g:"23-24",preco:"14.29",emoji:"🥛",x:22,y:1},
-{nome:"LEITE CONDENSADO",corredor:"25-26",g:"25-26",preco:"15.59",emoji:"🥛",x:24,y:1},
-{nome:"CREME DE LEITE",corredor:"3-4",g:"3-4",preco:"16.89",emoji:"🥛",x:2,y:2},
-{nome:"LEITE EM PO",corredor:"5-6",g:"5-6",preco:"18.19",emoji:"🥛",x:4,y:2},
-{nome:"ACHOCOLATADO",corredor:"7-8",g:"7-8",preco:"19.49",emoji:"🍫",x:6,y:2},
-{nome:"SUCO PO",corredor:"9-10",g:"9-10",preco:"20.79",emoji:"🧃",x:8,y:2},
-{nome:"SUCO CAIXA 1L",corredor:"11-12",g:"11-12",preco:"22.09",emoji:"🧃",x:10,y:2},
-{nome:"REFRI 2L COLA",corredor:"13-14",g:"13-14",preco:"23.39",emoji:"🥤",x:12,y:2},
-{nome:"REFRI 2L GUARANA",corredor:"15-16",g:"15-16",preco:"21.99",emoji:"🥤",x:14,y:2},
-{nome:"AGUA 1.5L",corredor:"17-18",g:"17-18",preco:"23.29",emoji:"💧",x:16,y:2},
-{nome:"AGUA 500ML",corredor:"19-20",g:"19-20",preco:"24.59",emoji:"💧",x:18,y:2},
-{nome:"CERVEJA LATA 350ML",corredor:"21-22",g:"21-22",preco:"25.89",emoji:"🍺",x:20,y:2},
-{nome:"CERVEJA LONG NECK",corredor:"23-24",g:"23-24",preco:"27.19",emoji:"🍺",x:22,y:2},
-{nome:"ENERGETICO 269ML",corredor:"25-26",g:"25-26",preco:"28.49",emoji:"🥤",x:24,y:2},
-{nome:"VINHO TINTO",corredor:"3-4",g:"3-4",preco:"29.79",emoji:"🍷",x:2,y:3},
-{nome:"ESPUMANTE",corredor:"5-6",g:"5-6",preco:"31.09",emoji:"🍾",x:4,y:3},
-{nome:"MACARRAO ESPAGUETE",corredor:"7-8",g:"7-8",preco:"32.39",emoji:"🍝",x:6,y:3},
-{nome:"MACARRAO PARAFUSO",corredor:"9-10",g:"9-10",preco:"30.99",emoji:"🍝",x:8,y:3},
-{nome:"MOLHO TOMATE",corredor:"11-12",g:"11-12",preco:"32.29",emoji:"🥫",x:10,y:3},
-{nome:"EXTRATO TOMATE",corredor:"13-14",g:"13-14",preco:"33.59",emoji:"🥫",x:12,y:3},
-{nome:"MILHO VERDE LATA",corredor:"15-16",g:"15-16",preco:"34.89",emoji:"🌽",x:14,y:3},
-{nome:"ERVILHA LATA",corredor:"17-18",g:"17-18",preco:"36.19",emoji:"🟢",x:16,y:3},
-{nome:"ATUM LATA",corredor:"19-20",g:"19-20",preco:"37.49",emoji:"🐟",x:18,y:3},
-{nome:"SARDINHA LATA",corredor:"21-22",g:"21-22",preco:"38.79",emoji:"🐟",x:20,y:3},
-{nome:"FARINHA TRIGO",corredor:"23-24",g:"23-24",preco:"40.09",emoji:"🌾",x:22,y:3},
-{nome:"FARINHA MANDIOCA",corredor:"25-26",g:"25-26",preco:"6.39",emoji:"🌾",x:24,y:3},
-{nome:"FUBA",corredor:"3-4",g:"3-4",preco:"4.99",emoji:"🌽",x:2,y:4},
-{nome:"AMIDO MILHO",corredor:"5-6",g:"5-6",preco:"6.29",emoji:"🌽",x:4,y:4},
-{nome:"FERMENTO",corredor:"7-8",g:"7-8",preco:"7.59",emoji:"🍞",x:6,y:4},
-{nome:"SAL 1KG",corredor:"9-10",g:"9-10",preco:"8.89",emoji:"🧂",x:8,y:4},
-{nome:"TEMPERO COMPLETO",corredor:"11-12",g:"11-12",preco:"10.19",emoji:"🧂",x:10,y:4},
-{nome:"PIMENTA DO REINO",corredor:"13-14",g:"13-14",preco:"11.49",emoji:"🌶️",x:12,y:4},
-{nome:"OREGANO",corredor:"15-16",g:"15-16",preco:"12.79",emoji:"🌿",x:14,y:4},
-{nome:"CALDO KNORR",corredor:"17-18",g:"17-18",preco:"14.09",emoji:"🍲",x:16,y:4},
-{nome:"MAIONESE",corredor:"19-20",g:"19-20",preco:"15.39",emoji:"🥫",x:18,y:4},
-{nome:"KETCHUP",corredor:"21-22",g:"21-22",preco:"13.99",emoji:"🥫",x:20,y:4},
-{nome:"MOSTARDA",corredor:"23-24",g:"23-24",preco:"15.29",emoji:"🥫",x:22,y:4},
-{nome:"BOLACHA CREAM CRACKER",corredor:"25-26",g:"25-26",preco:"16.59",emoji:"🍪",x:24,y:4},
-{nome:"BOLACHA MAISENA",corredor:"3-4",g:"3-4",preco:"17.89",emoji:"🍪",x:2,y:5},
-{nome:"BOLACHA RECHEADA CHOC",corredor:"5-6",g:"5-6",preco:"19.19",emoji:"🍪",x:4,y:5},
-{nome:"BOLACHA RECHEADA MOR",corredor:"7-8",g:"7-8",preco:"20.49",emoji:"🍪",x:6,y:5},
-{nome:"TORRADA",corredor:"9-10",g:"9-10",preco:"21.79",emoji:"🍞",x:8,y:5},
-{nome:"PIPOCA MICROONDAS",corredor:"11-12",g:"11-12",preco:"23.09",emoji:"🍿",x:10,y:5},
-{nome:"SALGADINHO DORITOS",corredor:"13-14",g:"13-14",preco:"24.39",emoji:"🧂",x:12,y:5},
-{nome:"SALGADINHO CHEETOS",corredor:"15-16",g:"15-16",preco:"22.99",emoji:"🧂",x:14,y:5},
-{nome:"CHOCOLATE BARRA 90G",corredor:"17-18",g:"17-18",preco:"24.29",emoji:"🍫",x:16,y:5},
-{nome:"CHOCOLATE CAIXA",corredor:"19-20",g:"19-20",preco:"25.59",emoji:"🍫",x:18,y:5},
-{nome:"BOMBOM SONHO VALSA",corredor:"21-22",g:"21-22",preco:"26.89",emoji:"🍬",x:20,y:5},
-{nome:"BALA FINI 90G",corredor:"23-24",g:"23-24",preco:"28.19",emoji:"🍬",x:22,y:5},
-{nome:"CHICLETE TRIDENT",corredor:"25-26",g:"25-26",preco:"29.49",emoji:"🍬",x:24,y:5},
-{nome:"PACOCA ROLHA",corredor:"3-4",g:"3-4",preco:"30.79",emoji:"🥜",x:2,y:6},
-{nome:"DOCE LEITE",corredor:"5-6",g:"5-6",preco:"32.09",emoji:"🥛",x:4,y:6},
-{nome:"LEITE PO NESCAU",corredor:"7-8",g:"7-8",preco:"33.39",emoji:"🥛",x:6,y:6},
-{nome:"CEREAL MATINAL",corredor:"9-10",g:"9-10",preco:"31.99",emoji:"🥣",x:8,y:6},
-{nome:"BARRA CEREAL",corredor:"11-12",g:"11-12",preco:"33.29",emoji:"🥣",x:10,y:6},
-{nome:"SABAO PO 1.6KG",corredor:"13-14",g:"13-14",preco:"34.59",emoji:"🧴",x:12,y:6},
-{nome:"SABAO PO 2.4KG",corredor:"15-16",g:"15-16",preco:"35.89",emoji:"🧴",x:14,y:6},
-{nome:"SABAO BARRA 5UN",corredor:"17-18",g:"17-18",preco:"37.19",emoji:"🍫",x:16,y:6},
-{nome:"DETERGENTE LIQUIDO",corredor:"19-20",g:"19-20",preco:"38.49",emoji:"🧼",x:18,y:6},
-{nome:"DETERGENTE PO",corredor:"21-22",g:"21-22",preco:"39.79",emoji:"🧼",x:20,y:6},
-{nome:"AMACIANTE 2L",corredor:"23-24",g:"23-24",preco:"6.09",emoji:"👕",x:22,y:6},
-{nome:"AMACIANTE 5L",corredor:"25-26",g:"25-26",preco:"7.39",emoji:"👕",x:24,y:6},
-{nome:"AGUA SANITARIA 1L",corredor:"3-4",g:"3-4",preco:"5.99",emoji:"💧",x:2,y:7},
-{nome:"AGUA SANITARIA 2L",corredor:"5-6",g:"5-6",preco:"7.29",emoji:"💧",x:4,y:7},
-{nome:"DESINFETANTE 1L",corredor:"7-8",g:"7-8",preco:"8.59",emoji:"🧽",x:6,y:7},
-{nome:"DESINFETANTE 2L",corredor:"9-10",g:"9-10",preco:"9.89",emoji:"🧽",x:8,y:7},
-{nome:"LIMPADOR MULTIUSO",corredor:"11-12",g:"11-12",preco:"11.19",emoji:"🧹",x:10,y:7},
-{nome:"LIMPA VIDRO",corredor:"13-14",g:"13-14",preco:"12.49",emoji:"🧹",x:12,y:7},
-{nome:"SACO LIXO 30L",corredor:"15-16",g:"15-16",preco:"13.79",emoji:"🗑️",x:14,y:7},
-{nome:"SACO LIXO 100L",corredor:"17-18",g:"17-18",preco:"15.09",emoji:"🗑️",x:16,y:7},
-{nome:"ESPONJA DUPLA FACE",corredor:"19-20",g:"19-20",preco:"16.39",emoji:"🧽",x:18,y:7},
-{nome:"LA ACO",corredor:"21-22",g:"21-22",preco:"14.99",emoji:"📦",x:20,y:7},
-{nome:"VASSOURA",corredor:"23-24",g:"23-24",preco:"16.29",emoji:"🧹",x:22,y:7},
-{nome:"RODO",corredor:"25-26",g:"25-26",preco:"17.59",emoji:"🧹",x:24,y:7},
-{nome:"PA BALDE",corredor:"3-4",g:"3-4",preco:"18.89",emoji:"📦",x:2,y:9},
-{nome:"PAPEL HIG 12UN",corredor:"5-6",g:"5-6",preco:"20.19",emoji:"🧻",x:4,y:9},
-{nome:"PAPEL HIG 24UN",corredor:"7-8",g:"7-8",preco:"21.49",emoji:"🧻",x:6,y:9},
-{nome:"PAPEL TOALHA 2UN",corredor:"9-10",g:"9-10",preco:"22.79",emoji:"🧻",x:8,y:9},
-{nome:"GUARDANAPO",corredor:"11-12",g:"11-12",preco:"24.09",emoji:"🧻",x:10,y:9},
-{nome:"FRALDA PAMPERS P",corredor:"13-14",g:"13-14",preco:"25.39",emoji:"👶",x:12,y:9},
-{nome:"FRALDA PAMPERS M",corredor:"15-16",g:"15-16",preco:"23.99",emoji:"👶",x:14,y:9},
-{nome:"FRALDA PAMPERS G",corredor:"17-18",g:"17-18",preco:"25.29",emoji:"👶",x:16,y:9},
-{nome:"LENCO UMEDECIDO",corredor:"19-20",g:"19-20",preco:"26.59",emoji:"👶",x:18,y:9},
-{nome:"SHAMPOO PANTENE 350ML",corredor:"21-22",g:"21-22",preco:"27.89",emoji:"🧴",x:20,y:9},
-{nome:"CONDICIONADOR PANTENE",corredor:"23-24",g:"23-24",preco:"29.19",emoji:"🧴",x:22,y:9},
-{nome:"SHAMPOO ELSEVE",corredor:"25-26",g:"25-26",preco:"30.49",emoji:"🧴",x:24,y:9},
-{nome:"CREME PENTEAR",corredor:"3-4",g:"3-4",preco:"31.79",emoji:"🧴",x:2,y:10},
-{nome:"SABONETE DOVE 90G",corredor:"5-6",g:"5-6",preco:"33.09",emoji:"🧼",x:4,y:10},
-{nome:"SABONETE LUX",corredor:"7-8",g:"7-8",preco:"34.39",emoji:"🧼",x:6,y:10},
-{nome:"SABONETE LIQUIDO",corredor:"9-10",g:"9-10",preco:"32.99",emoji:"🧼",x:8,y:10},
-{nome:"PASTA COLGATE 90G",corredor:"11-12",g:"11-12",preco:"34.29",emoji:"🪥",x:10,y:10},
-{nome:"PASTA SENSODYNE",corredor:"13-14",g:"13-14",preco:"35.59",emoji:"🪥",x:12,y:10},
-{nome:"ESCOVA DENTAL",corredor:"15-16",g:"15-16",preco:"36.89",emoji:"🪥",x:14,y:10},
-{nome:"FIO DENTAL",corredor:"17-18",g:"17-18",preco:"38.19",emoji:"🪥",x:16,y:10},
-{nome:"DESODORANTE REXONA",corredor:"19-20",g:"19-20",preco:"39.49",emoji:"🧴",x:18,y:10},
-{nome:"DESOD AEROSOL",corredor:"21-22",g:"21-22",preco:"5.79",emoji:"🧴",x:20,y:10},
-{nome:"ABSORVENTE ALWAYS",corredor:"23-24",g:"23-24",preco:"7.09",emoji:"🧴",x:22,y:10},
-{nome:"APARELHO BARBEAR",corredor:"25-26",g:"25-26",preco:"8.39",emoji:"🪒",x:24,y:10},
-{nome:"ALCOOL GEL 500ML",corredor:"3-4",g:"3-4",preco:"6.99",emoji:"🧴",x:2,y:11},
-{nome:"ALCOOL LIQUIDO 1L",corredor:"5-6",g:"5-6",preco:"8.29",emoji:"🧴",x:4,y:11},
-{nome:"IOGURTE NATURAL 170G",corredor:"7-8",g:"7-8",preco:"9.59",emoji:"🥣",x:6,y:11},
-{nome:"IOGURTE MORANGO",corredor:"9-10",g:"9-10",preco:"10.89",emoji:"🥣",x:8,y:11},
-{nome:"DANONINHO",corredor:"11-12",g:"11-12",preco:"12.19",emoji:"🥣",x:10,y:11},
-{nome:"LEITE FERMENTADO",corredor:"13-14",g:"13-14",preco:"13.49",emoji:"🥛",x:12,y:11},
-{nome:"MANTEIGA 500G",corredor:"15-16",g:"15-16",preco:"14.79",emoji:"🧈",x:14,y:11},
-{nome:"MARGARINA 500G",corredor:"17-18",g:"17-18",preco:"16.09",emoji:"🧈",x:16,y:11},
-{nome:"REQUEIJAO 200G",corredor:"19-20",g:"19-20",preco:"17.39",emoji:"🥫",x:18,y:11},
-{nome:"QUEIJO MUSSARELA KG",corredor:"21-22",g:"21-22",preco:"15.99",emoji:"🧀",x:20,y:11},
-{nome:"PRESUNTO KG",corredor:"23-24",g:"23-24",preco:"17.29",emoji:"🍖",x:22,y:11},
-{nome:"MORTADELA KG",corredor:"25-26",g:"25-26",preco:"18.59",emoji:"🍖",x:24,y:11},
-{nome:"SALSICHA KG",corredor:"3-4",g:"3-4",preco:"19.89",emoji:"🧂",x:2,y:12},
-{nome:"LINGUICA CALABRESA",corredor:"5-6",g:"5-6",preco:"21.19",emoji:"🌭",x:4,y:12},
-{nome:"BACON KG",corredor:"7-8",g:"7-8",preco:"22.49",emoji:"🥓",x:6,y:12},
-{nome:"CARNE BOVINA ACEM",corredor:"9-10",g:"9-10",preco:"23.79",emoji:"🥩",x:8,y:12},
-{nome:"CARNE BOVINA PICANHA",corredor:"11-12",g:"11-12",preco:"25.09",emoji:"🥩",x:10,y:12},
-{nome:"CARNE MOIDA KG",corredor:"13-14",g:"13-14",preco:"26.39",emoji:"🥩",x:12,y:12},
-{nome:"BIFE ANCHO",corredor:"15-16",g:"15-16",preco:"24.99",emoji:"🥩",x:14,y:12},
-{nome:"FRANGO INTEIRO KG",corredor:"17-18",g:"17-18",preco:"26.29",emoji:"🍗",x:16,y:12},
-{nome:"PEITO FRANGO KG",corredor:"19-20",g:"19-20",preco:"27.59",emoji:"🍗",x:18,y:12},
-{nome:"COXA SOBRECOXA",corredor:"21-22",g:"21-22",preco:"28.89",emoji:"🍗",x:20,y:12},
-{nome:"FILE PEIXE TILAPIA",corredor:"23-24",g:"23-24",preco:"30.19",emoji:"🐟",x:22,y:12},
-{nome:"CAMARAO KG",corredor:"25-26",g:"25-26",preco:"31.49",emoji:"🦐",x:24,y:12},
-{nome:"OVOS BRANCOS 12UN",corredor:"3-4",g:"3-4",preco:"32.79",emoji:"🥚",x:2,y:13},
-{nome:"OVOS VERMELHOS 30UN",corredor:"5-6",g:"5-6",preco:"34.09",emoji:"🥚",x:4,y:13},
-{nome:"BANANA NANICA KG",corredor:"7-8",g:"7-8",preco:"35.39",emoji:"🍌",x:6,y:13},
-{nome:"MACA FUJI KG",corredor:"9-10",g:"9-10",preco:"33.99",emoji:"🍎",x:8,y:13},
-{nome:"LARANJA PERA KG",corredor:"11-12",g:"11-12",preco:"35.29",emoji:"🍊",x:10,y:13},
-{nome:"UVA THOMPSON KG",corredor:"13-14",g:"13-14",preco:"36.59",emoji:"🍇",x:12,y:13},
-{nome:"MELANCIA KG",corredor:"15-16",g:"15-16",preco:"37.89",emoji:"🍉",x:14,y:13},
-{nome:"MORANGO BANDEJA",corredor:"17-18",g:"17-18",preco:"39.19",emoji:"🍓",x:16,y:13},
-{nome:"TOMATE SALADA KG",corredor:"19-20",g:"19-20",preco:"5.49",emoji:"🧂",x:18,y:13},
-{nome:"CEBOLA KG",corredor:"21-22",g:"21-22",preco:"6.79",emoji:"🧅",x:20,y:13},
-{nome:"BATATA INGLESA KG",corredor:"23-24",g:"23-24",preco:"8.09",emoji:"🥔",x:22,y:13},
-{nome:"BATATA DOCE KG",corredor:"25-26",g:"25-26",preco:"9.39",emoji:"🍬",x:24,y:13},
-{nome:"CENOURA KG",corredor:"3-4",g:"3-4",preco:"7.99",emoji:"🥕",x:2,y:14},
-{nome:"ALFACE UN",corredor:"5-6",g:"5-6",preco:"9.29",emoji:"🥬",x:4,y:14},
-{nome:"COUVE MACO",corredor:"7-8",g:"7-8",preco:"10.59",emoji:"🥬",x:6,y:14},
-{nome:"BROCOLIS UN",corredor:"9-10",g:"9-10",preco:"11.89",emoji:"🥦",x:8,y:14},
-{nome:"PIMENTAO VERDE",corredor:"11-12",g:"11-12",preco:"13.19",emoji:"🌶️",x:10,y:14},
-{nome:"ALHO KG",corredor:"13-14",g:"13-14",preco:"14.49",emoji:"🧄",x:12,y:14},
-{nome:"LIMAO TAITI KG",corredor:"15-16",g:"15-16",preco:"15.79",emoji:"🍋",x:14,y:14},
-{nome:"ABACATE KG",corredor:"17-18",g:"17-18",preco:"17.09",emoji:"🥑",x:16,y:14},
-{nome:"MANGA PALMER KG",corredor:"19-20",g:"19-20",preco:"18.39",emoji:"🥭",x:18,y:14},
-{nome:"PAO FORMA PULLMAN",corredor:"21-22",g:"21-22",preco:"16.99",emoji:"🍞",x:20,y:14},
-{nome:"PAO FRANCES KG",corredor:"23-24",g:"23-24",preco:"18.29",emoji:"🍞",x:22,y:14},
-{nome:"BOLO PRONTO",corredor:"25-26",g:"25-26",preco:"19.59",emoji:"🎂",x:24,y:14},
-{nome:"CROISSANT",corredor:"3-4",g:"3-4",preco:"20.89",emoji:"🥐",x:2,y:15},
-{nome:"PAO QUEIJO KG",corredor:"5-6",g:"5-6",preco:"22.19",emoji:"🧀",x:4,y:15},
-{nome:"OVO PASCOA 200G",corredor:"7-8",g:"7-8",preco:"23.49",emoji:"🥚",x:6,y:15},
-{nome:"VALE COMPRAS 50",corredor:"9-10",g:"9-10",preco:"24.79",emoji:"🎁",x:8,y:15},
-{nome:"FRETE GRATIS",corredor:"11-12",g:"11-12",preco:"26.09",emoji:"🚚",x:10,y:15},
-{nome:"GIRO SORTE",corredor:"13-14",g:"13-14",preco:"27.39",emoji:"🎰",x:12,y:15},
-{nome:"CUPOM 10% OFF",corredor:"15-16",g:"15-16",preco:"25.99",emoji:"🎫",x:14,y:15},
-{nome:"CUPOM 20% OFF",corredor:"17-18",g:"17-18",preco:"27.29",emoji:"🎫",x:16,y:15},
-{nome:"WHEY PROTEIN",corredor:"19-20",g:"19-20",preco:"28.59",emoji:"💪",x:18,y:15},
-{nome:"CREATINA 300G",corredor:"21-22",g:"21-22",preco:"29.89",emoji:"💪",x:20,y:15},
-{nome:"BARRA PROTEINA",corredor:"23-24",g:"23-24",preco:"31.19",emoji:"🍫",x:22,y:15},
-{nome:"CAFE ESPECIAL",corredor:"25-26",g:"25-26",preco:"32.49",emoji:"☕",x:24,y:15},
-{nome:"AZEITONA VERDE",corredor:"3-4",g:"3-4",preco:"33.79",emoji:"🫒",x:2,y:16},
-{nome:"PALMITO",corredor:"5-6",g:"5-6",preco:"35.09",emoji:"🌴",x:4,y:16},
-{nome:"MILHO PIPOCA",corredor:"7-8",g:"7-8",preco:"36.39",emoji:"🌽",x:6,y:16},
-{nome:"ARROZ INTEGRAL",corredor:"9-10",g:"9-10",preco:"34.99",emoji:"🍚",x:8,y:16},
-{nome:"GRANOLA",corredor:"11-12",g:"11-12",preco:"36.29",emoji:"🥣",x:10,y:16},
-{nome:"MEL",corredor:"13-14",g:"13-14",preco:"37.59",emoji:"🍯",x:12,y:16},
-{nome:"AZEITE EXTRA",corredor:"15-16",g:"15-16",preco:"38.89",emoji:"🫒",x:14,y:16},
-{nome:"PAO BISNAGUINHA",corredor:"17-18",g:"17-18",preco:"5.19",emoji:"🍞",x:16,y:16},
-{nome:"IOGURTE GREGO",corredor:"19-20",g:"19-20",preco:"6.49",emoji:"🥣",x:18,y:16},
-{nome:"PAO FORMA PULLMAN",corredor:"21-22",g:"21-22",preco:"7.79",emoji:"🍞",x:20,y:16},
-{nome:"PAO FRANCES KG",corredor:"23-24",g:"23-24",preco:"9.09",emoji:"🍞",x:22,y:16},
-{nome:"BOLO PRONTO",corredor:"25-26",g:"25-26",preco:"10.39",emoji:"🎂",x:24,y:16}
-];
-
-
-function carregar40Demo(){
-  if(confirm('Carregar 40 produtos demo? Vai adicionar aos existentes.')){
-    produtos = produtos.concat(PRODUTOS_40_DEMO);
-    exportar();
-    alert('40 PRODUTOS DEMO CARREGADOS! Total: '+produtos.length);
+function resetTotal(){
+  if(confirm('💥 RESET TOTAL?\n\nVai apagar:\n- atacadao364_FINAL\n- produtos\n- atacadao364_v56 (lista do cliente)\n\nTem certeza?')){
+    localStorage.removeItem('atacadao364_FINAL');
+    localStorage.removeItem('produtos');
+    localStorage.removeItem('atacadao364_v56');
+    produtos=[];
+    document.getElementById('jsonOut').innerText='✅ LOCALSTORAGE LIMPO!';
+    render();
+    alert('✅ Tudo apagado! Agora clique em 📦 40 DEMO ESQ');
   }
 }
-function limparDemo(){
-  if(confirm('Limpar tudo?')){ produtos=[]; exportar(); }
+
+function carregar40Demo(){
+  if(!confirm('Carregar 40 DEMO já no padrão ESQ correto?')) return;
+  // DEMO JÁ NO PADRÃO ESQ: X = gôndola+1
+  const demo=[
+    {nome:"ARROZ 5KG",g:"25-26",preco:"26.90",emoji:"🍚",x:2,y:2},
+    {nome:"FEIJAO 1KG",g:"25-26",preco:"8.49",emoji:"🫘",x:2,y:4},
+    {nome:"ACUCAR 1KG",g:"25-26",preco:"4.29",emoji:"🍬",x:2,y:6},
+    {nome:"OLEO SOJA",g:"23-24",preco:"7.99",emoji:"🫒",x:4,y:2},
+    {nome:"CAFE 500G",g:"23-24",preco:"18.90",emoji:"☕",x:4,y:4},
+    {nome:"LEITE CAIXA",g:"21-22",preco:"5.49",emoji:"🥛",x:6,y:2},
+    {nome:"REFRI 2L",g:"21-22",preco:"8.99",emoji:"🥤",x:6,y:4},
+  ];
+  produtos=produtos.concat(demo);
+  exportar();
 }
+
+function limparDemo(){ if(confirm('Limpar lista?')){ produtos=[]; exportar(); } }
 
 function render(){
   const q=document.getElementById('busca').value.toLowerCase();
   const filtered=produtos.map((p,i)=>({...p,_i:i})).filter(p=>p.nome.toLowerCase().includes(q));
-  document.getElementById('lista').innerHTML=filtered.map(p=>`<div class="card"><div style="display:flex;gap:8px;align-items:center"><span style="font-size:22px">${p.emoji}</span><div><b>${p.nome}</b><br><small style="background:#00ff88;color:#000;padding:2px;border-radius:4px">${p.corredor||p.g} X:${p.x}</small> R$${p.preco}</small></div></div><div><button class="b" onclick="editar(${p._i})">EDIT</button> <button class="b" style="border-color:#ff3b30;color:#ff3b30" onclick="apagar(${p._i})">X</button></div></div>`).join('');
+  document.getElementById('lista').innerHTML=filtered.map(p=>`<div class="card"><div style="display:flex;gap:8px;align-items:center"><span style="font-size:22px">${p.emoji}</span><div><b>${p.nome}</b><br><small style="background:#00ff88;color:#000;padding:2px 6px;border-radius:4px">${p.g} X:${p.x} Y:${p.y}</small> R$${p.preco}</div></div><div><button class="b" onclick="editar(${p._i})">EDIT</button> <button class="b" style="border-color:#ff3b30;color:#ff3b30" onclick="apagar(${p._i})">X</button></div></div>`).join('');
   document.getElementById('total').innerText=produtos.length; desenhaMapa();
 }
+
 function desenhaMapa(){
-  const mapa=document.getElementById('mapa'); mapa.innerHTML='<div style="position:absolute;right:0;top:0;bottom:0;width:30px;background:#00ff88;opacity:0.3;display:flex;align-items:center;justify-content:center;font-size:8px;color:#000;font-weight:bold;writing-mode:vertical-rl">ENTRADA 26</div>';
+  const mapa=document.getElementById('mapa'); mapa.innerHTML='';
   for(let y=0;y<ROWS;y++) for(let x=0;x<COLS;x++){
     if(isGondola(x,y)){
       let d=document.createElement('div'); d.className='gondola';
       d.style.left=(x/COLS*100)+'%'; d.style.top=(y/ROWS*100)+'%'; d.style.width=(100/COLS)+'%'; d.style.height=(100/ROWS)+'%';
-      if(x%2==1){ let lab=document.createElement('div'); lab.style.position='absolute'; lab.style.fontSize='7px'; lab.style.color='#fff'; lab.style.left='50%'; lab.style.top='50%'; lab.style.transform='translate(-50%,-50%)'; lab.innerText=getGByX(x); d.appendChild(lab); }
+      if(x%2==1){ let lab=document.createElement('div'); lab.style.cssText='position:absolute;font-size:7px;color:#fff;left:50%;top:50%;transform:translate(-50%,-50%)'; lab.innerText=getGByX(x+1); d.appendChild(lab); }
       mapa.appendChild(d);
     }
   }
+  // ENTRADA 1-2 DIR
+  let ent=document.createElement('div'); ent.style.cssText='position:absolute;left:'+(24/COLS*100)+'%;top:'+(15/ROWS*100)+'%;width:'+(100/COLS)+'%;height:'+(100/ROWS)+'%;background:#00ff88;display:flex;align-items:center;justify-content:center;font-size:6px;color:#000;font-weight:900'; ent.innerText='ENTRADA 1-2'; mapa.appendChild(ent);
   produtos.forEach(p=>{
     let d=document.createElement('div'); d.className='ponto'; d.style.left=(p.x/COLS*100)+'%'; d.style.top=(p.y/ROWS*100)+'%'; d.textContent=p.emoji; mapa.appendChild(d);
   });
 }
+
 function pegaXY(e){
   const r=document.getElementById('mapa').getBoundingClientRect();
   let x=Math.round((e.clientX-r.left)/r.width*COLS); let y=Math.round((e.clientY-r.top)/r.height*ROWS);
-  if(x%2==1){ if(x<26) x++; else x--; }
-  if(y<0) y=0; if(y>=ROWS) y=ROWS-1; if(x<0) x=0; if(x>=COLS) x=COLS-1;
-  if(isGondola(x,y)){ if(x>0 &&!isGondola(x-1,y)) x--; else if(x<COLS-1 &&!isGondola(x+1,y)) x++; }
+  if(x%2==1) x++; // força corredor par
+  if(x<2) x=2; if(x>24) x=24;
+  if(isParedeY(y)){ y+=2; if(y>16) y=14; }
+  if(y<2) y=2; if(y>16) y=14;
   let g=getGByX(x);
   document.getElementById('f_x').value=x; document.getElementById('f_y').value=y; document.getElementById('f_corredor').value=g;
-  document.getElementById('gpsInfo').innerText=`AUTO: Corredor X:${x} Y:${y} = Gôndola ${g} (DIREITA 25-26 → ESQUERDA 1-2)`;
-  let pp=document.getElementById('pontoPrev'); if(!pp){ pp=document.createElement('div'); pp.id='pontoPrev'; pp.className='ponto'; pp.style.fontSize='28px'; pp.style.filter='drop-shadow(0 0 8px #00ff88)'; document.getElementById('mapa').appendChild(pp); }
-  pp.style.left=(x/COLS*100)+'%'; pp.style.top=(y/ROWS*100)+'%'; pp.textContent=document.getElementById('f_emoji').value||'📦';
+  document.getElementById('gpsInfo').innerText=`✅ Gôndola ${g} | Corredor X:${x} Y:${y} | 25-26 ESQ`;
 }
-function openForm(){ editIndex=-1; document.getElementById('formTitle').innerText='NOVO (25-26 DIREITA)'; ['f_nome','f_corredor','f_preco','f_emoji','f_x','f_y'].forEach(id=>document.getElementById(id).value=''); document.getElementById('formEdit').style.display='block'; }
-function editar(i){ editIndex=i; const p=produtos[i]; document.getElementById('f_nome').value=p.nome; document.getElementById('f_corredor').value=p.corredor||p.g; document.getElementById('f_preco').value=p.preco; document.getElementById('f_emoji').value=p.emoji; document.getElementById('f_x').value=p.x; document.getElementById('f_y').value=p.y; document.getElementById('formEdit').style.display='block'; document.getElementById('gpsInfo').innerText=`EDITANDO: ${p.nome} [${p.g}] X:${p.x}`; }
+
+function openForm(){ editIndex=-1; document.getElementById('formTitle').innerText='NOVO - 25-26 ESQ'; ['f_nome','f_corredor','f_preco','f_emoji','f_x','f_y'].forEach(id=>document.getElementById(id).value=''); document.getElementById('formEdit').style.display='block'; }
+function editar(i){ editIndex=i; const p=produtos[i]; document.getElementById('f_nome').value=p.nome; document.getElementById('f_corredor').value=p.g; document.getElementById('f_preco').value=p.preco; document.getElementById('f_emoji').value=p.emoji; document.getElementById('f_x').value=p.x; document.getElementById('f_y').value=p.y; document.getElementById('formEdit').style.display='block'; }
 function closeForm(){ document.getElementById('formEdit').style.display='none'; }
+
 function salvar(){
-  let cor=document.getElementById('f_corredor').value||'25-26';
-  let x=parseInt(document.getElementById('f_x').value); let y=parseInt(document.getElementById('f_y').value);
-  if(isNaN(x)) x=getXByG(cor); if(isNaN(y)) y=4;
-  if(isGondola(x,y)){ alert('X em cima da gôndola! Clique no corredor ao lado.'); return; }
-  const p={nome:document.getElementById('f_nome').value.toUpperCase(), corredor:cor, g:getGByX(x), preco:document.getElementById('f_preco').value, emoji:document.getElementById('f_emoji').value||'📦', x:x, y:y};
-  if(!p.nome) return alert('Nome'); if(editIndex>=0) produtos[editIndex]=p; else produtos.push(p);
+  let gRaw=document.getElementById('f_corredor').value||'25-26';
+  let g=getGByX(getXByG(gRaw)+1); // normaliza
+  let x=getXByG(gRaw)+1; // X correto = gôndola + 1
+  let y=parseInt(document.getElementById('f_y').value)||4;
+  if(isParedeY(y)){ alert('Y na parede! Escolha Y=2,3,4,5,6,7,10,11,12,13,14,15,16'); return; }
+  const p={nome:document.getElementById('f_nome').value.toUpperCase(), g:g, corredor:g, preco:document.getElementById('f_preco').value, emoji:document.getElementById('f_emoji').value||'📦', x:x, y:y};
+  if(!p.nome) return alert('Nome obrigatório');
+  if(editIndex>=0) produtos[editIndex]=p; else produtos.push(p);
   closeForm(); exportar();
 }
+
 function apagar(i){ if(confirm('Apagar?')){ produtos.splice(i,1); exportar(); } }
+
 function exportar(){
   try{
-    produtos=produtos.map(p=>{ p.g=getGByX(p.x); p.corredor=p.g; return p; });
+    produtos=produtos.map(p=>{ let gx=getXByG(p.g); p.x=gx+1; p.g=getGByX(p.x); p.corredor=p.g; return p; });
     localStorage.setItem(KEY,JSON.stringify(produtos));
     localStorage.setItem('produtos',JSON.stringify(produtos));
-    document.getElementById('jsonOut').value=`✅ ${produtos.length} salvos - 25-26 DIREITA → 1-2 ESQUERDA - V60.8`;
+    document.getElementById('jsonOut').innerText=`✅ ${produtos.length} salvos - 25-26 ESQ / 1-2 DIR - V61.3`;
     render();
-  }catch(e){ alert('Erro: '+e.message); }
+  }catch(e){ alert(e.message); }
 }
 render();
 </script>
