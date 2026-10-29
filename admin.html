@@ -2,68 +2,64 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ADM 180 FICTICIO - 25-26 ESQ</title>
+<title>ADM 180 FICTICIO V61.4 COM EDIT - 25-26 ESQ</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}body{font-family:monospace;padding:12px;max-width:480px;margin:auto;background:#000;color:#00ff88}
-.top{display:flex;gap:8px;position:sticky;top:0;background:#000;padding:8px 0;z-index:5;border-bottom:1px solid #00ff88}
 input{padding:12px;border:1px solid #00ff88;border-radius:10px;width:100%;background:#111;color:#00ff88;margin-top:6px}
-.card{background:#0a0a0a;padding:12px;border-radius:12px;margin:8px 0;display:flex;justify-content:space-between;border:1px solid #222}
-.b{padding:10px;border-radius:8px;border:1px solid #00ff88;font-weight:700;background:#000;color:#00ff88}
-#mapa{width:100%;height:420px;border:2px solid #00ff88;border-radius:12px;position:relative;background:#000;margin:10px 0}
-.ponto{position:absolute;transform:translate(-50%,-50%);font-size:16px} .gondola{position:absolute;background:#1e40af;border:1px solid #00ff88;opacity:0.45}
+.card{background:#0a0a0a;padding:10px;border-radius:12px;margin:6px 0;display:flex;justify-content:space-between;border:1px solid #222;align-items:center}
+.b{padding:8px 10px;border-radius:8px;border:1px solid #00ff88;background:#000;color:#00ff88;font-weight:700}
+#formEdit{position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:auto;background:#111;padding:16px;border-radius:16px 16px 0 0;border:2px solid #00ff88;display:none;z-index:99}
+#mapa{width:100%;height:380px;border:2px solid #00ff88;border-radius:12px;position:relative;background:#000;margin:10px 0}
+.ponto{position:absolute;transform:translate(-50%,-50%);font-size:15px}
+.gondola{position:absolute;background:#1e40af;border:1px solid #00ff88;opacity:.4}
 </style>
 </head>
 <body>
-<h2>> ADM 180 FICTICIO ESQ - <span id="total">0</span></h2>
-<div style="font-size:10px;border:1px dashed #00ff88;padding:6px;border-radius:6px;margin:6px 0">✅ 25-26 ESQ X=2 → 1-2 DIR X=26 ENTRADA | 180 POSIÇÕES - V61.3</div>
-<div class="top"><input id="busca" placeholder="BUSCAR..." oninput="render()"><button class="b" style="background:#00ff88;color:#000" onclick="openForm()">+ NOVO</button></div>
-<div style="display:flex;gap:6px;margin:8px 0">
-<button class="b" style="flex:1;background:#00ff88;color:#000;height:44px" onclick="carregar180()">📦 POVOAR 180 FICTICIOS</button>
-<button class="b" style="flex:1;border-color:#ff3b30;color:#ff3b30" onclick="resetT()">💥 RESET</button>
-</div>
+<h3>> ADM 180 V61.4 COM EDIT - <span id="total">0</span></h3>
+<input id="busca" placeholder="BUSCAR PRODUTO..." oninput="render()" style="position:sticky;top:0;z-index:5">
+<div style="display:flex;gap:6px;margin:8px 0"><button class="b" style="flex:1;background:#00ff88;color:#000" onclick="carregar180()">📦 POVOAR 180</button><button class="b" style="flex:1" onclick="openForm()">+ NOVO</button><button class="b" style="border-color:#ff3b30;color:#ff3b30" onclick="resetT()">💥</button></div>
 <div id="lista"></div>
-<div id="gpsInfo" style="background:#00ff88;color:#000;padding:6px;text-align:center;font-weight:900;font-size:10px;border-radius:6px">MAPA ESQ UNIFICADO</div>
 <div id="mapa" onclick="pegaXY(event)"></div>
-<button class="b" style="width:100%;background:#00ff88;color:#000;height:50px;margin-top:10px" onclick="exportar()">💾 SALVAR 180 FICTICIOS</button>
-<div id="msg" style="font-size:9px;color:#666;margin-top:6px"></div>
+<button class="b" style="width:100%;background:#00ff88;color:#000;height:48px" onclick="exportar()">💾 SALVAR</button>
+<div id="msg" style="font-size:10px;color:#666"></div>
+
+<div id="formEdit">
+<h4 id="ftitle">EDITAR</h4>
+<input id="f_nome" placeholder="NOME PRODUTO">
+<div style="display:flex;gap:6px"><input id="f_emoji" placeholder="🍚"><input id="f_g" placeholder="25-26"><input id="f_preco" placeholder="9.90"></div>
+<div style="display:flex;gap:6px"><input id="f_x" type="number" readonly><input id="f_y" type="number"></div>
+<div style="display:flex;gap:8px;margin-top:10px"><button class="b" style="flex:1" onclick="closeForm()">CANCELAR</button><button class="b" style="flex:1;background:#00ff88;color:#000" onclick="salvar()">SALVAR</button></div>
+</div>
+
 <script>
 const COLS=27,ROWS=19;
 const MAP_G={'25-26':1,'23-24':3,'21-22':5,'19-20':7,'17-18':9,'15-16':11,'13-14':13,'11-12':15,'9-10':17,'7-8':19,'5-6':21,'3-4':23,'1-2':25};
 function getGByX(x){let gx=x-1,b='25-26',d=99;for(let k in MAP_G){let diff=Math.abs(gx-MAP_G[k]);if(diff<d){d=diff;b=k;}}return b;}
 function isGondola(x,y){if(y==0||y==8||y==17||x==0||x==COLS-1)return true;if(x%2==1)return true;return false;}
 const KEY='atacadao364_FINAL';
-const FICTICIOS = [
-{nome:"ARROZ CAMIL 5KG",g:"25-26",preco:"26.90",emoji:"🍚",x:2,y:2},{nome:"FEIJAO KICALDO 1KG",g:"25-26",preco:"8.49",emoji:"🫘",x:2,y:3},{nome:"ACUCAR UNIAO 1KG",g:"25-26",preco:"4.29",emoji:"🍬",x:2,y:4},{nome:"OLEO LIZA 900ML",g:"25-26",preco:"7.99",emoji:"🫒",x:2,y:5},{nome:"CAFE PILAO 500G",g:"25-26",preco:"18.90",emoji:"☕",x:2,y:6},{nome:"SAL LEBRE 1KG",g:"25-26",preco:"2.49",emoji:"🧂",x:2,y:7},{nome:"FARINHA DONA BENTA",g:"25-26",preco:"5.90",emoji:"🌾",x:2,y:10},{nome:"MACARRAO GALO 500G",g:"25-26",preco:"4.90",emoji:"🍝",x:2,y:11},{nome:"MOLHO HEINZ",g:"25-26",preco:"3.90",emoji:"🍅",x:2,y:12},{nome:"MILHO QUERO 200G",g:"25-26",preco:"3.49",emoji:"🌽",x:2,y:13},{nome:"ERVILHA QUERO",g:"25-26",preco:"3.49",emoji:"🟢",x:2,y:14},{nome:"LEITE COND MOÇA",g:"25-26",preco:"6.90",emoji:"🥫",x:2,y:15},{nome:"CREME LEITE NESTLE",g:"25-26",preco:"3.99",emoji:"🥫",x:2,y:16},{nome:"LEITE ITAMBE 1L",g:"23-24",preco:"5.49",emoji:"🥛",x:4,y:2},{nome:"REFRI COCA 2L",g:"23-24",preco:"8.99",emoji:"🥤",x:4,y:3}
-];
-const BASE = ["LEITE","REFRI","AGUA","SUCO","CERVEJA","BOLACHA","CHOCOLATE","BALA","CHICLETE","PACOCA","SABAO PO","DETERGENTE","AMACIANTE","AGUA SANIT","DESINFETANTE","IOGURTE","PRESUNTO","QUEIJO","MANTEIGA","REQUEIJAO","CARNE","FRANGO","BANANA","TOMATE","CEBOLA","SHAMPOO","SABONETE","PASTA","FRALDA","PAPEL HIG","OVO PASCOA","VALE COMPRAS","FRETE","GIRO SORTE","CUPOM"];
-const EMOJIS = ["🥛","🥤","💧","🧃","🍺","🍪","🍫","🍬","🍬","🥜","🧴","🧼","👕","🧹","🧽","🥣","🍖","🧀","🧈","🥫","🥩","🍗","🍌","🍅","🧅","🧴","🧼","🪥","👶","🧻","🥚","🎁","🚚","🎰","🎫"];
-let ys=[2,3,4,5,6,7,10,11,12,13,14,15,16];
-function gerar180(){
-  let lista=[...FICTICIOS];
-  let idx=lista.length;
-  for(let g in MAP_G){
-    let x=MAP_G[g]+1;
-    for(let y of ys){
-      if(lista.some(p=>p.x==x&&p.y==y)) continue;
-      if(lista.length>=180) break;
-      let nome = BASE[idx % BASE.length]+" "+(idx+1)+" "+g;
-      let emoji = EMOJIS[idx % EMOJIS.length];
-      lista.push({nome:nome,g:g,corredor:g,preco:(5+idx%25)+".90",emoji:emoji,x:x,y:y});
-      idx++;
-    }
-    if(lista.length>=180) break;
-  }
-  return lista.slice(0,180);
-}
 let produtos=[];try{produtos=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){}
-function resetT(){if(confirm('Apagar tudo?')){localStorage.removeItem(KEY);produtos=[];render();}}
-function carregar180(){if(!confirm('Povoar mapa com 180 ficticios ESQ?'))return;produtos=gerar180();exportar();}
-function render(){const q=document.getElementById('busca').value.toLowerCase();const f=produtos.map((p,i)=>({...p,_i:i})).filter(p=>p.nome.toLowerCase().includes(q));document.getElementById('lista').innerHTML=f.slice(0,60).map(p=>`<div class="card"><div><span style="font-size:18px">${p.emoji}</span> <b style="font-size:10px">${p.nome}</b><br><small style="background:#00ff88;color:#000;padding:2px 4px;border-radius:4px">${p.g} X:${p.x}</small> R$${p.preco}</div><button class="b" onclick="apagar(${p._i})">X</button></div>`).join('');document.getElementById('total').innerText=produtos.length;desenhaMapa();}
-function desenhaMapa(){const m=document.getElementById('mapa');m.innerHTML='';for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){if(isGondola(x,y)){let d=document.createElement('div');d.className='gondola';d.style.left=(x/COLS*100)+'%';d.style.top=(y/ROWS*100)+'%';d.style.width=(100/COLS)+'%';d.style.height=(100/ROWS)+'%';m.appendChild(d);}}let ent=document.createElement('div');ent.style.cssText='position:absolute;left:'+(24/COLS*100)+'%;top:'+(15/ROWS*100)+'%;width:'+(100/COLS)+'%;height:'+(100/ROWS)+'%;background:#00ff88;color:#000;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:900';ent.innerText='ENTRADA 1-2';m.appendChild(ent);produtos.forEach(p=>{let d=document.createElement('div');d.className='ponto';d.style.left=(p.x/COLS*100)+'%';d.style.top=(p.y/ROWS*100)+'%';d.textContent=p.emoji;m.appendChild(d);});}
-function pegaXY(e){const r=document.getElementById('mapa').getBoundingClientRect();let x=Math.round((e.clientX-r.left)/r.width*COLS);let y=Math.round((e.clientY-r.top)/r.height*ROWS);if(x%2==1)x++;if(x<2)x=2;if(x>26)x=26;if([0,1,8,9,17,18].includes(y))y=2;document.getElementById('gpsInfo').innerText=`Gôndola ${getGByX(x)} X:${x} Y:${y} - 25-26 ESQ`;}
-function exportar(){localStorage.setItem(KEY,JSON.stringify(produtos));localStorage.setItem('produtos',JSON.stringify(produtos));document.getElementById('msg').innerText=`✅ ${produtos.length} SALVOS - 25-26 ESQ X=2 | Frente vai ler certo!`;render();}
-function apagar(i){produtos.splice(i,1);exportar();}
-render();
-</script>
-</body>
-</html>
+let editIdx=-1;
+
+function resetT(){if(confirm('RESET TOTAL?')){localStorage.removeItem(KEY);produtos=[];render();}}
+function carregar180(){
+ let base=["ARROZ CAMIL 5KG","FEIJAO KICALDO 1KG","ACUCAR UNIAO","OLEO LIZA","CAFE PILAO","SAL LEBRE","FARINHA DONA BENTA","MACARRAO GALO","MOLHO HEINZ","MILHO QUERO","LEITE COND","CREME LEITE","LEITE ITAMBE","REFRI COCA 2L","AGUA CRYSTAL","SUCO DEL VALLE","CERVEJA BRAHMA","BOLACHA PASSATEMPO","CHOCOLATE GAROTO","BALA FINI","CHICLETE TRIDENT","PACOCA PACO","SABAO OMO 1KG","DETERGENTE YPE","AMACIANTE DOWNY","AGUA SANIT QBOM","DESINFETANTE PINHO","IOGURTE DANONE","PRESUNTO SEARA","QUEIJO MUSSARELA","MANTEIGA AVIAÇÃO","REQUEIJAO VIGOR","CARNE ALCATRA","FRANGO SEARA","BANANA NANICA","TOMATE","CEBOLA","SHAMPOO PANTENE","SABONETE DOVE","PASTA COLGATE","FRALDA PAMPERS","PAPEL NEVE 12UN","OVO PASCOA LACTA","VALE COMPRAS","FRETE GRATIS"];
+ let emojis=["🍚","🫘","🍬","🫒","☕","🧂","🌾","🍝","🍅","🌽","🥫","🥫","🥛","🥤","💧","🧃","🍺","🍪","🍫","🍬","🍬","🥜","🧴","🧼","👕","🧹","🧽","🥣","🍖","🧀","🧈","🥫","🥩","🍗","🍌","🍅","🧅","🧴","🧼","🪥","👶","🧻","🥚","🎁","🚚"];
+ let ys=[2,3,4,5,6,7,10,11,12,13,14,15,16];
+ let lista=[];
+ let i=0;
+ for(let g in MAP_G){
+  let x=MAP_G[g]+1;
+  for(let y of ys){
+   if(lista.length>=180) break;
+   lista.push({nome:base[i%base.length],g:g,corredor:g,preco:(4+i%30)+".90",emoji:emojis[i%emojis.length],x:x,y:y});
+   i++;
+  }
+ }
+ produtos=lista;exportar();
+}
+function render(){
+ const q=document.getElementById('busca').value.toLowerCase();
+ const f=produtos.map((p,i)=>({...p,_i:i})).filter(p=>p.nome.toLowerCase().includes(q));
+ document.getElementById('lista').innerHTML=f.map(p=>`
+ <div class="card">
+  
