@@ -2,64 +2,81 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ADM 180 FICTICIO V61.4 COM EDIT - 25-26 ESQ</title>
+<title>ADM V61.5 FIX - COM EDIT</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}body{font-family:monospace;padding:12px;max-width:480px;margin:auto;background:#000;color:#00ff88}
-input{padding:12px;border:1px solid #00ff88;border-radius:10px;width:100%;background:#111;color:#00ff88;margin-top:6px}
-.card{background:#0a0a0a;padding:10px;border-radius:12px;margin:6px 0;display:flex;justify-content:space-between;border:1px solid #222;align-items:center}
-.b{padding:8px 10px;border-radius:8px;border:1px solid #00ff88;background:#000;color:#00ff88;font-weight:700}
-#formEdit{position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:auto;background:#111;padding:16px;border-radius:16px 16px 0 0;border:2px solid #00ff88;display:none;z-index:99}
-#mapa{width:100%;height:380px;border:2px solid #00ff88;border-radius:12px;position:relative;background:#000;margin:10px 0}
-.ponto{position:absolute;transform:translate(-50%,-50%);font-size:15px}
-.gondola{position:absolute;background:#1e40af;border:1px solid #00ff88;opacity:.4}
+body{background:#000;color:#0f0;font-family:monospace;padding:10px;max-width:480px;margin:auto}
+input{width:100%;padding:12px;margin:4px 0;background:#111;color:#0f0;border:1px solid #0f0;border-radius:8px}
+.b{padding:10px;border:1px solid #0f0;border-radius:8px;background:#000;color:#0f0;font-weight:bold}
+.card{background:#111;padding:10px;margin:6px 0;border-radius:10px;display:flex;justify-content:space-between;border:1px solid #222}
+#formEdit{display:none;position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:auto;background:#222;padding:15px;border:2px solid #0f0;border-radius:15px 15px 0 0;z-index:10}
+#mapa{width:100%;height:350px;border:2px solid #0f0;position:relative;background:#000;margin:8px 0;border-radius:10px}
+.ponto{position:absolute;transform:translate(-50%,-50%)}
 </style>
 </head>
 <body>
-<h3>> ADM 180 V61.4 COM EDIT - <span id="total">0</span></h3>
-<input id="busca" placeholder="BUSCAR PRODUTO..." oninput="render()" style="position:sticky;top:0;z-index:5">
-<div style="display:flex;gap:6px;margin:8px 0"><button class="b" style="flex:1;background:#00ff88;color:#000" onclick="carregar180()">📦 POVOAR 180</button><button class="b" style="flex:1" onclick="openForm()">+ NOVO</button><button class="b" style="border-color:#ff3b30;color:#ff3b30" onclick="resetT()">💥</button></div>
+<h3>ADM V61.5 FIX <span id="total">0</span></h3>
+<input id="busca" placeholder="BUSCAR" oninput="render()">
+<div style="display:flex;gap:5px;margin:6px 0">
+<button class="b" style="flex:1;background:#0f0;color:#000" onclick="carregar180()">📦 POVOAR 180</button>
+<button class="b" style="flex:1" onclick="openForm()">+ NOVO</button>
+<button class="b" style="color:red;border-color:red" onclick="limpar()">💥 RESET</button>
+</div>
 <div id="lista"></div>
-<div id="mapa" onclick="pegaXY(event)"></div>
-<button class="b" style="width:100%;background:#00ff88;color:#000;height:48px" onclick="exportar()">💾 SALVAR</button>
-<div id="msg" style="font-size:10px;color:#666"></div>
+<div id="mapa"></div>
+<button class="b" style="width:100%;background:#0f0;color:#000;height:45px" onclick="exportar()">💾 SALVAR</button>
+<div id="msg"></div>
 
 <div id="formEdit">
-<h4 id="ftitle">EDITAR</h4>
-<input id="f_nome" placeholder="NOME PRODUTO">
-<div style="display:flex;gap:6px"><input id="f_emoji" placeholder="🍚"><input id="f_g" placeholder="25-26"><input id="f_preco" placeholder="9.90"></div>
-<div style="display:flex;gap:6px"><input id="f_x" type="number" readonly><input id="f_y" type="number"></div>
-<div style="display:flex;gap:8px;margin-top:10px"><button class="b" style="flex:1" onclick="closeForm()">CANCELAR</button><button class="b" style="flex:1;background:#00ff88;color:#000" onclick="salvar()">SALVAR</button></div>
+<h4 id="t">EDITAR</h4>
+<input id="f_nome" placeholder="NOME">
+<input id="f_emoji" placeholder="EMOJI 🍚">
+<div style="display:flex;gap:6px"><input id="f_g" placeholder="25-26"><input id="f_preco" placeholder="9.90"></div>
+<div style="display:flex;gap:6px"><input id="f_x" placeholder="X" type="number"><input id="f_y" placeholder="Y" type="number"></div>
+<div style="display:flex;gap:6px;margin-top:8px"><button class="b" style="flex:1" onclick="closeForm()">CANCELAR</button><button class="b" style="flex:1;background:#0f0;color:#000" onclick="salvar()">SALVAR</button></div>
 </div>
 
 <script>
-const COLS=27,ROWS=19;
-const MAP_G={'25-26':1,'23-24':3,'21-22':5,'19-20':7,'17-18':9,'15-16':11,'13-14':13,'11-12':15,'9-10':17,'7-8':19,'5-6':21,'3-4':23,'1-2':25};
-function getGByX(x){let gx=x-1,b='25-26',d=99;for(let k in MAP_G){let diff=Math.abs(gx-MAP_G[k]);if(diff<d){d=diff;b=k;}}return b;}
-function isGondola(x,y){if(y==0||y==8||y==17||x==0||x==COLS-1)return true;if(x%2==1)return true;return false;}
-const KEY='atacadao364_FINAL';
-let produtos=[];try{produtos=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){}
-let editIdx=-1;
-
-function resetT(){if(confirm('RESET TOTAL?')){localStorage.removeItem(KEY);produtos=[];render();}}
+const MAP_G={"25-26":1,"23-24":3,"21-22":5,"19-20":7,"17-18":9,"15-16":11,"13-14":13,"11-12":15,"9-10":17,"7-8":19,"5-6":21,"3-4":23,"1-2":25};
+const KEY='ADM_V615_FIX';
+let produtos=[];try{produtos=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){produtos=[]}
+let edit=-1;
+function limpar(){if(confirm('Limpar tudo?')){localStorage.removeItem(KEY);produtos=[];render();}}
 function carregar180(){
- let base=["ARROZ CAMIL 5KG","FEIJAO KICALDO 1KG","ACUCAR UNIAO","OLEO LIZA","CAFE PILAO","SAL LEBRE","FARINHA DONA BENTA","MACARRAO GALO","MOLHO HEINZ","MILHO QUERO","LEITE COND","CREME LEITE","LEITE ITAMBE","REFRI COCA 2L","AGUA CRYSTAL","SUCO DEL VALLE","CERVEJA BRAHMA","BOLACHA PASSATEMPO","CHOCOLATE GAROTO","BALA FINI","CHICLETE TRIDENT","PACOCA PACO","SABAO OMO 1KG","DETERGENTE YPE","AMACIANTE DOWNY","AGUA SANIT QBOM","DESINFETANTE PINHO","IOGURTE DANONE","PRESUNTO SEARA","QUEIJO MUSSARELA","MANTEIGA AVIAÇÃO","REQUEIJAO VIGOR","CARNE ALCATRA","FRANGO SEARA","BANANA NANICA","TOMATE","CEBOLA","SHAMPOO PANTENE","SABONETE DOVE","PASTA COLGATE","FRALDA PAMPERS","PAPEL NEVE 12UN","OVO PASCOA LACTA","VALE COMPRAS","FRETE GRATIS"];
- let emojis=["🍚","🫘","🍬","🫒","☕","🧂","🌾","🍝","🍅","🌽","🥫","🥫","🥛","🥤","💧","🧃","🍺","🍪","🍫","🍬","🍬","🥜","🧴","🧼","👕","🧹","🧽","🥣","🍖","🧀","🧈","🥫","🥩","🍗","🍌","🍅","🧅","🧴","🧼","🪥","👶","🧻","🥚","🎁","🚚"];
+ let nomes=["ARROZ 5KG","FEIJAO 1KG","ACUCAR","OLEO","CAFE 500G","LEITE 1L","REFRI 2L","AGUA 1.5L","SUCO","CERVEJA","BOLACHA","CHOCOLATE","BALA","CHICLETE","PACOCA","SABAO PO","DETERGENTE","AMACIANTE","AGUA SANIT","DESINFETANTE","IOGURTE","PRESUNTO","QUEIJO","MANTEIGA","REQUEIJAO","CARNE","FRANGO","BANANA","TOMATE","CEBOLA"];
+ let emojis=["🍚","🫘","🍬","🫒","☕","🥛","🥤","💧","🧃","🍺","🍪","🍫","🍬","🍬","🥜","🧴","🧼","👕","🧹","🧽","🥣","🍖","🧀","🧈","🥫","🥩","🍗","🍌","🍅","🧅"];
  let ys=[2,3,4,5,6,7,10,11,12,13,14,15,16];
- let lista=[];
- let i=0;
- for(let g in MAP_G){
+ let lista=[];let c=0;
+ Object.keys(MAP_G).forEach(g=>{
   let x=MAP_G[g]+1;
-  for(let y of ys){
-   if(lista.length>=180) break;
-   lista.push({nome:base[i%base.length],g:g,corredor:g,preco:(4+i%30)+".90",emoji:emojis[i%emojis.length],x:x,y:y});
-   i++;
-  }
- }
- produtos=lista;exportar();
+  ys.forEach(y=>{
+   if(lista.length>=180) return;
+   lista.push({nome:nomes[c%nomes.length]+" "+g,g:g,preco:(5+c%20)+".90",emoji:emojis[c%emojis.length],x:x,y:y});
+   c++;
+  });
+ });
+ produtos=lista;
+ exportar();
+ alert("180 povoados!");
 }
 function render(){
- const q=document.getElementById('busca').value.toLowerCase();
- const f=produtos.map((p,i)=>({...p,_i:i})).filter(p=>p.nome.toLowerCase().includes(q));
- document.getElementById('lista').innerHTML=f.map(p=>`
- <div class="card">
-  
+ let q=(document.getElementById('busca').value||'').toLowerCase();
+ let html='';
+ let filtro=produtos.filter(p=>p.nome.toLowerCase().includes(q));
+ filtro.forEach((p,idx)=>{
+  let realIdx=produtos.indexOf(p);
+  html+=`<div class="card"><div> ${p.emoji} <b style="font-size:11px">${p.nome}</b><br><small style="background:#0f0;color:#000;padding:2px 4px;border-radius:4px">${p.g} X:${p.x}</small> R$${p.preco}</div><div><button class="b" onclick="editar(${realIdx})">EDIT</button> <button class="b" style="color:red" onclick="apagar(${realIdx})">X</button></div></div>`;
+ });
+ document.getElementById('lista').innerHTML=html||'<div style="padding:20px;text-align:center">Vazio - Clique 📦 POVOAR 180</div>';
+ document.getElementById('total').innerText=produtos.length;
+ document.getElementById('mapa').innerHTML=produtos.map(p=>`<div class="ponto" style="left:${p.x/27*100}%;top:${p.y/19*100}%">${p.emoji}</div>`).join('');
+}
+function openForm(){edit=-1;document.getElementById('t').innerText='NOVO';['f_nome','f_emoji','f_g','f_preco','f_x','f_y'].forEach(id=>document.getElementById(id).value='');document.getElementById('formEdit').style.display='block';}
+function editar(i){edit=i;let p=produtos[i];document.getElementById('t').innerText='EDITAR '+p.nome;document.getElementById('f_nome').value=p.nome;document.getElementById('f_emoji').value=p.emoji;document.getElementById('f_g').value=p.g;document.getElementById('f_preco').value=p.preco;document.getElementById('f_x').value=p.x;document.getElementById('f_y').value=p.y;document.getElementById('formEdit').style.display='block';}
+function closeForm(){document.getElementById('formEdit').style.display='none';}
+function salvar(){let p={nome:document.getElementById('f_nome').value.toUpperCase()||'PRODUTO',emoji:document.getElementById('f_emoji').value||'📦',g:document.getElementById('f_g').value||'25-26',preco:document.getElementById('f_preco').value||'9.90',x:parseInt(document.getElementById('f_x').value)||2,y:parseInt(document.getElementById('f_y').value)||2};if(edit>=0)produtos[edit]=p;else produtos.push(p);closeForm();exportar();}
+function apagar(i){if(confirm('Apagar '+produtos[i].nome+'?')){produtos.splice(i,1);exportar();}}
+function exportar(){localStorage.setItem(KEY,JSON.stringify(produtos));localStorage.setItem('atacadao364_FINAL',JSON.stringify(produtos));localStorage.setItem('produtos',JSON.stringify(produtos));document.getElementById('msg').innerText='✅ '+produtos.length+' salvos';render();}
+render();
+</script>
+</body>
+</html>
