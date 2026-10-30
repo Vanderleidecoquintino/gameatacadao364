@@ -1,29 +1,51 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ADM V66 BANDEIRA FIX</title><style>body{background:#000;color:#0f0;font-family:monospace;padding:10px;max-width:480px;margin:auto}input{width:100%;padding:12px;margin:4px 0;background:#111;color:#0f0;border:1px solid #0f0;border-radius:8px}.b{padding:10px;border:1px solid #0f0;border-radius:8px;background:#000;color:#0f0;font-weight:bold}.card{background:#111;padding:10px;margin:6px 0;border-radius:10px;display:flex;justify-content:space-between;border:1px solid #222}#formEdit{display:none;position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:auto;background:#222;padding:15px;border:2px solid #0f0;border-radius:15px 15px 0 0;z-index:10}#mapa{width:100%;height:520px;border:2px solid #0f0;position:relative;background:#000;margin:8px 0;border-radius:10px;overflow:hidden}.gondola{position:absolute;background:#1e40af;border:1px solid #00d4ff;opacity:.6;box-sizing:border-box}.ponto{position:absolute;transform:translate(-50%,-50%);font-size:15px;z-index:3;transition:all 0.3s}.label{position:absolute;font-size:8px;color:#fff;z-index:4;background:#000;padding:2px;border:1px solid #0f0}</style></head><body>
-<h3>ADM V66 BANDEIRA SOBE <span id="total">0</span></h3><input id="busca" placeholder="BUSCAR" oninput="render()"><div style="display:flex;gap:5px"><button class="b" style="flex:1;background:#0f0;color:#000" onclick="exportar()">💾 SALVAR</button><button class="b" style="flex:1" onclick="render()">🔄 MAPA</button><button class="b" style="color:red" onclick="if(confirm('RESET?')){localStorage.clear();location.reload()}">RESET</button></div><div id="lista"></div><div id="mapa"></div><div id="msg" style="font-size:10px;color:#0f0"></div>
-<div id="formEdit"><h4 id="t"></h4><input id="f_nome"><input id="f_emoji"><div style="display:flex;gap:6px"><input id="f_g"><input id="f_preco"></div><div style="display:flex;gap:6px"><input id="f_x" type="number" placeholder="X (2=25-26)"><input id="f_y" type="number" placeholder="Y (1=fundo 16=caixa)"></div><div style="display:flex;gap:6px;margin-top:6px"><button class="b" style="flex:1" onclick="document.getElementById('f_y').value=parseInt(document.getElementById('f_y').value)-1">⬆️ SOBE</button><button class="b" style="flex:1" onclick="document.getElementById('f_y').value=parseInt(document.getElementById('f_y').value)+1">⬇️ DESCE</button></div><div style="display:flex;gap:6px;margin-top:8px"><button class="b" style="flex:1" onclick="closeForm()">CANCELAR</button><button class="b" style="flex:1;background:#0f0;color:#000" onclick="salvar()">SALVAR</button></div></div>
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ADM V67 180 FIX</title><style>body{background:#000;color:#0f0;font-family:monospace;padding:10px;max-width:480px;margin:auto}input{width:100%;padding:12px;margin:4px 0;background:#111;color:#0f0;border:1px solid #0f0;border-radius:8px}.b{padding:10px;border:1px solid #0f0;border-radius:8px;background:#000;color:#0f0;font-weight:bold}.card{background:#111;padding:10px;margin:6px 0;border-radius:10px;display:flex;justify-content:space-between;border:1px solid #222}#formEdit{display:none;position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:auto;background:#222;padding:15px;border:2px solid #0f0;border-radius:15px 15px 0 0;z-index:10}#mapa{width:100%;height:520px;border:2px solid #0f0;position:relative;background:#000;margin:8px 0;border-radius:10px;overflow:hidden}.gondola{position:absolute;background:#1e40af;border:1px solid #00d4ff;opacity:.6;box-sizing:border-box}.ponto{position:absolute;transform:translate(-50%,-50%);font-size:15px;z-index:3}.label{position:absolute;font-size:8px;color:#fff;z-index:4;background:#000;padding:2px;border:1px solid #0f0}</style></head><body>
+<h3>ADM V67 180 + BANDEIRA <span id="total">0</span></h3><input id="busca" placeholder="BUSCAR" oninput="render()"><div style="display:flex;gap:5px;flex-wrap:wrap">
+<button class="b" style="flex:1;background:#0f0;color:#000" onclick="exportar()">💾 SALVAR</button>
+<button class="b" style="flex:1;background:#ff0;color:#000" onclick="provocar180()">🔥 PROVOCAR 180</button>
+<button class="b" style="flex:1" onclick="render()">🔄 MAPA</button>
+<button class="b" style="color:red" onclick="if(confirm('RESET TUDO?')){localStorage.clear();location.reload()}">RESET</button>
+</div><div id="lista"></div><div id="mapa"></div><div id="msg"></div>
+<div id="formEdit"><h4 id="t"></h4><input id="f_nome"><input id="f_emoji"><div style="display:flex;gap:6px"><input id="f_g"><input id="f_preco"></div><div style="display:flex;gap:6px"><input id="f_x" type="number" placeholder="X"><input id="f_y" type="number" placeholder="Y"></div><div style="display:flex;gap:6px;margin-top:6px"><button class="b" style="flex:1" onclick="document.getElementById('f_y').value=parseInt(document.getElementById('f_y').value)-1">⬆️ SOBE</button><button class="b" style="flex:1" onclick="document.getElementById('f_y').value=parseInt(document.getElementById('f_y').value)+1">⬇️ DESCE</button></div><div style="display:flex;gap:6px;margin-top:8px"><button class="b" style="flex:1" onclick="closeForm()">CANCELAR</button><button class="b" style="flex:1;background:#0f0;color:#000" onclick="salvar()">SALVAR</button></div></div>
 <script>
 const COLS=27,ROWS=19,KEY='ADM_V615_FIX';
-const MAP_G={"25-26":1,"23-24":3,"21-22":5,"19-20":7,"17-18":9,"15-16":11,"13-14":13,"11-12":15,"9-10":17,"7-8":19,"5-6":21,"3-4":23,"1-2":25};
 let produtos=[];try{produtos=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){produtos=[]}
 let edit=-1;
+function provocar180(){
+ if(!confirm('Vai criar 180 produtos nas gôndolas 1-2 até 25-26. Manter os seus atuais?')) return;
+ const gondolas=["25-26","23-24","21-22","19-20","17-18","15-16","13-14","11-12","9-10","7-8","5-6","3-4","1-2"];
+ const xs=[1,3,5,7,9,11,13,15,17,19,21,23,25];
+ const nomes=["BALA FINI","ARROZ 5KG","FEIJAO","OLEO","ACUCAR","CAFE","LEITE","BOLACHA","CHOCOLATE","REFRI","SABONETE","DETERGENTE","PAPEL HIG"];
+ let novos=[];
+ let count=0;
+ gondolas.forEach((g,gi)=>{
+  for(let y=1;y<=14;y++){
+   count++; if(count>180) return;
+   let x=xs[gi];
+   let nome=nomes[count%nomes.length]+" "+g+" POS"+(15-y);
+   novos.push({nome:nome,emoji:count%2==0?"🍬":"📦",g:g,preco:(Math.random()*10+2).toFixed(2),x:x,y:y});
+  }
+ });
+ produtos=produtos.concat(novos);
+ exportar();
+ alert('180 PROVOCADOS! Agora X:2 Y:16 é POS1 caixa e sobe até Y:1 fundo!');
+}
 function render(){
  let q=(document.getElementById('busca').value||'').toLowerCase();
  let html='';let filtro=produtos.filter(p=>p.nome.toLowerCase().includes(q));
  filtro.forEach(p=>{
-  let pos = 17 - p.y; let idx=produtos.indexOf(p);
-  html+=`<div class="card"><div> ${p.emoji} <b style="font-size:11px">${p.nome}</b><br><small style="background:#0f0;color:#000;padding:2px 4px;border-radius:4px">${p.g} X:${p.x} Y:${p.y} POS:${pos}</small></div><div><button class="b" onclick="editar(${idx})">EDIT</button> <button class="b" style="color:red" onclick="apagar(${idx})">X</button></div></div>`;
+  let pos=17-p.y;let idx=produtos.indexOf(p);
+  html+=`<div class="card"><div> ${p.emoji} <b style="font-size:10px">${p.nome}</b><br><small style="background:#0f0;color:#000;padding:2px 4px;border-radius:4px">${p.g} X:${p.x} Y:${p.y} POS:${pos}</small></div><div><button class="b" onclick="editar(${idx})">EDIT</button> <button class="b" style="color:red" onclick="apagar(${idx})">X</button></div></div>`;
  });
- document.getElementById('lista').innerHTML=html||'<div style="text-align:center;padding:20px">Lista vazia</div>';
+ document.getElementById('lista').innerHTML=html||'<div style="text-align:center;padding:20px">Vazio - clique PROVOCAR 180</div>';
  document.getElementById('total').innerText=produtos.length;
  let m=document.getElementById('mapa');m.innerHTML='';
  for(let y=0;y<ROWS;y++){for(let x=0;x<COLS;x++){if(x%2==1 || y==0 || y==8 || y==9 || y==18 || x==0 || x==26){let d=document.createElement('div');d.className='gondola';d.style.left=(x/COLS*100)+'%';d.style.top=(y/ROWS*100)+'%';d.style.width=(100/COLS)+'%';d.style.height=(100/ROWS)+'%';m.appendChild(d);}}}
- produtos.forEach(p=>{let d=document.createElement('div');d.className='ponto';d.style.left=(p.x/COLS*100)+'%';d.style.top=(p.y/ROWS*100)+'%';d.textContent=p.emoji;d.title=p.nome;m.appendChild(d);});
- let cx=2,cy=16;let caixa=document.createElement('div');caixa.style.position='absolute';caixa.style.left=(cx/COLS*100)+'%';caixa.style.top=(cy/ROWS*100)+'%';caixa.style.width=(100/COLS)+'%';caixa.style.height=(100/ROWS)+'%';caixa.style.border='2px solid #ffff00';caixa.style.background='rgba(255,255,0,0.3)';caixa.style.zIndex='5';m.appendChild(caixa);
+ produtos.slice(0,180).forEach(p=>{let d=document.createElement('div');d.className='ponto';d.style.left=(p.x/COLS*100)+'%';d.style.top=(p.y/ROWS*100)+'%';d.textContent=p.emoji;m.appendChild(d);});
 }
-function editar(i){edit=i;let p=produtos[i];document.getElementById('t').innerText=p.nome+' Y:'+p.y+' POS:'+(17-p.y);document.getElementById('f_nome').value=p.nome;document.getElementById('f_emoji').value=p.emoji;document.getElementById('f_g').value=p.g;document.getElementById('f_preco').value=p.preco;document.getElementById('f_x').value=p.x;document.getElementById('f_y').value=p.y;document.getElementById('formEdit').style.display='block';}
+function editar(i){edit=i;let p=produtos[i];document.getElementById('t').innerText=p.nome+' Y:'+p.y;document.getElementById('f_nome').value=p.nome;document.getElementById('f_emoji').value=p.emoji;document.getElementById('f_g').value=p.g;document.getElementById('f_preco').value=p.preco;document.getElementById('f_x').value=p.x;document.getElementById('f_y').value=p.y;document.getElementById('formEdit').style.display='block';}
 function closeForm(){document.getElementById('formEdit').style.display='none';}
 function salvar(){let p={nome:document.getElementById('f_nome').value.toUpperCase(),emoji:document.getElementById('f_emoji').value||'📦',g:document.getElementById('f_g').value||'25-26',preco:document.getElementById('f_preco').value||'9.90',x:parseInt(document.getElementById('f_x').value)||2,y:parseInt(document.getElementById('f_y').value)||16};if(edit>=0)produtos[edit]=p;else produtos.push(p);closeForm();exportar();}
 function apagar(i){if(confirm('Apagar?')){produtos.splice(i,1);exportar();}}
-function exportar(){localStorage.setItem(KEY,JSON.stringify(produtos));localStorage.setItem('atacadao364_FINAL',JSON.stringify(produtos));localStorage.setItem('produtos',JSON.stringify(produtos));document.getElementById('msg').innerText='✅ '+produtos.length+' salvos - bandeira sobe/desce OK';render();}
+function exportar(){localStorage.setItem(KEY,JSON.stringify(produtos));localStorage.setItem('atacadao364_FINAL',JSON.stringify(produtos));localStorage.setItem('produtos',JSON.stringify(produtos));document.getElementById('msg').innerText='✅ '+produtos.length+' salvos';render();}
 render();
 </script></body></html>
