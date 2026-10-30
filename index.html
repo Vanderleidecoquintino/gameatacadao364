@@ -1,39 +1,170 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>INDEX V73 17VERT 442 BORDA FIX</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#000;color:#fff;font-family:monospace;height:100dvh;overflow:hidden}#tela1{height:100dvh;display:flex;flex-direction:column}#top{background:#0f0;color:#000;padding:6px;text-align:center;font-weight:900;font-size:10px}#lista{background:#0a0a0a;padding:4px;min-height:28px;max-height:50px;overflow:auto;border-bottom:2px solid #0f0;font-size:8px;color:#0f0}#prods{flex:1;overflow:auto;padding:4px;display:grid;grid-template-columns:1fr 1fr;gap:4px}.p{border:2px solid #222;background:#111;border-radius:8px;padding:4px;text-align:center}.p.sel{border-color:#0f0;background:#002a12}.p button{width:100%;margin-top:2px;height:22px;border-radius:6px;border:1px solid #0f0;background:#0f0;color:#000;font-weight:bold;font-size:8px}#btns{padding:4px;display:flex;gap:3px;background:#0a0a0a}#btns button{height:34px;flex:1;border-radius:8px;border:2px solid #0f0;font-weight:900;font-size:8px}#total{background:#001a0a;border-top:2px solid #0f0;padding:3px;text-align:center;font-weight:900;color:#0f0;font-size:8px}#tela2{display:none;height:100dvh;flex-direction:column;position:relative}#gps{background:#0f0;color:#000;padding:4px;text-align:center;font-size:9px;font-weight:bold;display:flex;justify-content:space-between}#gps span{background:#000;color:#0f0;padding:1px 4px;border-radius:3px}#console{background:#111;color:#0f0;padding:2px;font-size:8px;border-bottom:1px solid #0f0}canvas{flex:1;width:100%;background:#000;border:2px solid #0f0;display:block}.ctrl{display:grid;grid-template-columns:28px 28px 28px 28px 1fr 56px;gap:2px;padding:2px;background:#0a0a0a}button{height:30px;border-radius:5px;border:1.5px solid #0f0;font-weight:bold}#modal{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;color:#000;padding:10px;border-radius:12px;border:3px solid #0f0;z-index:100;display:none;text-align:center;min-width:220px}</style></head><body>
-<div id="tela1"><div id="top">V73 BORDA FIX - 17x26=442 - G 1-2 DENTRO DO MAPA</div><div id="lista">Carregando...</div><div id="prods"></div><div id="total">TOTAL: R$ 0 (0) | 17 VERT | 442 | 1-2 FIX</div><div id="btns"><button onclick="pagina(-1)" style="background:#222;color:#0f0">◀</button><button onclick="limpar()" style="background:#333;color:#fff">🗑️</button><button onclick="salvar()" style="background:#1e40af;color:#fff">💾</button><button onclick="provocar()" style="background:#ff0;color:#000">🔥442</button><button onclick="pagina(1)" style="background:#222;color:#0f0">▶</button><button onclick="irM()" style="background:#0f0;color:#000">IR</button></div></div>
-<div id="tela2"><div id="gps"><span id="v">VEL 250</span><span>V73 17x26=442 BORDA FIX</span><span id="pos">X:27 Y:15</span></div><div id="console">Pronto V73 - G 1-2 dentro</div><canvas id="c"></canvas><div id="modal"><div style="font-weight:bold;color:#16a34a">📍 CHEGOU!</div><div id="mProd" style="font-size:32px"></div><div id="mNome" style="font-weight:900;font-size:11px"></div><div id="mG" style="font-size:7px;background:#000;color:#fff;padding:2px;border-radius:3px"></div><div id="mL" style="font-size:9px;font-weight:900;padding:3px;border-radius:5px;margin:3px 0"></div><div id="mPreco" style="color:#16a34a;font-weight:900;font-size:16px"></div><div id="mProg" style="font-size:7px;color:#666"></div><button onclick="ok()" style="width:100%;height:38px;background:#0f0;color:#000;border:2px solid #000;border-radius:8px;margin-top:4px;font-weight:900">✅ PEGUEI!</button><button onclick="pular()" style="width:100%;height:22px;background:#fff;color:#666;border:1px solid #ccc;border-radius:5px;margin-top:2px;font-size:7px">PULAR</button></div><div class="ctrl"><button onclick="mv(-1,0)">←</button><button onclick="mv(0,-1)">↑</button><button onclick="mv(0,1)">↓</button><button onclick="mv(1,0)">→</button><select id="combo" style="height:30px;border-radius:5px;border:1px solid #0f0;background:#fff;color:#000;font-size:7px;font-weight:bold"></select><button onclick="ir(27,15)" style="background:#0f0;color:#000;font-size:5px">ENTRADA</button></div><div class="ctrl" style="padding-top:1px"><button onclick="voltar()" style="background:#333;color:#fff;font-size:5px">LISTA</button><button onclick="rota()" style="grid-column:span 2;background:#0f0;color:#000;font-size:8px">INICIAR 17 VERT</button><button onclick="ir(2,15)" style="background:#ff0;color:#000;font-size:5px">25-26</button></div></div>
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"><title>INDEX V73 FULL - 17 VERT - 442 - BORDA FIX - VEL</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#000;color:#fff;font-family:monospace;height:100dvh;overflow:hidden}#tela1{height:100dvh;display:flex;flex-direction:column}#t1top{background:#00ff88;color:#000;padding:8px;text-align:center;font-weight:900;font-size:11px;display:flex;justify-content:space-between}#t1top button{height:26px;padding:0 6px;border-radius:6px;border:1px solid #000;background:#000;color:#00ff88;font-weight:bold;font-size:8px}#t1lista{background:#0a0a0a;padding:5px;min-height:30px;max-height:55px;overflow:auto;border-bottom:2px solid #00ff88;font-size:9px;color:#00ff88}#t1produtos{flex:1;overflow:auto;padding:5px;display:grid;grid-template-columns:1fr 1fr;gap:5px}.prod{border:2px solid #222;background:#111;border-radius:10px;padding:5px;text-align:center}.prod.sel{border-color:#00ff88;background:#002a12}.prod button{width:100%;margin-top:3px;height:24px;border-radius:6px;border:1px solid #00ff88;background:#00ff88;color:#000;font-weight:bold;font-size:8px}#t1btns{padding:5px;display:flex;justify-content:center;gap:3px;flex-wrap:wrap;background:#0a0a0a;border-top:1px solid #222}#t1btns button{height:36px;min-width:44px;flex:1;max-width:90px;border-radius:8px;border:2px solid #00ff88;font-weight:900;font-size:8px}#btnGo{background:#00ff88;color:#000;flex:1.5}#totalBar{background:#001a0a;border-top:2px solid #00ff88;padding:4px;text-align:center;font-weight:900;color:#00ff88;font-size:9px}#tela2{display:none;height:100dvh;flex-direction:column;position:relative}#gps{background:#00ff88;color:#000;padding:5px;text-align:center;font-size:10px;font-weight:bold;display:flex;justify-content:space-between}#gps span{background:#000;color:#00ff88;padding:1px 5px;border-radius:4px;font-size:9px}#console{background:#111;color:#00ff88;padding:3px;font-size:9px;border-bottom:1px solid #00ff88}canvas{flex:1;width:100%;background:#000;border:2px solid #00ff88;display:block}.btns{display:grid;grid-template-columns:30px 30px 30px 30px 1fr 58px;gap:3px;padding:3px;background:#0a0a0a}button{height:32px;border-radius:6px;border:1.5px solid #00ff88;font-weight:bold}.bm{background:#222;color:#00ff88}.bway{background:#00ff88;color:#000;font-size:6px}.velCtrl{display:grid;grid-template-columns:46px 1fr 46px 56px;gap:3px;padding:3px;background:#001a0a;border-top:2px solid #00ff88}.velCtrl button{height:38px;background:#222;color:#00ff88;border:2px solid #00ff88;font-weight:900;font-size:12px}.velCtrl button.fast{background:#00ff88;color:#000}#combo{height:32px;border-radius:6px;border:1.5px solid #00ff88;background:#fff;color:#000;font-weight:bold;font-size:8px;width:100%}#modalPego{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;color:#000;padding:12px;border-radius:16px;border:3px solid #00ff88;z-index:100;display:none;text-align:center;min-width:240px}#admPanel{display:none;position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:auto;background:#111;padding:8px;border:2px solid #ff0;border-radius:12px 12px 0 0;z-index:200;max-height:82dvh;overflow:auto}</style></head><body>
+<div id="tela1"><div id="t1top"><span>INDEX V73 FULL - 17 VERT - 442 - BORDA FIX - VEL</span><button onclick="abrirADM()">⚙️ ADM</button></div><div id="t1lista">Carregando 26 lados x 17 vertical - BORDA FIX...</div><div id="t1produtos"></div><div id="totalBar">TOTAL: R$ 0,00 (0) | PÁG 1/1 | 17 VERTICAL | Array 0-16 = POS1-17 | 442 PROD | BORDA FIX</div><div id="t1btns"><button onclick="pagina(-1)" style="background:#222;color:#00ff88">◀</button><button onclick="limparT1()" style="background:#333;color:#fff;border-color:#333">🗑️</button><button onclick="salvarLista()" style="background:#1e40af;color:#fff">💾</button><button onclick="provocar442Index()" style="background:#ff0;color:#000;border-color:#ff0">🔥442 17 VERT</button><button onclick="pagina(1)" style="background:#222;color:#00ff88">▶</button><button id="btnGo" onclick="irParaMercado()">🗺️ IR (0)</button></div></div>
+<div id="tela2"><div id="gps"><span id="gpsVel">VEL 250ms</span><span>V73 FULL 17 VERT 26 LADOS 442 BORDA FIX</span><span id="gpsPos">X:27 Y:15</span></div><div id="console">Pronto - 17 VERTICAL x 26 LADOS = 442 | Array 0-16 = POS1-17 | COLS=29 BORDA FIX</div><canvas id="c"></canvas><div id="modalPego"><div style="font-weight:bold;color:#16a34a">📍 CHEGOU!</div><div id="modalProd" style="font-size:36px;margin:4px 0"></div><div id="modalNome" style="font-weight:900;font-size:12px"></div><div id="modalGond" style="font-size:8px;color:#fff;background:#000;padding:2px 6px;border-radius:4px;font-weight:bold;border:1px solid #00ff88"></div><div id="modalLado" style="font-size:10px;font-weight:900;padding:4px;border-radius:6px;margin:4px 0"></div><div id="modalPreco" style="color:#16a34a;font-weight:900;font-size:18px"></div><div id="modalProgress" style="font-size:8px;color:#666;margin:2px 0"></div><button onclick="confirmarPego()" style="width:100%;height:42px;background:#00ff88;color:#000;border:2px solid #000;border-radius:10px;margin-top:6px;font-weight:900">✅ PEGUEI! →</button><button onclick="pularItem()" style="width:100%;height:26px;background:#fff;color:#666;border:1px solid #ccc;border-radius:6px;margin-top:3px;font-size:8px">PULAR</button></div><div class="btns"><button class="bm" onclick="mover(-1,0)">←</button><button class="bm" onclick="mover(0,-1)">↑</button><button class="bm" onclick="mover(0,1)">↓</button><button class="bm" onclick="mover(1,0)">→</button><select id="combo"></select><button class="bway" onclick="ir(27,15)">ENTRADA<br>1-2 FIX</button></div><div class="velCtrl"><button onclick="mudaVel(-80)">⚡--</button><input type="range" id="velSlider" min="30" max="800" value="250" step="10" oninput="setVel(this.value)"><button onclick="mudaVel(80)">🐢++</button><button class="fast" onclick="setVel(30)">TURBO<br>30ms</button></div><div class="btns" style="padding-top:2px"><button onclick="voltarLista()" style="background:#333;color:#fff;font-size:6px">← LISTA</button><button onclick="gerarRotaDaLista()" style="grid-column:span 2;background:#00ff88;color:#000;font-size:9px">🗺️ INICIAR 1-2 → 25-26 (442 - 17 VERT - BORDA FIX)</button><button onclick="falarLista()" style="background:#1e40af;color:#fff;font-size:6px">🔊 VOZ</button><button onclick="abrirADM()" style="background:#ff0;color:#000;font-size:6px">⚙️ ADM</button><button onclick="ir(2,15)" style="background:#ff0;color:#000;font-size:6px">25-26 ESQ</button></div></div>
+<div id="admPanel"><h4 style="color:#ff0;text-align:center">ADM V73 17 VERT BORDA FIX - 442 PROD - VEL</h4><div style="display:flex;gap:3px;margin:4px 0"><button onclick="provocar442Index()" style="flex:1;background:#ff0;color:#000;height:36px;font-size:8px;font-weight:900">🔥 442 (17 VERT BORDA FIX)</button><button onclick="filtrarADM()" style="flex:1;background:#222;color:#0f0;height:36px;font-size:8px">FILTRO LADO</button></div><input id="buscaADM" placeholder="BUSCAR" oninput="renderADM()" style="width:100%;padding:6px;margin:3px 0;background:#000;color:#0f0;border:1px solid #0f0;border-radius:6px"><div id="listaADM" style="max-height:200px;overflow:auto"></div>
+<div id="formEditADM" style="display:none;background:#222;padding:6px;border:1px solid #00ff88;border-radius:8px;margin-top:4px"><input id="editNome" placeholder="NOME" style="width:100%;padding:5px;margin:2px 0;background:#000;color:#0f0;border:1px solid #0f0;border-radius:4px"><div style="display:flex;gap:3px"><input id="editEmoji" placeholder="EMOJI" style="width:60px;padding:5px;background:#000;color:#0f0;border:1px solid #0f0;border-radius:4px"><input id="editG" placeholder="GONDOLA 25-26" style="flex:1;padding:5px;background:#000;color:#0f0;border:1px solid #0f0;border-radius:4px"></div><div style="display:flex;gap:4px;margin:4px 0"><button id="eL25" onclick="setEditLado(1)" style="flex:1;height:34px;border:2px solid #0f0;background:#000;color:#0f0;font-weight:900;border-radius:6px;font-size:8px">LADO ESQ<br>⬅️</button><button id="eL26" onclick="setEditLado(2)" style="flex:1;height:34px;border:2px solid #0f0;background:#000;color:#0f0;font-weight:900;border-radius:6px;font-size:8px">LADO DIR<br>➡️</button></div><div style="display:flex;gap:3px"><input id="editX" type="number" placeholder="X" style="flex:1;padding:5px;background:#000;color:#0f0;border:1px solid #0f0;border-radius:4px"><input id="editY" type="number" placeholder="Y 2-18 = 17 VERT"><input id="editPos" type="number" placeholder="POS 1-17"></div><div style="display:flex;gap:4px;margin-top:4px"><button onclick="cancelarEditADM()" style="flex:1;background:#333;color:#fff;height:32px">CANCEL</button><button onclick="salvarEditADM()" style="flex:1;background:#0f0;color:#000;height:32px;font-weight:900">SALVAR</button></div></div><div style="display:flex;gap:3px;margin-top:4px"><button onclick="exportarADM()" style="flex:1;background:#0f0;color:#000;height:36px">💾 SALVAR</button><button onclick="fecharADM()" style="flex:1;background:#333;color:#fff;height:36px">FECHAR</button></div><div id="msgADM" style="font-size:8px;color:#0f0;text-align:center"></div></div>
 <script>
 const COLS=29,ROWS=19,W=40,H=26,KEY='ADM_V615_FIX';
-const MAP={'25-26':2,'23-24':4,'21-22':6,'19-20':8,'17-18':10,'15-16':12,'13-14':14,'11-12':16,'9-10':18,'7-8':20,'5-6':22,'3-4':24,'1-2':26};
-function ladoNum(g,i){let p=g.split('-');return i==1?+p[0]:+p[1]}
-let prods=[],lista=JSON.parse(localStorage.getItem('atacadao364_v56')||'[]'),pag=0,pp=40;
-function carregar(){let raw=null;try{raw=JSON.parse(localStorage.getItem('atacadao364_FINAL')||'null')}catch(e){}if(!raw||!raw.length){try{raw=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){}}if(!raw||!raw.length)raw=[];prods=raw.map(p=>{let g=(p.corredor||p.g||'25-26').toUpperCase(),x=parseInt(p.x)||MAP[g]||2,y=parseInt(p.y)||10,pos=p.pos||(y-1),ld=p.lado||ladoNum(g,1),li=p.ladoIdx||(ld==ladoNum(g,1)?1:2);return{x,y,pos,nome:(p.nome||'').toUpperCase(),emo:p.emoji||p.emo||'📦',preco:String(p.preco||'').includes('R$')?p.preco:`R$ ${p.preco}`,g, lado:ld,ladoIdx:li}}).filter(Boolean);render()}
-function provocar(){if(!confirm('Criar 442? 17x26 BORDA FIX?'))return;let gond=Object.keys(MAP),nI=["WHEY","CREATINA","BCAA","BARRA","PASTA","AVENA","LEITE","IOGURTE","QUEIJO","FRANGO","OVO","ARROZ","FEIJAO","SARDINHA","ATUM","AZEITE","CAFE"],nP=["CHOC","FINI","REFRI","BISC","SORVETE","ACUCAR","OLEO","BOLACHA","SABONETE","DETERG","PAPEL","SHAMPOO","CREME","PASTA D","SABAO","AMACIAN","ESPONJA"],nov=[],id=0;for(let y=2;y<=18;y++){let pos=y-1;gond.forEach(g=>{let x=MAP[g],l1=ladoNum(g,1),l2=ladoNum(g,2);id++;nov.push({nome:nI[id%nI.length]+" "+g+" L"+l1+" POS"+pos,emoji:"💪",g,lado:l1,ladoIdx:1,preco:(Math.random()*20+5).toFixed(2),x,y,pos});id++;nov.push({nome:nP[id%nP.length]+" "+g+" L"+l2+" POS"+pos,emoji:"🍫",g,lado:l2,ladoIdx:2,preco:(Math.random()*15+2).toFixed(2),x,y,pos})})}localStorage.setItem(KEY,JSON.stringify(nov));localStorage.setItem('atacadao364_FINAL',JSON.stringify(nov));carregar();alert('442 CRIADOS! V73 BORDA FIX - 1-2 DENTRO')}
-function calc(){return lista.reduce((s,p)=>{let v=parseFloat(String(p.preco).replace('R$','').replace(',','.'));return isNaN(v)?s:s+v},0)}
-let sv=null;function salvar(){clearTimeout(sv);sv=setTimeout(()=>{localStorage.setItem('atacadao364_v56',JSON.stringify(lista));document.getElementById('lista').innerHTML='💾 Salvo!';setTimeout(render,500)},200)}
-function pagina(d){let m=Math.ceil(prods.length/pp)-1;pag+=d;if(pag<0)pag=0;if(pag>m)pag=m;render()}
-function render(){let c=document.getElementById('prods');c.innerHTML='';let sl=prods.slice(pag*pp,(pag+1)*pp);sl.forEach((p,iG)=>{let i=pag*pp+iG,sel=lista.find(l=>l.nome==p.nome),cor=p.ladoIdx==1?'#00d4ff':'#ff0',d=document.createElement('div');d.className='p'+(sel?' sel':'');d.innerHTML=`<div style="font-size:22px">${p.emo}</div><div style="font-size:7px;font-weight:bold">${p.nome}</div><div style="font-size:7px;color:#0f0">${p.preco}</div><div style="font-size:5px;background:${cor};color:#000;padding:1px;border-radius:3px;font-weight:900">[${p.g}] L${p.lado} P${p.pos}/17</div><button onclick="tog(${i})">${sel?'✓':'ADD'}</button>`;c.appendChild(d)});document.getElementById('lista').innerHTML=lista.length==0?`✅ ${prods.length} prods - 17x26=442 - 1-2 FIX`:lista.map(l=>`${l.emo} ${l.nome} L${l.lado} P${l.pos}`).join(' | ');document.getElementById('total').innerText=`TOTAL R$ ${calc().toFixed(2)} (${lista.length}) | 17x26=442 BORDA FIX`;let cb=document.getElementById('combo');cb.innerHTML='';prods.forEach(p=>{let o=document.createElement('option');o.value=p.x+','+p.y;o.innerText=`${p.emo} ${p.nome} P${p.pos}/17`;cb.appendChild(o)})}
-function tog(i){let p=prods[i],ix=lista.findIndex(l=>l.nome==p.nome);if(ix>=0)lista.splice(ix,1);else lista.push({...p});salvar();render()}
-function limpar(){if(!confirm('Limpar?'))return;lista=[];localStorage.removeItem('atacadao364_v56');render()}
-function irM(){if(!lista.length){alert('Add 1!');return}document.getElementById('tela1').style.display='none';document.getElementById('tela2').style.display='flex';init();resize();draw();loop();setTimeout(rota,300)}
-function voltar(){document.getElementById('tela2').style.display='none';document.getElementById('tela1').style.display='flex';if(tm){clearInterval(tm);tm=null}document.getElementById('modal').style.display='none'}
+const MAP_G={'25-26':2,'23-24':4,'21-22':6,'19-20':8,'17-18':10,'15-16':12,'13-14':14,'11-12':16,'9-10':18,'7-8':20,'5-6':22,'3-4':24,'1-2':26};
+function getLadoNum(g, idx){let p=g.split('-'); return idx==1?parseInt(p[0]):parseInt(p[1]);}
+let produtos=[]; let listaT1=JSON.parse(localStorage.getItem('atacadao364_v56')||'[]');
+let paginaT1=0; const porPagina=40;
+async function carregarProdutos(){
+  let raw=null; try{ raw=JSON.parse(localStorage.getItem('atacadao364_FINAL')||'null'); }catch(e){}
+  if(!raw ||!raw.length){ raw=JSON.parse(localStorage.getItem(KEY)||'null'); }
+  if(!raw ||!raw.length){ raw=[]; }
+  produtos = raw.map(p=>{
+      try{
+        let g=(p.corredor||p.g||'25-26').toUpperCase();
+        let x=parseInt(p.x); if(isNaN(x)) x=MAP_G[g]||2;
+        let y=parseInt(p.y); if(isNaN(y)) y=10;
+        let pos=p.pos||(y-1);
+        let lado=p.lado||getLadoNum(g,1);
+        let ladoIdx=p.ladoIdx|| (lado==getLadoNum(g,1)?1:2);
+        return { x:x, y:y, pos:pos, nome:(p.nome||'').toUpperCase().trim(), emo:p.emoji||p.emo||'📦', preco:String(p.preco||'').includes('R$')?p.preco:`R$ ${p.preco}`, g:g, lado:lado, ladoIdx:ladoIdx };
+      }catch(e){return null}
+    }).filter(Boolean);
+  renderT1();
+}
+function provocar442Index(){
+ if(!confirm('Criar 442? 17 VERTICAL x 26 LADOS = 442 - BORDA FIX COLS=29?')) return;
+ const gondolas=Object.keys(MAP_G);
+ const nI=["WHEY","CREATINA","BCAA","BARRA PROT","PASTA AMENDO","AVENA","LEITE DESNAT","IOGURTE","QUEIJO","FRANGO","OVO","ARROZ","FEIJAO","SARDINHA","ATUM","AZEITE","CAFE"];
+ const nP=["CHOCOLATE","BALA FINI","REFRI","BISCOITO","SORVETE","ACUCAR","OLEO","BOLACHA","SABONETE","DETERGENTE","PAPEL HIG","SHAMPOO","CREME","PASTA DENTE","SABAO","AMACIANTE","ESPONJA"];
+ let novos=[]; let id=0;
+ for(let y=2;y<=18;y++){
+  let pos=y-1;
+  gondolas.forEach((g)=>{
+   let x=MAP_G[g]; let l1=getLadoNum(g,1), l2=getLadoNum(g,2);
+   id++; novos.push({nome:nI[id%nI.length]+" "+g+" L"+l1+" POS"+pos, emoji:"💪", g:g, lado:l1, ladoIdx:1, preco:(Math.random()*20+5).toFixed(2), x:x, y:y, pos:pos});
+   id++; novos.push({nome:nP[id%nP.length]+" "+g+" L"+l2+" POS"+pos, emoji:"🍫", g:g, lado:l2, ladoIdx:2, preco:(Math.random()*15+2).toFixed(2), x:x, y:y, pos:pos});
+  });
+ }
+ localStorage.setItem(KEY,JSON.stringify(novos)); localStorage.setItem('atacadao364_FINAL',JSON.stringify(novos));
+ carregarProdutos(); alert('442 CRIADOS! V73 BORDA FIX - COLS=29 - G 1-2 DENTRO - 17 VERT x 26 LADOS');
+}
+function falar(t){if('speechSynthesis' in window){let u=new SpeechSynthesisUtterance(t);u.lang='pt-BR';u.rate=1.1;speechSynthesis.cancel();speechSynthesis.speak(u);}}
+function falarLista(){if(!listaT1.length){falar('Lista vazia');return;}falar(`Rota de ${listaT1.length} itens 17 vertical borda fix`);}
+function calcTotal(){return listaT1.reduce((s,p)=>{let v=parseFloat(String(p.preco||'').replace('R$','').replace(',','.').trim());return isNaN(v)?s:s+v;},0);}
+let saveT=null; function salvarLista(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem('atacadao364_v56',JSON.stringify(listaT1));document.getElementById('t1lista').innerHTML='💾 Salvo!';setTimeout(()=>renderT1(),600);}catch(e){}},300);}
+function pagina(d){let max=Math.ceil(produtos.length/porPagina)-1; paginaT1+=d; if(paginaT1<0) paginaT1=0; if(paginaT1>max) paginaT1=max; renderT1();}
+function renderT1(){
+ let cont=document.getElementById('t1produtos'); cont.innerHTML='';
+ let slice=produtos.slice(paginaT1*porPagina,(paginaT1+1)*porPagina);
+ let frag=document.createDocumentFragment();
+ slice.forEach((p,iG)=>{
+   let i=paginaT1*porPagina+iG;
+   let sel=listaT1.find(l=>l.nome==p.nome);
+   let cor=p.ladoIdx==1?'#00d4ff':'#ff0';
+   let div=document.createElement('div'); div.className='prod'+(sel?' sel':'');
+   div.innerHTML=`<div style="font-size:26px">${p.emo}</div><div style="font-size:8px;font-weight:bold">${p.nome}</div><div style="font-size:8px;color:#00ff88">${p.preco}</div><div style="font-size:6px;background:${cor};color:#000;padding:2px;border-radius:4px;font-weight:900">[${p.g}] L:${p.lado} ${p.ladoIdx==1?'⬅️':'➡️'} POS:${p.pos}/17 Y:${p.y}</div><button onclick="toggleProd(${i})">${sel?'✓':' + ADD'}</button>`;
+   frag.appendChild(div);
+ });
+ cont.appendChild(frag);
+ let total=calcTotal();
+ document.getElementById('t1lista').innerHTML=listaT1.length==0?`✅ ${produtos.length} produtos - 17 VERT x 26 LADOS = 442 | COLS=29 BORDA FIX | Array 0-16 = POS 1-17`:listaT1.map(l=>`${l.emo} ${l.nome} [${l.g} L${l.lado} POS${l.pos}]`).join(' | ');
+ document.getElementById('totalBar').innerText=`TOTAL: R$ ${total.toFixed(2).replace('.',',')} (${listaT1.length}) | PÁG ${paginaT1+1}/${Math.ceil(produtos.length/porPagina)} | 17 VERT x 26 LADOS = 442 PROD BORDA FIX`;
+ document.getElementById('btnGo').innerText=`🗺️ IR (${listaT1.length})`;
+ let combo=document.getElementById('combo'); combo.innerHTML=''; produtos.forEach(p=>{let o=document.createElement('option');o.value=p.x+','+p.y;o.innerText=`${p.emo} ${p.nome} [${p.g} L${p.lado} POS${p.pos}/17]`;combo.appendChild(o);});
+}
+function toggleProd(i){let p=produtos[i];let idx=listaT1.findIndex(l=>l.nome==p.nome);if(idx>=0) listaT1.splice(idx,1);else listaT1.push({...p}); salvarLista(); renderT1(); if(navigator.vibrate) navigator.vibrate(50);}
+function limparT1(){if(!confirm('Limpar?')) return; listaT1=[]; localStorage.removeItem('atacadao364_v56'); renderT1();}
+function irParaMercado(){if(!listaT1.length){alert('Adicione 1 produto!');return;}document.getElementById('tela1').style.display='none';document.getElementById('tela2').style.display='flex';init();resize();draw();loop();setTimeout(()=>{gerarRotaDaLista();},400);}
+function voltarLista(){document.getElementById('tela2').style.display='none';document.getElementById('tela1').style.display='flex';if(tm){clearInterval(tm);tm=null;}document.getElementById('modalPego').style.display='none';}
 let lab=[],px=27,py=15,tx=27,ty=15,cam=[],tm=null,camX=0,camY=0,rastro=[],vw=0,vh=0,vel=250;
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
-let idxR=0,wait=false,ord=[];
-function rota(){lista.forEach(l=>l.visitado=false);let r=[...lista],at={x:27,y:15},o=[];while(r.length){r.sort((a,b)=>(Math.abs(at.x-a.x)+Math.abs(at.y-a.y))-(Math.abs(at.x-b.x)+Math.abs(at.y-b.y)));let pr=r.shift();o.push(pr);at=pr}ord=o;idxR=0;prox()}
-function prox(){if(idxR>=ord.length){document.getElementById('console').innerText='🎉 COMPLETA!';alert('FINALIZADO '+ord.length+' itens');return}ir(ord[idxR].x,ord[idxR].y)}
-function show(it){document.getElementById('mProd').innerText=it.emo;document.getElementById('mNome').innerText=it.nome;document.getElementById('mG').innerText=`G[${it.g}] X${it.x} Y${it.y} POS${it.pos}/17 (arr ${it.pos-1})`;let ld=document.getElementById('mL');ld.innerText=`LADO ${it.lado} ${it.ladoIdx==1?'⬅️':'➡️'} POS ${it.pos}/17 - BORDA FIX`;ld.style.background=it.ladoIdx==1?'#00d4ff':'#ff0';ld.style.color='#000';document.getElementById('mPreco').innerText=it.preco;document.getElementById('mProg').innerText=`${idxR+1}/${ord.length} P${it.pos}/17`;document.getElementById('modal').style.display='block'}
-function ok(){ord[idxR].visitado=true;document.getElementById('modal').style.display='none';idxR++;wait=false;setTimeout(prox,400)}
-function pular(){document.getElementById('modal').style.display='none';idxR++;prox()}
-function init(){lab=[];for(let y=0;y<ROWS;y++){lab[y]=[];for(let x=0;x<COLS;x++){if(y==0||y==18||x==0||x==COLS-1)lab[y][x]=0;else if(x%2==1)lab[y][x]=1;else lab[y][x]=0}}}
+let idxRota=0,esperando=false,listaOrdenada=[];
+function setVel(v){ vel=parseInt(v); if(vel<30) vel=30; if(vel>800) vel=800; document.getElementById('gpsVel').innerText='VEL '+vel+'ms'; document.getElementById('velSlider').value=vel; if(tm){ clearInterval(tm); tm=setInterval(step,vel); } }
+function mudaVel(d){ setVel(vel+d); }
+function gerarRotaDaLista(){ listaT1.forEach(l=>l.visitado=false); let resto=[...listaT1]; let atual={x:27,y:15}; let ordem=[]; while(resto.length){ resto.sort((a,b)=>(Math.abs(atual.x-a.x)+Math.abs(atual.y-a.y))-(Math.abs(atual.x-b.x)+Math.abs(atual.y-b.y))); let prox=resto.shift(); ordem.push(prox); atual=prox; } listaOrdenada=ordem; idxRota=0; irParaProximoDaLista(); }
+function irParaProximoDaLista(){if(idxRota>=listaOrdenada.length){let total=calcTotal();document.getElementById('console').innerText='🎉 COMPLETA!';alert(`🎉 FINALIZADO! ${listaOrdenada.length} itens 17 vertical x 26 lados BORDA FIX - R$ ${total.toFixed(2).replace('.',',')}`);return;}ir(listaOrdenada[idxRota].x,listaOrdenada[idxRota].y);}
+function mostrarModalPego(item){
+ document.getElementById('modalProd').innerText=item.emo;
+ document.getElementById('modalNome').innerText=item.nome;
+ document.getElementById('modalGond').innerText='GÔNDOLA ['+item.g+'] X:'+item.x+' Y:'+item.y+' POS:'+item.pos+'/17 (array '+(item.pos-1)+') COLS=29 BORDA FIX';
+ let ladoDiv=document.getElementById('modalLado');
+ ladoDiv.innerText='LADO '+item.lado+' '+(item.ladoIdx==1?'⬅️ ESQ':'➡️ DIR')+' - POS '+item.pos+' de 17 - Array '+(item.pos-1)+' de 0-16 - 17 VERTICAL - BORDA FIX';
+ ladoDiv.style.background=item.ladoIdx==1?'#00d4ff':'#ff0';
+ ladoDiv.style.color='#000';
+ document.getElementById('modalPreco').innerText=item.preco;
+ document.getElementById('modalProgress').innerText='Item '+(idxRota+1)+'/'+listaOrdenada.length+' - VERTICAL '+item.pos+'/17 - COLS=29';
+ document.getElementById('modalPego').style.display='block';
+ falar(`Chegou na gôndola ${item.g}, lado ${item.lado}, posicao ${item.pos} de 17, ${item.nome}`);
+ if(navigator.vibrate) navigator.vibrate([200,100,200]);
+}
+function confirmarPego(){listaOrdenada[idxRota].visitado=true;document.getElementById('modalPego').style.display='none';idxRota++;esperando=false;setTimeout(()=>{irParaProximoDaLista();},500);}
+function pularItem(){document.getElementById('modalPego').style.display='none';idxRota++;irParaProximoDaLista();}
+function init(){lab=[];for(let y=0;y<ROWS;y++){lab[y]=[];for(let x=0;x<COLS;x++){if(y==0||y==18||x==0||x==COLS-1) lab[y][x]=0; else if(x%2==1) lab[y][x]=1; else lab[y][x]=0;}} }
 function livre(x,y){return x>=0&&x<COLS&&y>=0&&y<ROWS&&lab[y][x]!=1}
-function achar(sx,sy,ex,ey){let q=[{x:sx,y:sy,p:[]}],v={};v[sx+','+sy]=1;while(q.length){let c=q.shift();if(c.x==ex&&c.y==ey)return c.p;for(let d of [[1,0],[-1,0],[0,1],[0,-1]]){let nx=c.x+d[0],ny=c.y+d[1],k=nx+','+ny;if(!v[k]&&livre(nx,ny)){v[k]=1;q.push({x:nx,y:ny,p:c.p.concat([{x:nx,y:ny}])})}}}return[]}
-function resize(){let r=cv.getBoundingClientRect();vw=r.width;vh=r.height||400;cv.width=vw;cv.height=vh;draw()}
-function updateCam(){let tX=px*W - vw/2 + W/2, tY=py*H - vh/2 + H/2;camX+=(tX-camX)*0.12;camY+=(tY-camY)*0.12;let mx=Math.max(0,COLS*W-vw),my=Math.max(0,ROWS*H-vh);camX=Math.max(0,Math.min(mx,camX));camY=Math.max(0,Math.min(my,camY))}
-function draw(){updateCam();ctx.fillStyle='#000';ctx.fillRect(0,0,vw,vh);ctx.save();ctx.translate(-camX,-camY);for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){if(lab[y][x]==1){ctx.fillStyle='#0a194e';ctx.fillRect(x*W,y*H,W,H);ctx.fillStyle='#1e40af';ctx.fillRect(x*W+1,y*H+1,W-2,H-2);ctx.fillStyle='#0f0';ctx.font='bold 7px monospace';ctx.textAlign='center';let n='';if(x==2)n='25-26';else if(x==4)n='23-24';else if(x==6)n='21-22';else if(x==8)n='19-20';else if(x==10)n='17-18';else if(x==12)n='15-16';else if(x==14)n='13-14';else if(x==16)n='11-12';else if(x==18)n='9-10';else if(x==20)n='7-8';else if(x==22)n='5-6';else if(x==24)n='3-4';else if(x==26)n='1-2';if(n)ctx.fillText(n,x*W+20,y*H+14)}}for(let k in MAP){let x=MAP[k];ctx.fillStyle='#000';ctx.fillRect(x*W,0,W,12);ctx.fillStyle='#0f0';ctx.font='bold 7px monospace';ctx.textAlign='center';ctx.fillText(k,x*W+20,8)}ctx.fillStyle='#0f0';ctx.fillRect(27*W,15*H,W,H);ctx.fillStyle='#000';ctx.font='bold 6px monospace';ctx.textAlign='center';ctx.fillText('ENTRADA',27*W+20,15*H+15);ctx.fillStyle='#ff0';ctx.fillRect(2*W,15*H,W,H);ctx.fillStyle='#000';ctx.fillText('25-26',2*W+20,15*H+15);for(let i=0;i<rastro.length;i++){let p=rastro[i];let a=(i+1)/rastro.length;ctx.fillStyle='rgba(0,255,136,'+(0.4+a*0.6)+')';ctx.beginPath();ctx.arc(p.x*W+20,p.y*H+13,6*a+2,0,6.28);ctx.fill()}if(!(tx==27&&ty==15)){ctx.fillStyle='#f44';ctx.fillRect(tx*W-2,ty*H-2,W+4,H+4)}ord.forEach((it,i)=>{if(it.visitado||i<idxR)return;let off=it.ladoIdx==1?-8:8;ctx.fillStyle=i==idxR?'#0f0':'#f44';ctx.beginPath();ctx.arc(it.x*W+20+off,it.y*H+13,i==idxR?11:7,0,6.28);ctx.fill();ctx.fillStyle=i==idxR?'#000':'#fff';ctx.font='bold 8px Arial';ctx.textAlign='center';ctx.fillText(i+1,it.x*W+20+off,it.y*H+16);ctx.fillStyle=it.ladoIdx==1?'#00d4ff':'#ff0';ctx.font='bold 6px monospace';ctx.fillText('P'+it.pos, it.x*W+20+off, it.y*H+5)});ctx.fillStyle='#0f0';ctx.beginPath();ctx.arc(px*W+20,py*H+13,10,0,6.28);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();ctx.restore();document.getElementById('pos').innerText=`X:${px} Y:${py} P${ord[idxR]?.pos||''}/17`;document.getElementById('console').innerText=ord.filter(l=>!l.visitado).length>0?`📍 ${idxR+1}/${ord.length} ${ord[idxR]?.nome} [${ord[idxR]?.g} L${ord[idxR]?.lado} P${ord[idxR]?.pos}/17] BORDA FIX`:'🎉 Pronto 442 BORDA FIX!'}
-function step(){if(cam.length==0){clearInterval(tm);tm=null;let al=ord[idxR];if(al&&px==al.x&&py==al.y&&!al.visitado&&!wait){wait=true;show(al)}draw();return}let p=cam.shift();rastro.push({x:px,y:py});if(rastro.length>25)rastro.shift();px=p.x;py=p.y;draw()}
-function mv(dx,dy){if(tm){clearInterval(tm);tm=null}let nx=px+dx,ny=py+dy;if(!livre(nx,ny))return;rastro.push({x:px,y:py});if(rastro.length>25)rastro.shift();px=nx;py=ny;draw()}
-function ir(x,y){if(tm){clearInterval(tm);tm=null}x=Math.max(1,Math.min(COLS-2,parseInt(x)||27));y=Math.max(1,Math.min(ROWS-2,parseInt(y)||15));if(lab[y]&&lab[y][x]==1){if(x>0&&lab[y][x-1]!=1)x--;else if(x<COLS-1&&lab[y][x+1]!=1)x++}if(x==27&&y==15)rastro=[];tx=x;ty=y;cam=achar(px,py,x,y);if(cam.length==0){if(px!=x||py!=y){px=x;py=y}let al=ord[idxR];if(al&&px==al.x&&py==al.y&&!al.visitado&&!wait){wait=true;show(al)}draw();return}tm=setInterval(step,vel);draw()}
-function loop(){updateCam();draw();requestAnimationFrame(loop)}
-carregar();window.addEventListener('resize',resize);
-document.getElementById('combo').addEventListener('change',()=>{let v=document.getElementById('combo').value.split(',');ir(parseInt(v[0]),parseInt(v[1]))});
+function achar(sx,sy,ex,ey){let q=[{x:sx,y:sy,p:[]}],v={};v[sx+','+sy]=1;while(q.length){let c=q.shift();if(c.x==ex&&c.y==ey)return c.p;for(let d of [[1,0],[-1,0],[0,1],[0,-1]]){let nx=c.x+d[0],ny=c.y+d[1],k=nx+','+ny;if(!v[k]&&livre(nx,ny)){v[k]=1;q.push({x:nx,y:ny,p:c.p.concat([{x:nx,y:ny}])})}}}return []}
+function resize(){let r=cv.getBoundingClientRect();vw=r.width;vh=r.height||400;cv.width=vw;cv.height=vh;draw();}
+function updateCam(){let tX=px*W - vw/2 + W/2, tY=py*H - vh/2 + H/2; camX+=(tX-camX)*0.12; camY+=(tY-camY)*0.12;let maxX=Math.max(0,COLS*W-vw),maxY=Math.max(0,ROWS*H-vh);camX=Math.max(0,Math.min(maxX,camX));camY=Math.max(0,Math.min(maxY,camY));}
+function draw(){
+  updateCam();ctx.fillStyle='#000';ctx.fillRect(0,0,vw,vh);ctx.save();ctx.translate(-camX,-camY);
+  for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){ if(lab[y][x]==1){ ctx.fillStyle='#0a194e';ctx.fillRect(x*W,y*H,W,H); ctx.fillStyle='#1e40af';ctx.fillRect(x*W+1,y*H+1,W-2,H-2); ctx.fillStyle='#00ff88';ctx.font='bold 7px monospace';ctx.textAlign='center'; let n=''; if(x==2)n='25-26'; else if(x==4)n='23-24'; else if(x==6)n='21-22'; else if(x==8)n='19-20'; else if(x==10)n='17-18'; else if(x==12)n='15-16'; else if(x==14)n='13-14'; else if(x==16)n='11-12'; else if(x==18)n='9-10'; else if(x==20)n='7-8'; else if(x==22)n='5-6'; else if(x==24)n='3-4'; else if(x==26)n='1-2'; if(n) ctx.fillText(n,x*W+20,y*H+14); } }
+  for(let k in MAP_G){ let x=MAP_G[k]; ctx.fillStyle='#000'; ctx.fillRect(x*W,0,W,12); ctx.fillStyle='#00ff88'; ctx.font='bold 7px monospace'; ctx.textAlign='center'; ctx.fillText(k, x*W+20, 8); }
+  ctx.fillStyle='#00ff88';ctx.fillRect(27*W,15*H,W,H);ctx.fillStyle='#000';ctx.font='bold 6px monospace';ctx.textAlign='center';ctx.fillText('ENTRADA 1-2 FIX',27*W+20,15*H+15);
+  ctx.fillStyle='#ff0';ctx.fillRect(2*W,15*H,W,H);ctx.fillStyle='#000';ctx.fillText('25-26 ESQ',2*W+20,15*H+15);
+  for(let i=0;i<rastro.length;i++){let p=rastro[i];let a=(i+1)/rastro.length;ctx.fillStyle='rgba(0,255,136,'+(0.4+a*0.6)+')';ctx.beginPath();ctx.arc(p.x*W+20,p.y*H+13,6*a+2,0,6.28);ctx.fill();}
+  if(!(tx==27&&ty==15)){ctx.fillStyle='#ef4444';ctx.fillRect(tx*W-2,ty*H-2,W+4,H+4);}
+  listaOrdenada.forEach((it,i)=>{if(it.visitado||i<idxRota) return;let off=it.ladoIdx==1?-8:8; ctx.fillStyle=i==idxRota?'#00ff88':'#ef4444';ctx.beginPath();ctx.arc(it.x*W+20+off,it.y*H+13,i==idxRota?11:7,0,6.28);ctx.fill();ctx.fillStyle=i==idxRota?'#000':'#fff';ctx.font='bold 8px Arial';ctx.textAlign='center';ctx.fillText(i+1,it.x*W+20+off,it.y*H+16); ctx.fillStyle=it.ladoIdx==1?'#00d4ff':'#ff0'; ctx.font='bold 6px monospace'; ctx.fillText('L'+it.lado+' P'+it.pos, it.x*W+20+off, it.y*H+5);});
+  ctx.fillStyle='#00ff88';ctx.beginPath();ctx.arc(px*W+20,py*H+13,10,0,6.28);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();ctx.restore();
+  document.getElementById('gpsPos').innerText=`X:${px} Y:${py} POS${listaOrdenada[idxRota]?.pos||''}/17`;
+  let pend=listaOrdenada.filter(l=>!l.visitado).length;
+  document.getElementById('console').innerText=pend>0?`📍 ${idxRota+1}/${listaOrdenada.length} - ${listaOrdenada[idxRota]?.nome} [${listaOrdenada[idxRota]?.g} L${listaOrdenada[idxRota]?.lado} POS${listaOrdenada[idxRota]?.pos}/17] Array ${listaOrdenada[idxRota]?.pos-1} - 17 VERT x 26 LADOS - COLS=29 BORDA FIX`:'🎉 Pronto! 442 PROD 17 VERT BORDA FIX!';
+}
+function step(){if(cam.length==0){clearInterval(tm);tm=null;let alvo=listaOrdenada[idxRota];if(alvo&&px==alvo.x&&py==alvo.y&&!alvo.visitado&&!esperando){esperando=true;mostrarModalPego(alvo);}draw();return;}let p=cam.shift();rastro.push({x:px,y:py});if(rastro.length>25) rastro.shift();px=p.x;py=p.y;draw();}
+function mover(dx,dy){if(tm){clearInterval(tm);tm=null;}let nx=px+dx,ny=py+dy;if(!livre(nx,ny))return;rastro.push({x:px,y:py});if(rastro.length>25) rastro.shift();px=nx;py=ny;draw();}
+function ir(x,y){
+  if(tm){clearInterval(tm);tm=null;}
+  x=Math.max(1,Math.min(COLS-2,parseInt(x)||27));
+  y=Math.max(1,Math.min(ROWS-2,parseInt(y)||15));
+  if(lab[y] && lab[y][x]==1){ if(x>0 && lab[y][x-1]!=1) x--; else if(x<COLS-1 && lab[y][x+1]!=1) x++; }
+  if(x==27&&y==15) rastro=[];
+  tx=x;ty=y;cam=achar(px,py,x,y);
+  if(cam.length==0){ if(px!=x || py!=y){ px=x; py=y; } let alvo=listaOrdenada[idxRota]; if(alvo&&px==alvo.x&&py==alvo.y&&!alvo.visitado&&!esperando){esperando=true;mostrarModalPego(alvo);} draw(); return; }
+  tm=setInterval(step,vel);draw();
+}
+function loop(){updateCam();draw();requestAnimationFrame(loop);}
+let editADMIdx=-1, curEditLado=1, filtroLadoADM=0;
+function abrirADM(){document.getElementById('admPanel').style.display='block';renderADM();}
+function fecharADM(){document.getElementById('admPanel').style.display='none';carregarProdutos();}
+function filtrarADM(){ filtroLadoADM = filtroLadoADM==0?25:filtroLadoADM==25?26:0; renderADM(); }
+function renderADM(){ 
+ let q=(document.getElementById('buscaADM').value||'').toLowerCase(); let html=''; 
+ let filtro=produtos.filter(p=>{let ok=p.nome.toLowerCase().includes(q); if(filtroLadoADM!=0) ok=ok && p.lado==filtroLadoADM; return ok;}); 
+ filtro.slice(0,60).forEach(p=>{ 
+  let idx=produtos.indexOf(p); 
+  let cor=p.ladoIdx==1?'#00d4ff':'#ff0';
+  html+=`<div style="display:flex;justify-content:space-between;align-items:center;background:#000;padding:4px;margin:2px 0;border-radius:6px;border:1px solid #222;font-size:8px"><div style="flex:1">${p.emo} <b>${p.nome}</b><br><small style="background:${cor};color:#000;padding:1px 3px;border-radius:3px;font-weight:900">[${p.g}] LADO ${p.lado} ${p.ladoIdx==1?'⬅️ ESQ':'➡️ DIR'} POS:${p.pos}/17 X:${p.x} Y:${p.y}</small></div><div style="display:flex;gap:2px"><button onclick="editarADM(${idx})" style="background:#00ff88;color:#000;border:none;padding:3px 6px;border-radius:4px;font-weight:bold;font-size:8px">EDIT</button><button onclick="if(confirm('Apagar?')){produtos.splice(${idx},1);exportarADM();}" style="background:#f00;color:#fff;border:none;padding:3px 5px;border-radius:4px;font-size:8px">X</button></div></div>`; 
+ }); 
+ document.getElementById('listaADM').innerHTML=html||'Vazio - clique 442'; 
+}
+function setEditLado(idx){curEditLado=idx; document.getElementById('eL25').style.background=idx==1?'#0f0':'#000'; document.getElementById('eL26').style.background=idx==2?'#ff0':'#000'; document.getElementById('eL25').style.color=idx==1?'#000':'#0f0'; document.getElementById('eL26').style.color=idx==2?'#000':'#0f0';}
+function editarADM(idx){
+ let p=produtos[idx]; editADMIdx=idx;
+ document.getElementById('editNome').value=p.nome;
+ document.getElementById('editEmoji').value=p.emo;
+ document.getElementById('editG').value=p.g;
+ document.getElementById('editX').value=p.x;
+ document.getElementById('editY').value=p.y;
+ document.getElementById('editPos').value=p.pos;
+ curEditLado=p.ladoIdx||1; setEditLado(curEditLado);
+ document.getElementById('formEditADM').style.display='block';
+}
+function cancelarEditADM(){ document.getElementById('formEditADM').style.display='none'; editADMIdx=-1; }
+function salvarEditADM(){
+ if(editADMIdx<0) return;
+ let g=(document.getElementById('editG').value||'25-26').toUpperCase();
+ let x=MAP_G[g]||2;
+ let y=parseInt(document.getElementById('editY').value)||2;
+ let pos=y-1;
+ let ladoNum=getLadoNum(g,curEditLado);
+ produtos[editADMIdx]={ nome:document.getElementById('editNome').value.toUpperCase(), emo:document.getElementById('editEmoji').value||'📦', g:g, lado:ladoNum, ladoIdx:curEditLado, preco:produtos[editADMIdx].preco, x:x, y:y, pos:pos };
+ exportarADM(); cancelarEditADM(); renderADM(); carregarProdutos();
+}
+function exportarADM(){ localStorage.setItem(KEY,JSON.stringify(produtos)); localStorage.setItem('atacadao364_FINAL',JSON.stringify(produtos)); document.getElementById('msgADM').innerText='✅ '+produtos.length+' salvos | 17 VERT x 26 LADOS = 442 | Array 0-16 = POS1-17 | COLS=29 BORDA FIX | VEL OK'; carregarProdutos(); renderADM();}
+carregarProdutos();
+window.addEventListener('resize',resize);
+document.getElementById('combo').addEventListener('change',()=>{let v=document.getElementById('combo').value.split(',');ir(parseInt(v[0]),parseInt(v[1]));});
 </script></body></html>
