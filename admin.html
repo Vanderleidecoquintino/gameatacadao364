@@ -1,20 +1,20 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ADM V71 - 17 POR LADO - 442 PROD - 26 LADOS</title><style>body{background:#000;color:#0f0;font-family:monospace;padding:8px;max-width:540px;margin:auto}input,select{width:100%;padding:10px;margin:3px 0;background:#111;color:#0f0;border:1px solid #0f0;border-radius:8px}.b{padding:8px;border:1px solid #0f0;border-radius:8px;background:#000;color:#0f0;font-weight:bold}.card{background:#111;padding:6px;margin:4px 0;border-radius:8px;display:flex;justify-content:space-between;border:1px solid #222;font-size:10px}#formEdit{display:none;position:fixed;bottom:0;left:0;right:0;max-width:540px;margin:auto;background:#1a1a1a;padding:12px;border:2px solid #0f0;border-radius:15px 15px 0 0;z-index:10}.ladoBtn{flex:1;height:38px;border:2px solid #0f0;background:#000;color:#0f0;font-weight:900;border-radius:8px}.ladoBtn.sel{background:#0f0;color:#000}#mapa{width:100%;height:620px;border:2px solid #0f0;position:relative;background:#000;margin:6px 0;border-radius:10px;overflow:hidden}.gondola{position:absolute;background:#1e40af;border:1px solid #00d4ff;opacity:.6;box-sizing:border-box}.ponto{position:absolute;transform:translate(-50%,-50%);font-size:13px;z-index:3}.label{position:absolute;font-size:7px;color:#fff;z-index:4;background:#000;padding:1px 3px;border:1px solid #0f0}</style></head><body>
-<h3 style="text-align:center">ADM V71 - 17 POR LADO - 26 LADOS = 442 PROD<br><span style="font-size:10px">Array 0-16 = POS 1-17</span> <span id="total">0</span></h3>
-<input id="busca" placeholder="BUSCAR ex: WHEY LADO 25" oninput="render()">
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ADM V72 - 17 VERTICAL - 442 PROD - 26 LADOS FIX</title><style>body{background:#000;color:#0f0;font-family:monospace;padding:8px;max-width:580px;margin:auto}input,select{width:100%;padding:10px;margin:3px 0;background:#111;color:#0f0;border:1px solid #0f0;border-radius:8px}.b{padding:8px;border:1px solid #0f0;border-radius:8px;background:#000;color:#0f0;font-weight:bold}.card{background:#111;padding:6px;margin:4px 0;border-radius:8px;display:flex;justify-content:space-between;border:1px solid #222;font-size:10px}#formEdit{display:none;position:fixed;bottom:0;left:0;right:0;max-width:580px;margin:auto;background:#1a1a1a;padding:12px;border:2px solid #0f0;border-radius:15px 15px 0 0;z-index:10}.ladoBtn{flex:1;height:38px;border:2px solid #0f0;background:#000;color:#0f0;font-weight:900;border-radius:8px}.ladoBtn.sel{background:#0f0;color:#000}#mapa{width:100%;height:1100px;border:3px solid #0f0;position:relative;background:#001122;margin:6px 0;border-radius:10px;overflow:auto}.gondola{position:absolute;background:#1e40af;border:1px solid #00d4ff;opacity:.5;box-sizing:border-box}.ponto{position:absolute;transform:translate(-50%,-50%);font-size:14px;z-index:3;font-weight:bold}.label{position:absolute;font-size:8px;color:#000;z-index:5;background:#00ff88;padding:2px 4px;border:1px solid #000;font-weight:900;border-radius:4px}</style></head><body>
+<h3 style="text-align:center">ADM V72 - 17 VERTICAL FIX<br>26 LADOS x 17 = 442 | Array 0-16 = POS1-17<br><span id="total" style="color:#ff0">0</span> produtos</h3>
+<input id="busca" placeholder="BUSCAR" oninput="render()">
 <div style="display:flex;gap:4px;flex-wrap:wrap;margin:6px 0">
 <button class="b" style="flex:1;background:#0f0;color:#000" onclick="exportar()">💾 SALVAR</button>
-<button class="b" style="flex:1;background:#ff0;color:#000" onclick="provocar442()">🔥 PROVOCAR 442 (17 POR LADO)</button>
-<button class="b" style="flex:1" onclick="render()">🔄 MAPA</button>
+<button class="b" style="flex:1;background:#ff0;color:#000" onclick="provocar442()">🔥 PROVOCAR 442 - 17 VERTICAL</button>
+<button class="b" style="flex:1" onclick="render()">🔄 MAPA 17 FILEIRAS</button>
 <button class="b" style="color:red" onclick="if(confirm('RESET?')){localStorage.clear();location.reload()}">RESET</button>
 </div>
-<div style="display:flex;gap:4px"><button class="b" style="flex:1" onclick="filtrarLado(0)">TODOS 26 LADOS</button><button class="b" style="flex:1" onclick="filtrarLado(1)">SÓ LADO ÍMPAR (ESQ)</button><button class="b" style="flex:1" onclick="filtrarLado(2)">SÓ LADO PAR (DIR)</button></div>
-<div id="lista"></div><div id="mapa"></div><div id="msg" style="text-align:center;font-size:10px;padding:4px"></div>
+<div style="display:flex;gap:4px"><button class="b" style="flex:1" onclick="filtrarLado(0)">TODOS 26 LADOS (17 VERT)</button><button class="b" style="flex:1" onclick="filtrarLado(1)">SÓ ESQ (17)</button><button class="b" style="flex:1" onclick="filtrarLado(2)">SÓ DIR (17)</button></div>
+<div id="lista"></div><div id="mapa"></div><div id="msg" style="text-align:center;font-size:11px;padding:6px;color:#0f0"></div>
 <div id="formEdit"><h4 id="t"></h4>
 <input id="f_nome" placeholder="NOME">
 <div style="display:flex;gap:4px"><input id="f_emoji" placeholder="EMOJI" style="width:80px"><input id="f_preco" placeholder="PREÇO"><input id="f_g" placeholder="GONDOLA 25-26"></div>
-<div style="margin:6px 0"><div style="font-size:10px">LADO DA GÔNDOLA - 26 LADOS - Array 0-16 = POS 1-17:</div><div style="display:flex;gap:6px"><button id="btnL25" class="ladoBtn" onclick="setLado(1)">LADO ÍMPAR<br><small>⬅️ ESQ</small></button><button id="btnL26" class="ladoBtn" onclick="setLado(2)">LADO PAR<br><small>➡️ DIR</small></button></div><div id="ladoInfo" style="font-size:9px;text-align:center;margin:4px 0;color:#ff0"></div></div>
-<div style="display:flex;gap:4px"><input id="f_x" type="number" placeholder="X auto"><input id="f_y" type="number" placeholder="Y 2-18 = POS1-17"><input id="f_pos" type="number" placeholder="POS 1-17"></div>
-<div style="display:flex;gap:4px;margin-top:6px"><button class="b" style="flex:1" onclick="ajustaY(-1)">⬆️ SOBE POS</button><button class="b" style="flex:1" onclick="ajustaY(1)">⬇️ DESCE POS</button></div>
+<div style="margin:6px 0"><div style="font-size:10px">LADO - 26 LADOS - Array 0-16 = POS 1-17 - 17 VERTICAL:</div><div style="display:flex;gap:6px"><button id="btnL25" class="ladoBtn" onclick="setLado(1)">LADO ÍMPAR<br><small>⬅️ ESQ</small></button><button id="btnL26" class="ladoBtn" onclick="setLado(2)">LADO PAR<br><small>➡️ DIR</small></button></div><div id="ladoInfo" style="font-size:10px;text-align:center;margin:4px 0;color:#ff0"></div></div>
+<div style="display:flex;gap:4px"><input id="f_x" type="number" placeholder="X auto"><input id="f_y" type="number" placeholder="Y 2-18 = 17 VERT"><input id="f_pos" type="number" placeholder="POS 1-17"></div>
+<div style="display:flex;gap:4px;margin-top:6px"><button class="b" style="flex:1" onclick="ajustaY(-1)">⬆️ SOBE (POS+1)</button><button class="b" style="flex:1" onclick="ajustaY(1)">⬇️ DESCE (POS-1)</button></div>
 <div style="display:flex;gap:6px;margin-top:8px"><button class="b" style="flex:1" onclick="closeForm()">CANCELAR</button><button class="b" style="flex:1;background:#0f0;color:#000" onclick="salvar()">💾 SALVAR</button></div>
 </div>
 <script>
@@ -25,7 +25,7 @@ let produtos=[];try{produtos=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e
 let edit=-1, curLadoIdx=1, filtroLado=0;
 function filtrarLado(t){filtroLado=t;render();}
 function provocar442(){
- if(!confirm('Criar 442 produtos?\n\n26 LADOS x 17 POR LADO = 442\nArray 0-16 = POS 1-17\nSUBSTITUIR tudo?')) return;
+ if(!confirm('Criar 442 produtos?\n\n17 VERTICAL x 26 LADOS = 442\nArray 0-16 = POS 1-17\n17 fileiras verticais de cima até embaixo\nSUBSTITUIR tudo?')) return;
  const gondolas=Object.keys(MAP_G);
  const nImpar=["WHEY","CREATINA","BCAA","BARRA PROT","PASTA AMENDO","AVENA","LEITE DESNAT","IOGURTE","QUEIJO","FRANGO","OVO","ARROZ","FEIJAO","SARDINHA","ATUM","AZEITE","CAFE"];
  const nPar=["CHOCOLATE","BALA FINI","REFRI","BISCOITO","SORVETE","ACUCAR","OLEO","BOLACHA","SABONETE","DETERGENTE","PAPEL HIG","SHAMPOO","CREME","PASTA DENTE","SABAO","AMACIANTE","ESPONJA"];
@@ -40,9 +40,9 @@ function provocar442(){
    id++; novos.push({nome:nPar[id%nPar.length]+" "+g+" L"+l2+" POS"+pos, emoji:"🍫", g:g, lado:l2, ladoIdx:2, preco:(Math.random()*15+2).toFixed(2), x:x, y:y, pos:pos});
   });
  }
- produtos=novos.slice(0,442);
+ produtos=novos;
  exportar();
- alert('442 CRIADOS! 26 LADOS x 17 POR LADO = Array 0-16 = POS 1-17 - Todas as 13 gondolas cheias!');
+ alert('442 CRIADOS! 17 VERTICAL x 26 LADOS = 442 fileiras cheias de cima até embaixo!');
 }
 function render(){
  let q=(document.getElementById('busca').value||'').toLowerCase();
@@ -52,27 +52,31 @@ function render(){
   if(filtroLado==2) ok=ok && p.ladoIdx==2;
   return ok;
  });
- filtro.slice(0,140).forEach(p=>{
+ filtro.slice(0,120).forEach(p=>{
   let idx=produtos.indexOf(p);
   let cor=p.ladoIdx==1?'#00d4ff':'#ff0';
-  html+=`<div class="card"><div>${p.emoji} <b>${p.nome}</b><br><small style="background:${cor};color:#000;padding:2px 4px;border-radius:4px">G[${p.g}] LADO ${p.lado} ${p.ladoIdx==1?'⬅️ ESQ':'➡️ DIR'} X:${p.x} Y:${p.y} POS:${p.pos} (array ${p.pos-1})</small></div><div style="display:flex;flex-direction:column;gap:2px"><button class="b" style="font-size:9px;padding:4px" onclick="editar(${idx})">EDIT</button><button class="b" style="color:red;font-size:9px;padding:4px" onclick="apagar(${idx})">X</button></div></div>`;
+  html+=`<div class="card"><div>${p.emo} <b>${p.nome}</b><br><small style="background:${cor};color:#000;padding:2px 4px;border-radius:4px">G[${p.g}] LADO ${p.lado} ${p.ladoIdx==1?'⬅️ ESQ':'➡️ DIR'} X:${p.x} Y:${p.y} POS:${p.pos} (array ${p.pos-1}) VERT ${p.pos}/17</small></div><div style="display:flex;flex-direction:column;gap:2px"><button class="b" style="font-size:9px;padding:4px" onclick="editar(${idx})">EDIT</button><button class="b" style="color:red;font-size:9px;padding:4px" onclick="apagar(${idx})">X</button></div></div>`;
  });
- document.getElementById('lista').innerHTML=html||'<div style="text-align:center;padding:20px">Vazio - clique PROVOCAR 442</div>';
+ document.getElementById('lista').innerHTML=html||'<div style="text-align:center;padding:20px">Vazio - clique PROVOCAR 442 - 17 VERTICAL</div>';
  document.getElementById('total').innerText=produtos.length;
  let m=document.getElementById('mapa'); m.innerHTML='';
- for(let y=0;y<ROWS;y++){for(let x=0;x<COLS;x++){if(x%2==1 || y==0 || y==18 || x==0 || x==26){let d=document.createElement('div');d.className='gondola';d.style.left=(x/COLS*100)+'%';d.style.top=(y/ROWS*100)+'%';d.style.width=(100/COLS)+'%';d.style.height=(100/ROWS)+'%';m.appendChild(d);}}}
- for(let k in MAP_G){let x=MAP_G[k]; let d=document.createElement('div'); d.className='label'; d.style.left=(x/COLS*100)+'%'; d.style.top='1%'; d.textContent=k; m.appendChild(d);}
- produtos.slice(0,250).forEach(p=>{
-  let off = p.ladoIdx==1 ? -0.35 : 0.35;
+ for(let y=0;y<ROWS;y++){for(let x=0;x<COLS;x++){let d=document.createElement('div');d.className='gondola';d.style.left=(x/COLS*100)+'%';d.style.top=(y/ROWS*100)+'%';d.style.width=(100/COLS)+'%';d.style.height=(100/ROWS)+'%';if(x%2==1) d.style.background='#0a194e'; m.appendChild(d);}}
+ for(let k in MAP_G){let x=MAP_G[k]; let d=document.createElement('div'); d.className='label'; d.style.left=(x/COLS*100)+'%'; d.style.top='0%'; d.textContent=k; m.appendChild(d);}
+ produtos.forEach(p=>{
+  let off = p.ladoIdx==1 ? -0.3 : 0.3;
   let d=document.createElement('div');d.className='ponto';d.style.left=((p.x+off)/COLS*100)+'%';d.style.top=(p.y/ROWS*100)+'%';d.textContent=p.emoji; m.appendChild(d);
  });
+ let info=document.createElement('div'); info.style.position='absolute'; info.style.bottom='5px'; info.style.left='5px'; info.style.background='#000'; info.style.color='#0f0'; info.style.padding='4px'; info.style.fontSize='9px'; info.style.border='1px solid #0f0';
+ let verticais = new Set(produtos.map(p=>p.pos)).size;
+ info.innerText=`VERTICAL: ${verticais} fileiras (POS1-POS${verticais}) | ${produtos.length} produtos | 26 LADOS x ${verticais} = ${26*verticais}`;
+ m.appendChild(info);
 }
-function setLado(idx){curLadoIdx=idx; document.getElementById('btnL25').classList.toggle('sel', idx==1); document.getElementById('btnL26').classList.toggle('sel', idx==2); let g=document.getElementById('f_g').value||'25-26'; let num=getLadoNum(g,idx); document.getElementById('ladoInfo').innerText='Selecionado LADO '+num+' '+(idx==1?'⬅️ ESQ (ímpar)':'➡️ DIR (par)')+' - Array '+(parseInt(document.getElementById('f_pos').value||1)-1)+' = POS '+(document.getElementById('f_pos').value||1);}
+function setLado(idx){curLadoIdx=idx; document.getElementById('btnL25').classList.toggle('sel', idx==1); document.getElementById('btnL26').classList.toggle('sel', idx==2); let g=document.getElementById('f_g').value||'25-26'; let num=getLadoNum(g,idx); document.getElementById('ladoInfo').innerText='LADO '+num+' '+(idx==1?'⬅️ ESQ':'➡️ DIR')+' - Array '+(parseInt(document.getElementById('f_pos').value||1)-1)+' = POS '+(document.getElementById('f_pos').value||1)+' - VERTICAL '+(document.getElementById('f_pos').value||1)+'/17';}
 function ajustaY(d){let y=parseInt(document.getElementById('f_y').value||2)+d; if(y<2) y=2; if(y>18) y=18; document.getElementById('f_y').value=y; document.getElementById('f_pos').value=y-1; setLado(curLadoIdx);}
 function editar(i){edit=i;let p=produtos[i];document.getElementById('t').innerText=p.nome;document.getElementById('f_nome').value=p.nome;document.getElementById('f_emoji').value=p.emoji;document.getElementById('f_g').value=p.g;document.getElementById('f_preco').value=p.preco;document.getElementById('f_x').value=p.x;document.getElementById('f_y').value=p.y;document.getElementById('f_pos').value=p.pos;curLadoIdx=p.ladoIdx||1;setLado(curLadoIdx);document.getElementById('formEdit').style.display='block';}
 function closeForm(){document.getElementById('formEdit').style.display='none';}
 function salvar(){let g=(document.getElementById('f_g').value||'25-26').toUpperCase(); let x=MAP_G[g]||2; let y=parseInt(document.getElementById('f_y').value)||2; let pos=y-1; let ladoNum=getLadoNum(g,curLadoIdx); let p={nome:document.getElementById('f_nome').value.toUpperCase(),emoji:document.getElementById('f_emoji').value||'📦',g:g,lado:ladoNum,ladoIdx:curLadoIdx,preco:document.getElementById('f_preco').value||'9.90',x:x,y:y,pos:pos};if(edit>=0)produtos[edit]=p;else produtos.push(p);closeForm();exportar();}
 function apagar(i){if(confirm('Apagar?')){produtos.splice(i,1);exportar();}}
-function exportar(){localStorage.setItem(KEY,JSON.stringify(produtos));localStorage.setItem('atacadao364_FINAL',JSON.stringify(produtos));localStorage.setItem('produtos',JSON.stringify(produtos));document.getElementById('msg').innerText='✅ '+produtos.length+' salvos | 26 LADOS x 17 POR LADO = 442 | Array 0-16 = POS1-17 | Bandeiras OK';render();}
+function exportar(){localStorage.setItem(KEY,JSON.stringify(produtos));localStorage.setItem('atacadao364_FINAL',JSON.stringify(produtos));localStorage.setItem('produtos',JSON.stringify(produtos));document.getElementById('msg').innerText='✅ '+produtos.length+' salvos | VERTICAL: '+new Set(produtos.map(p=>p.pos)).size+' fileiras | 26 LADOS x '+new Set(produtos.map(p=>p.pos)).size+' = '+(26*new Set(produtos.map(p=>p.pos)).size)+' | Array 0-16 = POS1-17 | Bandeiras OK';render();}
 render();
 </script></body></html>
