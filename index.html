@@ -24,9 +24,14 @@ function setV(v){vel=parseInt(v);if(vel<30)vel=30;if(vel>800)vel=800;document.ge
 function muda(d){setV(vel+d)}
 function rota(){lista.forEach(l=>l.visitado=false);let r=[...lista],at={x:27,y:15},o=[];while(r.length){r.sort((a,b)=>(Math.abs(at.x-a.x)+Math.abs(at.y-a.y))-(Math.abs(at.x-b.x)+Math.abs(at.y-b.y)));let pr=r.shift();o.push(pr);at=pr}ord=o;idxR=0;prox()}
 function prox(){if(idxR>=ord.length){document.getElementById('console').innerText='🎉 COMPLETA!';alert('FINALIZADO '+ord.length+' itens 3M DEMO');return}ir(ord[idxR].x,ord[idxR].y)}
+
 function show(it){document.getElementById('mProd').innerText=it.emo;document.getElementById('mNome').innerText=it.nome;document.getElementById('mG').innerText=`G[${it.g}] X${it.x} Y${it.y} POS${it.pos}/17 3M Y=9 LIVRE`;let ld=document.getElementById('mL');ld.innerText=`LADO ${it.lado} ${it.ladoIdx==1?'⬅️':'➡️'} POS ${it.pos}/17 - 3M + MEIO`;ld.style.background=it.ladoIdx==1?'#00d4ff':'#ff0';ld.style.color='#000';document.getElementById('mPreco').innerText=it.preco;document.getElementById('mProg').innerText=`${idxR+1}/${ord.length} P${it.pos}/17 3M`;document.getElementById('modal').style.display='block'}
+
+
 function ok(){ord[idxR].visitado=true;document.getElementById('modal').style.display='none';idxR++;wait=false;setTimeout(prox,400)}
-function pular(){document.getElementById('modal').style.display='none';idxR++;prox()}
+function pular(){let it=ord[idxR];if(it)it.visitado=true;document.getElementById('modal').style.display='none';wait=false;idxR++;setTimeout(prox,200)}
+
+
 function init(){lab=[];for(let y=0;y<ROWS;y++){lab[y]=[];for(let x=0;x<COLS;x++){if(y==0||y==18||x==0||x==COLS-1)lab[y][x]=0;else if(y==9)lab[y][x]=0;else if(x%2==1)lab[y][x]=1;else lab[y][x]=0}}}
 function livre(x,y){return x>=0&&x<COLS&&y>=0&&y<ROWS&&lab[y][x]!=1}
 function achar(sx,sy,ex,ey){let q=[{x:sx,y:sy,p:[]}],v={};v[sx+','+sy]=1;while(q.length){let c=q.shift();if(c.x==ex&&c.y==ey)return c.p;for(let d of [[1,0],[-1,0],[0,1],[0,-1]]){let nx=c.x+d[0],ny=c.y+d[1],k=nx+','+ny;if(!v[k]&&livre(nx,ny)){v[k]=1;q.push({x:nx,y:ny,p:c.p.concat([{x:nx,y:ny}])})}}}return[]}
